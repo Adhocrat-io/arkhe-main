@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Arkhe\Main;
 
 use Arkhe\Main\Console\Commands\InstallCommand;
+use Arkhe\Main\Livewire\Admin\Users\UserCreate;
+use Arkhe\Main\Livewire\Admin\Users\UserEdit;
+use Arkhe\Main\Livewire\Admin\Users\UsersList;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class ArkheMainServiceProvider extends ServiceProvider
 {
@@ -65,8 +69,11 @@ class ArkheMainServiceProvider extends ServiceProvider
             __DIR__.'/../stubs/tests/Settings/TwoFactorAuthenticationTest.php' => base_path('tests/Feature/Settings/TwoFactorAuthenticationTest.php'),
         ], 'arkhe-main-files');
 
-        // $this->loadRoutesFrom(__DIR__.'/../routes/admin.php');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'arkhe-main');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'arkhe-main');
+
+        Livewire::component('arkhe.main.livewire.admin.users.users-list', UsersList::class);
+        Livewire::component('arkhe.main.livewire.admin.users.users-create', UserCreate::class);
+        Livewire::component('arkhe.main.livewire.admin.users.users-edit', UserEdit::class);
 
         $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
         $this->publishes([

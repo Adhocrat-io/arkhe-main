@@ -17,6 +17,20 @@
                 </flux:navlist.group>
             </flux:navlist>
 
+            @can(['manage-users'])
+                <flux:navlist.group :heading="__('Users')" class="grid" expandable :expanded="request()->routeIs('admin.users.*')">
+                    <flux:navlist.item icon="users" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.index')" wire:navigate>
+                        {{ __('Users') }}
+                    </flux:navlist.item>
+
+                    @can('manage-roles')
+                        <flux:navlist.item icon="wrench" :href="route('admin.users.roles.index')" :current="request()->routeIs('admin.users.roles.*')" wire:navigate>
+                            {{ __('Roles & Permissions') }}
+                        </flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
+            @endcan
+
             <flux:spacer />
 
             <flux:navlist variant="outline">

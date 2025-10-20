@@ -84,7 +84,7 @@
 
                 <tbody class="bg-white dark:bg-zinc-800">
                     @forelse($users as $user)
-                        <tr>
+                        <tr class="hover:bg-gray-100 dark:hover:bg-zinc-700">
                             <td class="px-6 py-4 whitespace-nowrap {{ !$this->canEditUser($user) ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                                 @if ($this->canEditUser($user))
                                 <flux:link wire:click='editUser({{ $user->id }})' variant="text">

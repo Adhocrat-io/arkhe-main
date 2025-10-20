@@ -23,6 +23,9 @@ Route::middleware([
     ->prefix(config('arkhe.admin.prefix'))
     ->name('admin.')
     ->group(function () {
+        /**
+         * Laravel Settings
+         */
         Route::prefix('settings')
             ->name('settings.')
             ->group(function () {
@@ -45,6 +48,9 @@ Route::middleware([
                     ->name('two-factor.show'); // admin.settings.two-factor.show
             });
 
+        /**
+         * Dashboard
+         */
         Route::view('/dashboard', 'dashboard')->name('dashboard'); // admin.dashboard
         Route::redirect('/', '/'.config('arkhe.admin.prefix').'/dashboard');
     });

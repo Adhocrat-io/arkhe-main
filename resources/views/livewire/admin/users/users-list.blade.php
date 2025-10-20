@@ -63,6 +63,7 @@
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50 dark:bg-zinc-800">
+                    {{-- TODO: make the columns sortable --}}
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                             {{ __('Name') }}

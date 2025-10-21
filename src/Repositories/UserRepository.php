@@ -6,7 +6,6 @@ namespace Arkhe\Main\Repositories;
 
 use App\Models\User;
 use Arkhe\Main\DataTransferObjects\UserDto;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 
 class UserRepository
@@ -18,10 +17,6 @@ class UserRepository
 
     public function create(UserDto $userDto): User
     {
-        if (auth()->check() && ! auth()->user()->can('create-user')) {
-            throw new AuthorizationException(__('You do not have the permissions to create a user.'));
-        }
-
         $user = User::create($userDto->toArray());
         $user->assignRole($userDto->role);
 
@@ -32,10 +27,6 @@ class UserRepository
 
     public function update(User $user, UserDto $userDto): User
     {
-        if (auth()->check() && ! auth()->user()->can('update-user')) {
-            throw new AuthorizationException(__('You do not have the permissions to update a user.'));
-        }
-
         $data = $userDto->toArray();
 
         // Ne pas mettre à jour le mot de passe s'il est vide

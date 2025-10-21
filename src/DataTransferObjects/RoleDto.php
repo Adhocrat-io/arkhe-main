@@ -7,10 +7,10 @@ namespace Arkhe\Main\DataTransferObjects;
 class RoleDto
 {
     public function __construct(
-        public string $name,
-        public string $label,
-        public string $guard_name,
-        public array $permissions = [],
+        public readonly string $name,
+        public readonly string $label,
+        public readonly string $guard_name,
+        public readonly array $permissions = [],
     ) {}
 
     public function toArray(): array

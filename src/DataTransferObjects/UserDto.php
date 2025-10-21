@@ -9,14 +9,14 @@ use Carbon\Carbon;
 class UserDto
 {
     public function __construct(
-        public ?string $first_name,
-        public string $last_name,
-        public string $email,
-        public ?Carbon $date_of_birth,
-        public ?string $civility,
-        public ?string $profession,
-        public ?string $password,
-        public ?string $role,
+        public readonly ?string $first_name,
+        public readonly string $last_name,
+        public readonly string $email,
+        public readonly ?Carbon $date_of_birth,
+        public readonly ?string $civility,
+        public readonly ?string $profession,
+        public readonly ?string $password,
+        public readonly ?string $role,
     ) {}
 
     public function toArray(): array

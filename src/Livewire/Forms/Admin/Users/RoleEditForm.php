@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Arkhe\Main\Livewire\Forms\Admin\Users;
 
 use Livewire\Form;

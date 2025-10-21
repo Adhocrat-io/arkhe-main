@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Arkhe\Main\Livewire\Admin\Users;
 
 use App\Models\User;

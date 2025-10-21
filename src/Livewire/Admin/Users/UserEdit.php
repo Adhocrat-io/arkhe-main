@@ -33,7 +33,7 @@ class UserEdit extends Component
     public function save(): RedirectResponse|Redirector
     {
         $this->userEditForm->validate();
-        $userService = app(UserRepository::class);
+        $userService = new UserRepository;
         $userService->update($this->userEditForm->user, new UserDto(...$this->userEditForm->toUserDtoArray()));
         session()->flash('message', __('User updated successfully.'));
 
@@ -42,7 +42,7 @@ class UserEdit extends Component
 
     public function deleteUser(): RedirectResponse|Redirector
     {
-        $userRepository = app(UserRepository::class);
+        $userRepository = new UserRepository;
 
         if ($this->user) {
             $userRepository->delete($this->user);

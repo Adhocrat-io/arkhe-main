@@ -26,7 +26,7 @@ class UserCreate extends Component
     public function save(): Redirector|RedirectResponse
     {
         $this->userEditForm->validate();
-        $userService = app(UserRepository::class);
+        $userService = new UserRepository;
         $userService->create(new UserDto(...$this->userEditForm->toUserDtoArray()));
         session()->flash('message', __('User created successfully.'));
 

@@ -41,7 +41,7 @@ class RoleEdit extends Component
             $this->addError('error', $e->getMessage());
         }
 
-        $roleRepository = app(RoleRepository::class);
+        $roleRepository = new RoleRepository;
 
         $permissions = array_keys(array_filter($this->roleEditForm->permissions, fn ($value) => $value === true));
 

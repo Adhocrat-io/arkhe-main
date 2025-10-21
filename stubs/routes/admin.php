@@ -39,9 +39,8 @@ Route::prefix(config('arkhe.admin.prefix'))
                 Route::middleware('role:'.UserRoleEnum::ROOT->value)
                     ->name('roles.')
                     ->group(function () {
-                        Route::get('users/roles', function () {})->name('index'); // admin.users.roles.index
-                        Route::get('users/roles/create', function () {})->name('create'); // admin.users.roles.create
-                        Route::get('users/roles/edit/{role}', function () {})->name('edit'); // admin.users.roles.edit
+                        Route::get('users/roles', Users\Roles\RolesList::class)->name('index'); // admin.users.roles.index
+                        Route::get('users/roles/edit/{role?}', Users\Roles\RoleEdit::class)->name('edit'); // admin.users.roles.edit
                     });
             });
 

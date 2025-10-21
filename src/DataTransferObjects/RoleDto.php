@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\DataTransferObjects;
 
-use Illuminate\Support\Collection;
-
 class RoleDto
 {
     public function __construct(
         public string $name,
         public string $label,
         public string $guard_name,
-        public ?Collection $permissions,
+        public array $permissions = [],
     ) {}
 
     public function toArray(): array

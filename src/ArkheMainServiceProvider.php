@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Arkhe\Main;
 
 use Arkhe\Main\Console\Commands\InstallCommand;
+use Arkhe\Main\Livewire\Admin\Users\Roles\RoleEdit;
+use Arkhe\Main\Livewire\Admin\Users\Roles\RolesList;
 use Arkhe\Main\Livewire\Admin\Users\UserCreate;
 use Arkhe\Main\Livewire\Admin\Users\UserEdit;
 use Arkhe\Main\Livewire\Admin\Users\UsersList;
@@ -74,6 +76,8 @@ class ArkheMainServiceProvider extends ServiceProvider
         Livewire::component('arkhe.main.livewire.admin.users.users-list', UsersList::class);
         Livewire::component('arkhe.main.livewire.admin.users.users-create', UserCreate::class);
         Livewire::component('arkhe.main.livewire.admin.users.users-edit', UserEdit::class);
+        Livewire::component('arkhe.main.livewire.admin.users.roles.roles-list', RolesList::class);
+        Livewire::component('arkhe.main.livewire.admin.users.roles.role-edit', RoleEdit::class);
 
         $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
         $this->publishes([

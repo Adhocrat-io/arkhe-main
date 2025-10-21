@@ -19,13 +19,8 @@ class RoleRepository
     {
         $role = Role::create($roleDto->toArray());
 
-        try {
-            // $role->syncPermissions($roleDto->permissions);
-            $role->permissions()->detach();
-            $role->permissions()->attach($roleDto->permissions);
-            // $role->permissions()->sync($roleDto->permissions);
-        } catch (\Exception $e) {
-            dump($e);
+        if (! empty($roleDto->permissions)) {
+            $role->syncPermissions($roleDto->permissions);
         }
 
         return $role;
@@ -34,15 +29,8 @@ class RoleRepository
     public function update(Role $role, RoleDto $roleDto): Role
     {
         $role->update($roleDto->toArray());
-        // dump($roleDto->permissions);
-        try {
-            // $role->syncPermissions($roleDto->permissions);
-            $role->permissions()->detach();
-            $role->permissions()->attach($roleDto->permissions);
-            // $role->permissions()->sync($roleDto->permissions);
-        } catch (\Exception $e) {
-            dump($e);
-        }
+
+        $role->syncPermissions($roleDto->permissions);
 
         return $role;
     }

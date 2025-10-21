@@ -2,7 +2,6 @@
 
 namespace Arkhe\Main\Livewire\Forms\Admin\Users;
 
-use Illuminate\Support\Collection;
 use Livewire\Form;
 use Spatie\Permission\Models\Role;
 
@@ -16,8 +15,7 @@ class RoleEditForm extends Form
 
     public string $guard_name = 'web';
 
-    // public array $permissions = [];
-    public ?Collection $permissions = null;
+    public array $permissions = [];
 
     public function rules(): array
     {
@@ -26,7 +24,7 @@ class RoleEditForm extends Form
             'name' => ['required', 'string', 'max:255'],
             'guard_name' => ['nullable', 'string', 'max:255'],
             'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['nullable', 'integer'],
+            'permissions.*' => ['nullable', 'boolean'],
         ];
     }
 
@@ -53,10 +51,9 @@ class RoleEditForm extends Form
         $this->role = $role;
         $this->name = $role->name;
         $this->guard_name = $role->guard_name;
-        $this->permissions = collect($role->permissions);
-        // foreach ($role->permissions as $permission) {
-        //     // $this->permissions[$permission];
-        //     $this->permissions->push($permission);
-        // }
+
+        foreach ($role->permissions as $permission) {
+            $this->permissions[$permission->id] = true;
+        }
     }
 }

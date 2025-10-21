@@ -11,6 +11,8 @@ return [
             UserRoleEnum::ROOT->value,
             UserRoleEnum::ADMIN->value,
             UserRoleEnum::EDITORIAL->value,
+            UserRoleEnum::AUTHOR->value,
+            UserRoleEnum::CONTRIBUTOR->value,
         ],
     ],
 ];

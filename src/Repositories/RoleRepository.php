@@ -50,6 +50,7 @@ class RoleRepository
     public function getRoles(): Builder
     {
         return Role::query()
+            ->with('permissions')
             ->where('guard_name', 'web')
             ->orderBy('id', 'desc');
     }

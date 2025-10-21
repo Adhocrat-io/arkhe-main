@@ -119,7 +119,7 @@
                             value="{{ $role->name }}"
                             :selected="$userEditForm->role === '{{ $role->name }}'"
                         >
-                            {{ Arkhe\Main\Enums\Users\UserRoleEnum::from($role->name)->label() }}
+                            {{ $role->label }}
                         </flux:select.option>
                     @endforeach
                 </flux:select>

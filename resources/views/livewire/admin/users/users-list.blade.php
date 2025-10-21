@@ -52,7 +52,9 @@
                     <flux:select.option value="">{{ __('All') }}</flux:select.option>
 
                     @foreach($roles as $role)
-                        <flux:select.option value="{{ $role->name }}">{{ Arkhe\Main\Enums\Users\UserRoleEnum::from($role->name)->label() }}</flux:select.option>
+                        <flux:select.option value="{{ $role->name }}">
+                            {{ $role->label }}
+                        </flux:select.option>
                     @endforeach
                 </flux:select>
             </div>
@@ -88,7 +90,7 @@
                         <tr class="hover:bg-gray-100 dark:hover:bg-zinc-700">
                             <td class="px-6 py-4 whitespace-nowrap {{ !$this->canEditUser($user) ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                                 @if ($this->canEditUser($user))
-                                <flux:link wire:click='editUser({{ $user->id }})' variant="text">
+                                    <flux:link wire:click='editUser({{ $user->id }})' variant="text">
                                         {{ $user->full_name }}
                                     </flux:link>
                                 @else
@@ -101,9 +103,8 @@
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {{-- {{ $user->roles->pluck('name')->implode(', ') }} --}}
                                 @foreach($user->roles as $role)
-                                    {{ Arkhe\Main\Enums\Users\UserRoleEnum::from($role->name)->label() }}
+                                    {{ $role->label }}
                                 @endforeach
                             </td>
 

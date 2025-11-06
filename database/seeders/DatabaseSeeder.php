@@ -1,6 +1,6 @@
 <?php
 
-namespace Arkhe\Main\Database\Seeders;
+namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Arkhe\Blog\Database\Seeders\RolesAndPermissionsSeeder;

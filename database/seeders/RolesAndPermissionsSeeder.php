@@ -1,6 +1,6 @@
 <?php
 
-namespace Arkhe\Main\Database\Seeders;
+namespace Database\Seeders;
 
 use Arkhe\Main\Enums\Users\UserRoleEnum;
 use Illuminate\Database\Seeder;

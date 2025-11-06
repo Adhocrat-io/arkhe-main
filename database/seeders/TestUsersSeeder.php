@@ -1,6 +1,6 @@
 <?php
 
-namespace Arkhe\Main\Database\Seeders;
+namespace Database\Seeders;
 
 use App\Models\User;
 use Arkhe\Main\Enums\Users\UserRoleEnum;

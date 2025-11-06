@@ -42,6 +42,7 @@ class ArkheMainServiceProvider extends ServiceProvider
 
             __DIR__.'/../stubs/routes/web.php' => base_path('routes/web.php'),
             __DIR__.'/../stubs/routes/admin.php' => base_path('routes/admin.php'),
+            __DIR__.'/../stubs/routes/auth.php' => base_path('routes/auth.php'),
 
             __DIR__.'/../stubs/Models/User.php' => app_path('Models/User.php'),
 

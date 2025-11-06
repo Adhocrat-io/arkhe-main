@@ -137,6 +137,16 @@ class RolesAndPermissionsSeeder extends Seeder
         $this->createPermissions($perm_invite);
 
         /**
+         * Permissions Posts
+         */
+        $perm_posts = [
+            'view-post',
+            'create-post',
+            'update-post',
+        ];
+        $this->createPermissions($perm_posts);
+
+        /**
          * Root
          */
         $roleRoot = Role::updateOrCreate(['name' => UserRoleEnum::ROOT->value, 'label' => UserRoleEnum::ROOT->label()]);

@@ -2,8 +2,8 @@
 
 namespace Tests;
 
-use Database\Seeders\RolesAndPermissionsSeeder;
-use Database\Seeders\TestUsersSeeder;
+use Arkhe\Main\Database\Seeders\RolesAndPermissionsSeeder;
+use Arkhe\Main\Database\Seeders\TestUsersSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase

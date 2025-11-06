@@ -5,8 +5,8 @@
     "autoload": {
         "psr-4": {
             "Arkhe\\Main\\": "src/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Arkhe\\Main\\Database\\Factories\\": "database/factories/",
+            "Arkhe\\Main\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {

@@ -1,5 +1,5 @@
 {
-    "name": "arkhe/main",
+    "name": "adhocrat-io/arkhe-main",
     "description": "Main part of Arkhè : the base with User, Permission & Role management",
     "license": "MIT",
     "autoload": {

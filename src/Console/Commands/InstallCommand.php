@@ -48,6 +48,8 @@ class InstallCommand extends Command
             }
         }
 
+        $this->publishAndModifyFortifyConfig();
+
         if (confirm(__('Do you want to publish the migrations?'), true)) {
             $this->publishMigrations();
             $this->info(__('Arkhe Main migrations published successfully.'));
@@ -130,6 +132,46 @@ class InstallCommand extends Command
     {
         if (confirm(label: __('This will overwrite the existing files. Are you sure?'), default: false)) {
             $this->call(command: 'vendor:publish', arguments: ['--tag' => 'arkhe-main-files', '--force' => true]);
+        }
+    }
+
+    private function publishAndModifyFortifyConfig(): void
+    {
+        $fortifyConfigPath = config_path('fortify.php');
+
+        if (! File::exists($fortifyConfigPath)) {
+            $this->info(__('Publishing Fortify configuration...'));
+            $this->call('vendor:publish', [
+                '--provider' => 'Laravel\Fortify\FortifyServiceProvider',
+                '--tag' => 'config',
+            ]);
+        }
+
+        if (File::exists($fortifyConfigPath)) {
+            $content = File::get($fortifyConfigPath);
+
+            $patterns = [
+                "'home' => '/dashboard'",
+                '"home" => "/dashboard"',
+                "'home' => \"/dashboard\"",
+                '"home" => \'/dashboard\'',
+            ];
+
+            $replacement = "'home' => '/administration/dashboard'";
+            $modified = false;
+
+            foreach ($patterns as $pattern) {
+                if (str_contains($content, $pattern)) {
+                    $content = str_replace($pattern, $replacement, $content);
+                    $modified = true;
+                    break;
+                }
+            }
+
+            if ($modified) {
+                File::put($fortifyConfigPath, $content);
+                $this->info(__('Fortify configuration updated: home route set to /administration/dashboard.'));
+            }
         }
     }
 }

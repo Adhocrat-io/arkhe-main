@@ -1,12 +1,11 @@
 {
     "name": "adhocrat-io/arkhe-main",
     "description": "Main part of Arkhè : the base with User, Permission & Role management",
+    "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Arkhe\\Main\\": "src/",
-            "Arkhe\\Main\\Database\\Factories\\": "database/factories/",
-            "Arkhe\\Main\\Database\\Seeders\\": "database/seeders/"
+            "Arkhe\\Main\\": "src/"
         }
     },
     "autoload-dev": {
@@ -49,5 +48,6 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
-    }
+    },
+    "minimum-stability": "dev"
 }

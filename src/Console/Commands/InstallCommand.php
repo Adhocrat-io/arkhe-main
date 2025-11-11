@@ -49,6 +49,7 @@ class InstallCommand extends Command
         }
 
         $this->publishAndModifyFortifyConfig();
+        $this->modifyWelcomeBlade();
 
         if (confirm(__('Do you want to publish the migrations?'), true)) {
             $this->publishMigrations();
@@ -171,6 +172,38 @@ class InstallCommand extends Command
             if ($modified) {
                 File::put($fortifyConfigPath, $content);
                 $this->info(__('Fortify configuration updated: home route set to /administration/dashboard.'));
+            }
+        }
+    }
+
+    private function modifyWelcomeBlade(): void
+    {
+        $welcomeBladePath = resource_path('views/welcome.blade.php');
+
+        if (File::exists($welcomeBladePath)) {
+            $content = File::get($welcomeBladePath);
+
+            $patterns = [
+                'href="{{ url(\'/dashboard\') }}"',
+                'href="{{ url("/dashboard") }}"',
+                'href="{{url(\'/dashboard\')}}"',
+                'href="{{url("/dashboard")}}"',
+            ];
+
+            $replacement = 'href="{{ url(\'/administration/dashboard\') }}"';
+            $modified = false;
+
+            foreach ($patterns as $pattern) {
+                if (str_contains($content, $pattern)) {
+                    $content = str_replace($pattern, $replacement, $content);
+                    $modified = true;
+                    break;
+                }
+            }
+
+            if ($modified) {
+                File::put($welcomeBladePath, $content);
+                $this->info(__('Welcome blade file updated: dashboard route set to /administration/dashboard.'));
             }
         }
     }

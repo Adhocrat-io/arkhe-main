@@ -17,39 +17,50 @@ class ArkheMainServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/arkhe.php', 'arkhe');
+        // $this->mergeConfigFrom(__DIR__.'/../config/arkhe.php', 'arkhe');
     }
 
     public function boot(): void
     {
-        $this->publishes([
-            __DIR__.'/../config/arkhe.php' => config_path('arkhe.php'),
-        ], 'arkhe-main-config');
+        $this->publishes(
+            [__DIR__ . '/../config/arkhe.php' => config_path('arkhe.php')],
+            'arkhe-main-config'
+        );
 
-        $this->publishes([
-            __DIR__.'/../stubs/database/migrations' => database_path('migrations'),
-        ], 'arkhe-main-migrations');
+        $this->publishes(
+            [__DIR__ . '/../stubs/database/migrations' => database_path('migrations')],
+            'arkhe-main-migrations'
+        );
 
-        $this->publishes([
-            __DIR__.'/../stubs/database/seeders' => database_path('seeders'),
-            __DIR__.'/../stubs/database/factories' => database_path('factories'),
-        ], 'arkhe-main-roles-seeder');
+        $this->publishes(
+            [
+                __DIR__ . '/../stubs/database/seeders' => database_path('seeders'),
+                __DIR__ . '/../stubs/database/factories' => database_path('factories'),
+            ],
+            'arkhe-main-roles-seeder'
+        );
 
-        $this->publishes([
-            __DIR__.'/../stubs/bootstrap/app.php' => base_path('bootstrap/app.php'),
-            __DIR__.'/../stubs/routes' => base_path('routes'),
+        $this->publishes(
+            [
+                __DIR__ . '/../stubs/bootstrap/app.php' => base_path('bootstrap/app.php'),
+                __DIR__ . '/../stubs/routes' => base_path('routes'),
 
-            __DIR__.'/../stubs/Models/' => app_path('Models/'),
-            __DIR__.'/../stubs/app/Http/Controllers/' => app_path('Http/Controllers/'),
-            __DIR__.'/../stubs/app/Livewire/' => app_path('Livewire/'),
+                __DIR__ . '/../stubs/Models/' => app_path('Models/'),
+                __DIR__ . '/../stubs/app/Http/Controllers/' => app_path('Http/Controllers/'),
+                __DIR__ . '/../stubs/app/Livewire/' => app_path('Livewire/'),
 
-            __DIR__.'/../stubs/resources/views/livewire/' => resource_path('views/livewire/'),
-            __DIR__.'/../stubs/resources/views/components/' => resource_path('views/components/'),
+                __DIR__ . '/../stubs/resources/views/livewire/' => resource_path('views/livewire/'),
+                __DIR__ . '/../stubs/resources/views/components/' => resource_path('views/components/'),
 
-            __DIR__.'/../stubs/tests/' => base_path('tests/'),
-        ], 'arkhe-main-files');
+                __DIR__ . '/../stubs/tests/' => base_path('tests/'),
+            ],
+            'arkhe-main-files'
+        );
 
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'arkhe-main');
+        $this->loadViewsFrom(
+            __DIR__ . '/../resources/views',
+            'arkhe-main'
+        );
 
         Livewire::component('arkhe.main.livewire.admin.users.users-list', UsersList::class);
         Livewire::component('arkhe.main.livewire.admin.users.users-create', UserCreate::class);
@@ -57,15 +68,18 @@ class ArkheMainServiceProvider extends ServiceProvider
         Livewire::component('arkhe.main.livewire.admin.users.roles.roles-list', RolesList::class);
         Livewire::component('arkhe.main.livewire.admin.users.roles.role-edit', RoleEdit::class);
 
-        $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
-        $this->publishes([
-            __DIR__.'/../lang' => $this->app->langPath('vendor/arkhe-main'),
-        ]);
+        $this->loadJsonTranslationsFrom(__DIR__ . '/../lang');
+        $this->publishes(
+            [__DIR__ . '/../lang' => $this->app->langPath('vendor/arkhe-main')],
+            'arkhe-main-lang'
+        );
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                InstallCommand::class,
-            ]);
+            $this->commands(
+                [
+                    InstallCommand::class
+                ]
+            );
         }
     }
 }

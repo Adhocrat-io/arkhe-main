@@ -14,11 +14,11 @@ Route::prefix(config('arkhe.admin.prefix'))
     ->middleware([
         'auth',
         'verified',
-        'role:'.
-            UserRoleEnum::ROOT->value.'|'.
-            UserRoleEnum::ADMIN->value.'|'.
-            UserRoleEnum::EDITORIAL->value.'|'.
-            UserRoleEnum::AUTHOR->value.'|'.
+        'role:' .
+            UserRoleEnum::ROOT->value . '|' .
+            UserRoleEnum::ADMIN->value . '|' .
+            UserRoleEnum::EDITORIAL->value . '|' .
+            UserRoleEnum::AUTHOR->value . '|' .
             UserRoleEnum::CONTRIBUTOR->value,
     ])
     ->group(function () {
@@ -27,8 +27,8 @@ Route::prefix(config('arkhe.admin.prefix'))
          */
         Route::name('users.')
             ->middleware(
-                'role:'.
-                    UserRoleEnum::ROOT->value.'|'.
+                'role:' .
+                    UserRoleEnum::ROOT->value . '|' .
                     UserRoleEnum::ADMIN->value
             )
             ->group(function () {
@@ -36,7 +36,7 @@ Route::prefix(config('arkhe.admin.prefix'))
                 Route::get('users/create', Users\UserCreate::class)->name('create'); // admin.users.create
                 Route::get('users/edit/{user}', Users\UserEdit::class)->name('edit'); // admin.users.edit
 
-                Route::middleware('role:'.UserRoleEnum::ROOT->value)
+                Route::middleware('role:' . UserRoleEnum::ROOT->value)
                     ->name('roles.')
                     ->group(function () {
                         Route::get('users/roles', Users\Roles\RolesList::class)->name('index'); // admin.users.roles.index
@@ -73,7 +73,7 @@ Route::prefix(config('arkhe.admin.prefix'))
          * Dashboard
          */
         Route::view('/dashboard', 'dashboard')->name('dashboard'); // admin.dashboard
-        Route::redirect('/', '/'.config('arkhe.admin.prefix').'/dashboard');
+        Route::redirect('/', '/' . config('arkhe.admin.prefix') . '/dashboard');
     });
 
-require __DIR__.'/auth.php';
+// require __DIR__.'/auth.php';

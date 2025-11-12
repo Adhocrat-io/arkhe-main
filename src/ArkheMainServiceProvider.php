@@ -10,7 +10,10 @@ use Arkhe\Main\Livewire\Admin\Users\Roles\RolesList;
 use Arkhe\Main\Livewire\Admin\Users\UserCreate;
 use Arkhe\Main\Livewire\Admin\Users\UserEdit;
 use Arkhe\Main\Livewire\Admin\Users\UsersList;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use Livewire\Livewire;
 
 class ArkheMainServiceProvider extends ServiceProvider
@@ -18,6 +21,20 @@ class ArkheMainServiceProvider extends ServiceProvider
     public function register(): void
     {
         // $this->mergeConfigFrom(__DIR__.'/../config/arkhe.php', 'arkhe');
+
+        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
+            public function toResponse($request): RedirectResponse
+            {
+                return redirect()->route('admin.dashboard');
+            }
+        });
+
+        $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
+            public function toResponse($request): RedirectResponse
+            {
+                return redirect()->route('login');
+            }
+        });
     }
 
     public function boot(): void

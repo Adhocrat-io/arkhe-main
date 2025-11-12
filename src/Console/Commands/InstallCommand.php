@@ -190,7 +190,7 @@ class InstallCommand extends Command
                 'href="{{url("/dashboard")}}"',
             ];
 
-            $replacement = 'href="{{ url(\'/administration/dashboard\') }}"';
+            $replacement = 'href="{{ url(\'/' . config('arkhe.admin_prefix') . '/dashboard\') }}"';
             $modified = false;
 
             foreach ($patterns as $pattern) {

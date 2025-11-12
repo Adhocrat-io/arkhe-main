@@ -19,28 +19,12 @@ class ArkheMainServiceProvider extends ServiceProvider
     public function register(): void
     {
         // $this->mergeConfigFrom(__DIR__.'/../config/arkhe.php', 'arkhe');
-
-        if (class_exists(\Laravel\Fortify\Contracts\LoginResponse::class)) {
-            $this->app->instance(\Laravel\Fortify\Contracts\LoginResponse::class, new class implements \Laravel\Fortify\Contracts\LoginResponse {
-                public function toResponse($request): RedirectResponse
-                {
-                    return redirect()->route('admin.dashboard');
-                }
-            });
-        }
-
-        if (class_exists(\Laravel\Fortify\Contracts\LogoutResponse::class)) {
-            $this->app->instance(\Laravel\Fortify\Contracts\LogoutResponse::class, new class implements \Laravel\Fortify\Contracts\LogoutResponse {
-                public function toResponse($request): RedirectResponse
-                {
-                    return redirect()->route('login');
-                }
-            });
-        }
     }
 
     public function boot(): void
     {
+        $this->configureFortifyRedirects();
+
         $this->publishes(
             [__DIR__ . '/../config/arkhe.php' => config_path('arkhe.php')],
             'arkhe-main-config'
@@ -99,6 +83,34 @@ class ArkheMainServiceProvider extends ServiceProvider
                     InstallCommand::class
                 ]
             );
+        }
+    }
+
+    private function configureFortifyRedirects(): void
+    {
+        $loginResponseClass = 'Laravel\Fortify\Contracts\LoginResponse';
+        $logoutResponseClass = 'Laravel\Fortify\Contracts\LogoutResponse';
+
+        if (interface_exists($loginResponseClass)) {
+            $this->app->singleton($loginResponseClass, function () {
+                return new class implements \Laravel\Fortify\Contracts\LoginResponse {
+                    public function toResponse($request): RedirectResponse
+                    {
+                        return redirect()->route('admin.dashboard');
+                    }
+                };
+            });
+        }
+
+        if (interface_exists($logoutResponseClass)) {
+            $this->app->singleton($logoutResponseClass, function () {
+                return new class implements \Laravel\Fortify\Contracts\LogoutResponse {
+                    public function toResponse($request): RedirectResponse
+                    {
+                        return redirect()->route('login');
+                    }
+                };
+            });
         }
     }
 }

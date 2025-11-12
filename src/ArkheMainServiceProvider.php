@@ -12,8 +12,6 @@ use Arkhe\Main\Livewire\Admin\Users\UserEdit;
 use Arkhe\Main\Livewire\Admin\Users\UsersList;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Fortify\Contracts\LoginResponse;
-use Laravel\Fortify\Contracts\LogoutResponse;
 use Livewire\Livewire;
 
 class ArkheMainServiceProvider extends ServiceProvider
@@ -22,19 +20,23 @@ class ArkheMainServiceProvider extends ServiceProvider
     {
         // $this->mergeConfigFrom(__DIR__.'/../config/arkhe.php', 'arkhe');
 
-        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
-            public function toResponse($request): RedirectResponse
-            {
-                return redirect()->route('admin.dashboard');
-            }
-        });
+        if (class_exists(\Laravel\Fortify\Contracts\LoginResponse::class)) {
+            $this->app->instance(\Laravel\Fortify\Contracts\LoginResponse::class, new class implements \Laravel\Fortify\Contracts\LoginResponse {
+                public function toResponse($request): RedirectResponse
+                {
+                    return redirect()->route('admin.dashboard');
+                }
+            });
+        }
 
-        $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
-            public function toResponse($request): RedirectResponse
-            {
-                return redirect()->route('login');
-            }
-        });
+        if (class_exists(\Laravel\Fortify\Contracts\LogoutResponse::class)) {
+            $this->app->instance(\Laravel\Fortify\Contracts\LogoutResponse::class, new class implements \Laravel\Fortify\Contracts\LogoutResponse {
+                public function toResponse($request): RedirectResponse
+                {
+                    return redirect()->route('login');
+                }
+            });
+        }
     }
 
     public function boot(): void

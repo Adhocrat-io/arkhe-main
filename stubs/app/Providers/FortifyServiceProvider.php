@@ -37,7 +37,7 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 public function toResponse($request)
                 {
-                    return redirect()->route('admin.dashboard', absolute: false);
+                    return redirect()->route('admin.dashboard');
                 }
             };
         });
@@ -47,7 +47,7 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 public function toResponse($request)
                 {
-                    return redirect()->route('login', absolute: false);
+                    return redirect()->route('login');
                 }
             };
         });

@@ -32,7 +32,6 @@
         "livewire/livewire": "^3.6"
     },
     "require-dev": {
-        "laravel/boost": "^1.8",
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.18",
         "nunomaduro/collision": "^8.6",

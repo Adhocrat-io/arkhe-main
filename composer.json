@@ -3,6 +3,7 @@
     "description": "Main part of Arkhè : the base with User, Permission & Role management",
     "type": "library",
     "license": "MIT",
+    "version": "1.0.0",
     "autoload": {
         "psr-4": {
             "Arkhe\\Main\\": "src/"
@@ -31,6 +32,7 @@
         "livewire/livewire": "^3.6"
     },
     "require-dev": {
+        "laravel/boost": "^1.8",
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.18",
         "nunomaduro/collision": "^8.6",

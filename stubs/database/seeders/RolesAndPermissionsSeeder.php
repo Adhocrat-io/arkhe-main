@@ -67,17 +67,17 @@ class RolesAndPermissionsSeeder extends Seeder
         // ];
         // $this->createPermissions($perm_subscriptions);
 
-        // $perm_users = [
-        //     'manage-users',
-        //     'view-any-user',
-        //     'view-user',
-        //     'create-user',
-        //     'update-user',
-        //     'delete-user',
-        //     'restore-user',
-        //     'force-delete-user',
-        // ];
-        // $this->createPermissions($perm_users);
+        $perm_users = [
+            'manage-users',
+            'view-any-user',
+            'view-user',
+            'create-user',
+            'update-user',
+            'delete-user',
+            'restore-user',
+            'force-delete-user',
+        ];
+        $this->createPermissions($perm_users);
 
         $perm_roles = [
             'manage-roles',

@@ -152,6 +152,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $roleRoot = Role::updateOrCreate(['name' => UserRoleEnum::ROOT->value, 'label' => UserRoleEnum::ROOT->label()]);
         $permRoot = array_merge(
             $perm_root,
+            $perm_users,
             $perm_roles,
             $perm_customization,
             $perm_settings,
@@ -166,6 +167,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $roleAdmin = Role::updateOrCreate(['name' => UserRoleEnum::ADMIN->value, 'label' => UserRoleEnum::ADMIN->label()]);
         $permAdmin = array_merge(
             $perm_customization,
+            $perm_users,
+            $perm_roles,
             $perm_settings,
             $perm_abonne,
             $perm_invite

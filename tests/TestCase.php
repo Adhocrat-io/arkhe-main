@@ -49,10 +49,10 @@ abstract class TestCase extends BaseTestCase
 
     protected function defineDatabaseMigrations(): void
     {
-        // Load Laravel's default migrations first (users, etc.)
-        $this->loadLaravelMigrations();
+        // Load test migrations first (creates users table)
+        $this->loadMigrationsFrom(__DIR__.'/database/migrations');
         // Then load package migrations
-        $this->loadMigrationsFrom(__DIR__ . '/../stubs/database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../stubs/database/migrations');
     }
 
     protected function setUp(): void
@@ -68,10 +68,10 @@ abstract class TestCase extends BaseTestCase
         $roles = ['root', 'admin', 'editorial', 'author', 'contributor', 'subscriber', 'guest'];
 
         foreach ($roles as $role) {
-            \Spatie\Permission\Models\Role::firstOrCreate([
-                'name' => $role,
-                'guard_name' => 'web',
-            ]);
+            \Spatie\Permission\Models\Role::firstOrCreate(
+                ['name' => $role, 'guard_name' => 'web'],
+                ['label' => ucfirst($role)]
+            );
         }
     }
 }

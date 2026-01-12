@@ -12,7 +12,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $this->repository = new RoleRepository();
+    $this->repository = new RoleRepository;
 });
 
 describe('RoleRepository', function () {
@@ -73,7 +73,7 @@ describe('RoleRepository', function () {
         it('deletes a non-protected role', function () {
             Event::fake([RoleDeleted::class]);
 
-            $role = Role::create(['name' => 'deletable-role', 'guard_name' => 'web']);
+            $role = Role::create(['name' => 'deletable-role', 'label' => 'Deletable Role', 'guard_name' => 'web']);
             $roleId = $role->id;
 
             $this->repository->delete($role);
@@ -109,7 +109,7 @@ describe('RoleRepository', function () {
         });
 
         it('identifies custom roles as non-protected', function () {
-            $role = Role::create(['name' => 'custom', 'guard_name' => 'web']);
+            $role = Role::create(['name' => 'custom', 'label' => 'Custom', 'guard_name' => 'web']);
 
             expect($this->repository->isProtectedRole($role))->toBeFalse();
         });
@@ -117,8 +117,8 @@ describe('RoleRepository', function () {
 
     describe('getAllRoles', function () {
         it('returns all roles', function () {
-            Role::create(['name' => 'role-1', 'guard_name' => 'web']);
-            Role::create(['name' => 'role-2', 'guard_name' => 'web']);
+            Role::create(['name' => 'role-1', 'label' => 'Role 1', 'guard_name' => 'web']);
+            Role::create(['name' => 'role-2', 'label' => 'Role 2', 'guard_name' => 'web']);
 
             $roles = $this->repository->getAllRoles();
 

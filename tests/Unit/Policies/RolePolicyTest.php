@@ -8,7 +8,7 @@ use Arkhe\Main\Policies\RolePolicy;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $this->policy = new RolePolicy();
+    $this->policy = new RolePolicy;
 });
 
 describe('RolePolicy', function () {
@@ -74,7 +74,7 @@ describe('RolePolicy', function () {
             $rootUser = User::factory()->create();
             $rootUser->assignRole(UserRoleEnum::ROOT->value);
 
-            $customRole = Role::create(['name' => 'custom-role', 'guard_name' => 'web']);
+            $customRole = Role::create(['name' => 'custom-role', 'label' => 'Custom Role', 'guard_name' => 'web']);
 
             expect($this->policy->delete($rootUser, $customRole))->toBeTrue();
         });
@@ -83,7 +83,7 @@ describe('RolePolicy', function () {
             $adminUser = User::factory()->create();
             $adminUser->assignRole(UserRoleEnum::ADMIN->value);
 
-            $customRole = Role::create(['name' => 'custom-role', 'guard_name' => 'web']);
+            $customRole = Role::create(['name' => 'custom-role', 'label' => 'Custom Role', 'guard_name' => 'web']);
 
             expect($this->policy->delete($adminUser, $customRole))->toBeFalse();
         });

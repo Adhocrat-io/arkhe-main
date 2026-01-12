@@ -4,25 +4,31 @@ declare(strict_types=1);
 
 namespace Arkhe\Main;
 
+use App\Models\User;
 use Arkhe\Main\Console\Commands\InstallCommand;
 use Arkhe\Main\Livewire\Admin\Users\Roles\RoleEdit;
 use Arkhe\Main\Livewire\Admin\Users\Roles\RolesList;
 use Arkhe\Main\Livewire\Admin\Users\UserCreate;
 use Arkhe\Main\Livewire\Admin\Users\UserEdit;
 use Arkhe\Main\Livewire\Admin\Users\UsersList;
+use Arkhe\Main\Policies\RolePolicy;
+use Arkhe\Main\Policies\UserPolicy;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 class ArkheMainServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // $this->mergeConfigFrom(__DIR__.'/../config/arkhe.php', 'arkhe');
+        $this->mergeConfigFrom(__DIR__.'/../config/arkhe.php', 'arkhe');
     }
 
     public function boot(): void
     {
+        $this->registerPolicies();
         $this->configureFortifyRedirects();
 
         $this->publishes(
@@ -86,6 +92,12 @@ class ArkheMainServiceProvider extends ServiceProvider
                 ]
             );
         }
+    }
+
+    private function registerPolicies(): void
+    {
+        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Role::class, RolePolicy::class);
     }
 
     private function configureFortifyRedirects(): void

@@ -3,7 +3,7 @@
     <div class="mb-8 flex justify-start items-center w-full">
         <div>
             <h2 class="text-2xl font-semibold">
-                Créer un utilisateur
+                {{ __('Create User') }}
             </h2>
         </div>
     </div>

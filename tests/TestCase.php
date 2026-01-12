@@ -1,20 +1,77 @@
 <?php
 
-namespace Tests;
+namespace Arkhe\Main\Tests;
 
-use Arkhe\Main\Database\Seeders\RolesAndPermissionsSeeder;
-use Arkhe\Main\Database\Seeders\TestUsersSeeder;
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Arkhe\Main\ArkheMainServiceProvider;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Orchestra\Testbench\TestCase as BaseTestCase;
+
+// Load fixtures
+require_once __DIR__.'/Fixtures/User.php';
+require_once __DIR__.'/Fixtures/UserFactory.php';
 
 abstract class TestCase extends BaseTestCase
 {
-    protected $seed = true;
+    use RefreshDatabase;
+
+    protected function getPackageProviders($app): array
+    {
+        return [
+            ArkheMainServiceProvider::class,
+            \Spatie\Permission\PermissionServiceProvider::class,
+        ];
+    }
+
+    protected function getEnvironmentSetUp($app): void
+    {
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+
+        $app['config']->set('permission.table_names', [
+            'roles' => 'roles',
+            'permissions' => 'permissions',
+            'model_has_permissions' => 'model_has_permissions',
+            'model_has_roles' => 'model_has_roles',
+            'role_has_permissions' => 'role_has_permissions',
+        ]);
+
+        $app['config']->set('permission.column_names', [
+            'role_pivot_key' => 'role_id',
+            'permission_pivot_key' => 'permission_id',
+            'model_morph_key' => 'model_id',
+            'team_foreign_key' => 'team_id',
+        ]);
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        // Load Laravel's default migrations first (users, etc.)
+        $this->loadLaravelMigrations();
+        // Then load package migrations
+        $this->loadMigrationsFrom(__DIR__ . '/../stubs/database/migrations');
+    }
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->seed(RolesAndPermissionsSeeder::class);
-        $this->seed(TestUsersSeeder::class);
+        // Create base roles needed for tests
+        $this->createBaseRoles();
+    }
+
+    private function createBaseRoles(): void
+    {
+        $roles = ['root', 'admin', 'editorial', 'author', 'contributor', 'subscriber', 'guest'];
+
+        foreach ($roles as $role) {
+            \Spatie\Permission\Models\Role::firstOrCreate([
+                'name' => $role,
+                'guard_name' => 'web',
+            ]);
+        }
     }
 }

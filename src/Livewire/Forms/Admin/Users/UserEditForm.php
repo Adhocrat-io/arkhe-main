@@ -6,6 +6,7 @@ namespace Arkhe\Main\Livewire\Forms\Admin\Users;
 
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Validation\Rules\Password;
 use Livewire\Form;
 
 class UserEditForm extends Form
@@ -66,11 +67,11 @@ class UserEditForm extends Form
         ];
 
         if (! $this->user) {
-            $rules['password'] = ['required', 'min:8', 'confirmed'];
-            $rules['password_confirmation'] = ['required', 'min:8'];
+            $rules['password'] = ['required', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'];
+            $rules['password_confirmation'] = ['required'];
         } else {
-            $rules['password'] = ['nullable', 'min:8', 'confirmed'];
-            $rules['password_confirmation'] = ['nullable', 'min:8'];
+            $rules['password'] = ['nullable', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'];
+            $rules['password_confirmation'] = ['nullable'];
         }
 
         return $rules;
@@ -88,14 +89,13 @@ class UserEditForm extends Form
             '*.confirmed' => __('The :attribute confirmation does not match.'),
         ];
 
-        if (! $this->user) {
-            $messages['password.required'] = __('The password is required.');
-            $messages['password.min'] = __('The password must be at least 8 characters long.');
-            $messages['password.confirmed'] = __('The password confirmation does not match.');
-            $messages['password_confirmation.required'] = __('The password confirmation is required.');
-            $messages['password_confirmation.min'] = __('The password confirmation must be at least 8 characters long.');
-            $messages['password_confirmation.confirmed'] = __('The password confirmation does not match.');
-        }
+        $messages['password.required'] = __('The password is required.');
+        $messages['password.min'] = __('The password must be at least 8 characters long.');
+        $messages['password.mixed'] = __('The password must contain at least one uppercase and one lowercase letter.');
+        $messages['password.numbers'] = __('The password must contain at least one number.');
+        $messages['password.symbols'] = __('The password must contain at least one symbol.');
+        $messages['password.confirmed'] = __('The password confirmation does not match.');
+        $messages['password_confirmation.required'] = __('The password confirmation is required.');
 
         return $messages;
     }

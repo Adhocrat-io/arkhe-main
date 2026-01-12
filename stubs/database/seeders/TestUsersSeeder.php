@@ -5,20 +5,46 @@ namespace Database\Seeders;
 use App\Models\User;
 use Arkhe\Main\Enums\Users\UserRoleEnum;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 
 class TestUsersSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     *
+     * WARNING: This seeder creates test users with known passwords.
+     * It should ONLY run in local or testing environments.
      */
     public function run(): void
     {
+        // Security check: Only run in local or testing environments
+        if (App::environment('production')) {
+            $this->command->error('TestUsersSeeder cannot run in production environment!');
+
+            return;
+        }
+
+        if (! App::environment(['local', 'testing'])) {
+            $this->command->warn('TestUsersSeeder is intended for local/testing environments only.');
+            if (! $this->command->confirm('Are you sure you want to continue?', false)) {
+                return;
+            }
+        }
+
+        // Use random passwords in non-local environments
+        $useRandomPasswords = ! App::environment('local');
+        $defaultPassword = $useRandomPasswords ? Str::random(32) : 'password';
+
+        if ($useRandomPasswords) {
+            $this->command->info("Using random password for test users: {$defaultPassword}");
+        }
         $admin = User::updateOrCreate([
             'email' => 'root@arkhe.com',
         ], [
             'first_name' => 'Root',
             'last_name' => 'Arkhè',
-            'password' => 'password',
+            'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
         $admin->assignRole(UserRoleEnum::ROOT->value);
@@ -28,7 +54,7 @@ class TestUsersSeeder extends Seeder
         ], [
             'first_name' => 'Admin',
             'last_name' => 'Arkhè',
-            'password' => 'password',
+            'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
         $admin->assignRole(UserRoleEnum::ADMIN->value);
@@ -38,7 +64,7 @@ class TestUsersSeeder extends Seeder
         ], [
             'first_name' => 'Editorial',
             'last_name' => 'Arkhè',
-            'password' => 'password',
+            'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
         $editor->assignRole(UserRoleEnum::EDITORIAL->value);
@@ -48,7 +74,7 @@ class TestUsersSeeder extends Seeder
         ], [
             'first_name' => 'Author',
             'last_name' => 'Arkhè',
-            'password' => 'password',
+            'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
         $author->assignRole(UserRoleEnum::AUTHOR->value);
@@ -58,7 +84,7 @@ class TestUsersSeeder extends Seeder
         ], [
             'first_name' => 'Contributor',
             'last_name' => 'Arkhè',
-            'password' => 'password',
+            'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
         $contributor->assignRole(UserRoleEnum::CONTRIBUTOR->value);
@@ -68,7 +94,7 @@ class TestUsersSeeder extends Seeder
         // ], [
         //     'first_name' => 'Shop Manager',
         //     'last_name' => 'Arkhè',
-        //     'password' => 'password',
+        //     'password' => $defaultPassword,
         //     'email_verified_at' => now(),
         // ]);
         // $shopManager->assignRole(UserRoleEnum::SHOP_MANAGER->value);
@@ -78,7 +104,7 @@ class TestUsersSeeder extends Seeder
         ], [
             'first_name' => 'Subscriber',
             'last_name' => 'Arkhè',
-            'password' => 'password',
+            'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
         $abonne->assignRole(UserRoleEnum::SUBSCRIBER->value);
@@ -88,7 +114,7 @@ class TestUsersSeeder extends Seeder
         ], [
             'first_name' => 'Guest',
             'last_name' => 'Arkhè',
-            'password' => 'password',
+            'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
         $invite->assignRole(UserRoleEnum::GUEST->value);

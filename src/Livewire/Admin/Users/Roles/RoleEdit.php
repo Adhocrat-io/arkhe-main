@@ -9,6 +9,8 @@ use Arkhe\Main\Livewire\Forms\Admin\Users\RoleEditForm;
 use Arkhe\Main\Repositories\RoleRepository;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
@@ -25,7 +27,6 @@ class RoleEdit extends Component
 
     public function mount(?Role $role): void
     {
-        // TODO: changer pour un repository s'il y a plus qu'une méthode
         $this->allPermissions = Permission::all();
 
         if ($role->exists) {
@@ -38,9 +39,16 @@ class RoleEdit extends Component
     {
         try {
             $this->roleEditForm->validate();
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
+            Log::error('Role validation error', [
+                'error' => $e->getMessage(),
+                'role' => $this->role?->id,
+            ]);
             session()->flash('error', __('An error occurred while validating the data.'));
-            $this->addError('error', $e->getMessage());
+
+            return null;
         }
 
         $roleRepository = new RoleRepository;
@@ -55,22 +63,28 @@ class RoleEdit extends Component
         );
 
         if ($this->role && $this->role->exists) {
-            $role = $roleRepository->update(
-                $this->role,
-                $roleDto
-            );
+            try {
+                $roleRepository->update($this->role, $roleDto);
+                session()->flash('message', __('Role updated successfully.'));
+            } catch (\Exception $e) {
+                Log::error('Role update error', [
+                    'error' => $e->getMessage(),
+                    'role_id' => $this->role->id,
+                ]);
+                session()->flash('error', __('An error occurred while updating the role.'));
 
-            session()->flash('message', __('Role updated successfully.'));
+                return null;
+            }
         } else {
             try {
-                $role = $roleRepository->create(
-                    $roleDto
-                );
-
+                $roleRepository->create($roleDto);
                 session()->flash('message', __('Role created successfully.'));
             } catch (\Exception $e) {
+                Log::error('Role creation error', [
+                    'error' => $e->getMessage(),
+                    'role_name' => $roleDto->name,
+                ]);
                 session()->flash('error', __('An error occurred while creating the role.'));
-                $this->addError('error', $e->getMessage());
 
                 return null;
             }
@@ -79,12 +93,36 @@ class RoleEdit extends Component
         return redirect()->route('admin.users.roles.index');
     }
 
-    public function deleteRole(): RedirectResponse|Redirector
+    public function deleteRole(): RedirectResponse|Redirector|null
     {
-        (new RoleRepository)->delete($this->role);
-        session()->flash('message', __('Role deleted successfully.'));
+        if (! $this->role) {
+            session()->flash('error', __('Role not found.'));
 
-        return redirect()->route('admin.users.roles.index');
+            return redirect()->route('admin.users.roles.index');
+        }
+
+        $roleRepository = new RoleRepository;
+
+        if ($roleRepository->isProtectedRole($this->role)) {
+            session()->flash('error', __('Cannot delete protected system role.'));
+
+            return null;
+        }
+
+        try {
+            $roleRepository->delete($this->role);
+            session()->flash('message', __('Role deleted successfully.'));
+
+            return redirect()->route('admin.users.roles.index');
+        } catch (\Exception $e) {
+            Log::error('Role deletion error', [
+                'error' => $e->getMessage(),
+                'role_id' => $this->role->id,
+            ]);
+            session()->flash('error', __('An error occurred while deleting the role.'));
+
+            return null;
+        }
     }
 
     public function render(): View

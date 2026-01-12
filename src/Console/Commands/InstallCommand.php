@@ -57,6 +57,9 @@ class InstallCommand extends Command
             $this->info(__('Arkhe Main migrations published successfully.'));
         }
 
+        $this->publishSeoAssets();
+        $this->info(__('SEO package assets published successfully.'));
+
         if (confirm(__('Do you want to publish the roles and permissions seeder?'), true)) {
             $this->publishRolesAndPermissionsSeeder();
             $this->info(__('Arkhe Main roles and permissions seeder published successfully.'));
@@ -128,6 +131,12 @@ class InstallCommand extends Command
     private function publishLangFiles(): void
     {
         $this->call(command: 'vendor:publish', arguments: ['--tag' => 'arkhe-main-lang', '--force' => true]);
+    }
+
+    private function publishSeoAssets(): void
+    {
+        $this->call(command: 'vendor:publish', arguments: ['--tag' => 'seo-migrations']);
+        $this->call(command: 'vendor:publish', arguments: ['--tag' => 'seo-config']);
     }
 
     private function publishFiles(): void

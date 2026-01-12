@@ -7,32 +7,48 @@ namespace Arkhe\Main\Repositories;
 use App\Models\User;
 use Arkhe\Main\DataTransferObjects\RoleDto;
 use Arkhe\Main\Enums\Users\UserRoleEnum;
-use Illuminate\Auth\Access\AuthorizationException;
+use Arkhe\Main\Events\RoleCreated;
+use Arkhe\Main\Events\RoleDeleted;
+use Arkhe\Main\Events\RoleUpdated;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 class RoleRepository
 {
+    /**
+     * System roles that cannot be deleted.
+     */
+    private const PROTECTED_ROLES = ['root', 'admin'];
+
     public function create(RoleDto $roleDto): Role
     {
-        $role = Role::create($roleDto->toArray());
+        return DB::transaction(function () use ($roleDto) {
+            $role = Role::create($roleDto->toArray());
 
-        if (! empty($roleDto->permissions)) {
-            $role->syncPermissions($roleDto->permissions);
-        }
+            if (! empty($roleDto->permissions)) {
+                $role->syncPermissions($roleDto->permissions);
+            }
 
-        return $role;
+            RoleCreated::dispatch($role, Auth::user());
+
+            return $role;
+        });
     }
 
     public function update(Role $role, RoleDto $roleDto): Role
     {
-        $role->update($roleDto->toArray());
+        return DB::transaction(function () use ($role, $roleDto) {
+            $role->update($roleDto->toArray());
+            $role->syncPermissions($roleDto->permissions);
 
-        $role->syncPermissions($roleDto->permissions);
+            RoleUpdated::dispatch($role, Auth::user());
 
-        return $role;
+            return $role;
+        });
     }
 
     public function getRoles(): Builder
@@ -60,12 +76,36 @@ class RoleRepository
         return $this->getRoles()->paginate($perPage);
     }
 
+    public function find(int $roleId): ?Role
+    {
+        return Role::find($roleId);
+    }
+
+    public function findOrFail(int $roleId): Role
+    {
+        return Role::findOrFail($roleId);
+    }
+
+    /**
+     * Check if a role is a protected system role.
+     */
+    public function isProtectedRole(Role $role): bool
+    {
+        return in_array($role->name, self::PROTECTED_ROLES, true);
+    }
+
     public function delete(Role $role): void
     {
-        if (auth()->check() && ! auth()->user()->can('delete-role')) {
-            throw new AuthorizationException("Vous n'avez pas les permissions nécessaires pour supprimer un rôle.");
+        if ($this->isProtectedRole($role)) {
+            throw new \RuntimeException(__('Cannot delete protected system role: :role', ['role' => $role->name]));
         }
 
-        $role->delete();
+        DB::transaction(function () use ($role) {
+            $deletedBy = Auth::user();
+            $role->syncPermissions([]);
+            $role->delete();
+
+            RoleDeleted::dispatch($role, $deletedBy);
+        });
     }
 }

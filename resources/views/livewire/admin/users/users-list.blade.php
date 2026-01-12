@@ -64,7 +64,7 @@
     <div class="rounded-lg shadow-sm p-6 mb-6 bg-gray-50 dark:bg-zinc-800">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50 dark:bg-zinc-800">
+                <thead class="bg-gray-50 dark:bg-zinc-800 w-full">
                     {{-- TODO: make the columns sortable --}}
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
@@ -85,16 +85,16 @@
                     </tr>
                 </thead>
 
-                <tbody class="bg-white dark:bg-zinc-800">
+                <tbody class="bg-white dark:bg-zinc-800 w-full">
                     @forelse($users as $user)
                         <tr class="hover:bg-gray-100 dark:hover:bg-zinc-700">
                             <td class="px-6 py-4 whitespace-nowrap {{ !$this->canEditUser($user) ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                                 @if ($this->canEditUser($user))
                                     <flux:link wire:click='editUser({{ $user->id }})' variant="text">
-                                        {{ $user->full_name }}
+                                        {{ $user->username }}
                                     </flux:link>
                                 @else
-                                    {{ $user->full_name }}
+                                    {{ $user->username }}
                                 @endif
                             </td>
 

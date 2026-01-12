@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Arkhe\Main\Livewire\Admin\Users;
 
 use App\Models\User;
+use Arkhe\Main\Enums\Users\UserRoleEnum;
 use Arkhe\Main\Repositories\RoleRepository;
 use Arkhe\Main\Repositories\UserRepository;
 use Illuminate\Http\RedirectResponse;
@@ -45,8 +46,7 @@ class UsersList extends Component
             $searchTerm = $this->cleanSearchTerm($this->search);
 
             $users = $users->where(function ($query) use ($searchTerm): void {
-                $query->where('first_name', 'like', '%'.$searchTerm.'%')
-                    ->orWhere('last_name', 'like', '%'.$searchTerm.'%')
+                $query->where('username', 'like', '%'.$searchTerm.'%')
                     ->orWhere('email', 'like', '%'.$searchTerm.'%');
             });
         }
@@ -100,11 +100,11 @@ class UsersList extends Component
     {
         $currentUser = Auth::user();
 
-        if (! $currentUser->hasAnyRole(['root', 'admin'])) {
+        if (! $currentUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
             return false;
         }
 
-        if ($user->hasRole('root') && ! $currentUser->hasRole('root')) {
+        if ($user->hasRole(UserRoleEnum::ROOT->value) && ! $currentUser->hasRole(UserRoleEnum::ROOT->value)) {
             return false;
         }
 
@@ -115,7 +115,7 @@ class UsersList extends Component
     {
         $currentUser = Auth::user();
 
-        if (! $currentUser->hasAnyRole(['root', 'admin'])) {
+        if (! $currentUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
             return false;
         }
 
@@ -123,7 +123,7 @@ class UsersList extends Component
             return false;
         }
 
-        if ($user->hasRole('root') && ! $currentUser->hasRole('root')) {
+        if ($user->hasRole(UserRoleEnum::ROOT->value) && ! $currentUser->hasRole(UserRoleEnum::ROOT->value)) {
             return false;
         }
 
@@ -135,9 +135,20 @@ class UsersList extends Component
         $userRepository = (new UserRepository);
         $user = $userRepository->find($userId);
 
-        if ($user) {
-            $userRepository->delete($user);
+        if (! $user) {
+            session()->flash('error', __('User not found.'));
+
+            return;
         }
+
+        if (! $this->canDeleteUser($user)) {
+            session()->flash('error', __('You are not authorized to delete this user.'));
+
+            return;
+        }
+
+        $userRepository->delete($user);
+        session()->flash('message', __('User deleted successfully.'));
     }
 
     public function render(): View

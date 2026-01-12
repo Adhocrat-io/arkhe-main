@@ -10,19 +10,34 @@ use Arkhe\Main\Enums\Users\UserRoleEnum;
 class UserPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Check if the authenticated user can manage the target user.
+     *
+     * Rules:
+     * - Only root and admin can manage users
+     * - Only root can manage other root users
+     * - Admins can manage all non-root users
      */
-    public function viewAny(User $authUser, User $user): bool
+    private function canManage(User $authUser, User $targetUser): bool
     {
+        // Only root and admin can manage users
         if (! $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
             return false;
         }
 
-        if (! $user->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
+        // Only root can manage root users
+        if ($targetUser->hasRole(UserRoleEnum::ROOT->value) && ! $authUser->hasRole(UserRoleEnum::ROOT->value)) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $authUser): bool
+    {
+        return $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value]);
     }
 
     /**
@@ -30,31 +45,15 @@ class UserPolicy
      */
     public function view(User $authUser, User $user): bool
     {
-        if (! $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        if (! $user->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        return true;
+        return $this->canManage($authUser, $user);
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $authUser, User $user): bool
+    public function create(User $authUser): bool
     {
-        if (! $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        if (! $user->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        return true;
+        return $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value]);
     }
 
     /**
@@ -62,15 +61,7 @@ class UserPolicy
      */
     public function update(User $authUser, User $user): bool
     {
-        if (! $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        if (! $user->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        return true;
+        return $this->canManage($authUser, $user);
     }
 
     /**
@@ -78,15 +69,12 @@ class UserPolicy
      */
     public function delete(User $authUser, User $user): bool
     {
-        if (! $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
+        // Cannot delete yourself
+        if ($authUser->id === $user->id) {
             return false;
         }
 
-        if (! $user->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        return true;
+        return $this->canManage($authUser, $user);
     }
 
     /**
@@ -94,15 +82,7 @@ class UserPolicy
      */
     public function restore(User $authUser, User $user): bool
     {
-        if (! $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        if (! $user->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        return true;
+        return $this->canManage($authUser, $user);
     }
 
     /**
@@ -110,14 +90,11 @@ class UserPolicy
      */
     public function forceDelete(User $authUser, User $user): bool
     {
-        if (! $authUser->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
+        // Cannot force delete yourself
+        if ($authUser->id === $user->id) {
             return false;
         }
 
-        if (! $user->hasAnyRole([UserRoleEnum::ROOT->value, UserRoleEnum::ADMIN->value])) {
-            return false;
-        }
-
-        return true;
+        return $this->canManage($authUser, $user);
     }
 }

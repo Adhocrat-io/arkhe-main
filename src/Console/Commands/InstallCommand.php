@@ -19,7 +19,7 @@ class InstallCommand extends Command
      * @var string
      */
     // TODO: permettre de lancer l'installation d'arkhè sans interaction, pour pouvoir l'utiliser sur un serveur distant "-y --seed"
-    protected $signature = 'arkhe-main:install';
+    protected $signature = 'arkhe:main:install';
 
     /**
      * The console command description.

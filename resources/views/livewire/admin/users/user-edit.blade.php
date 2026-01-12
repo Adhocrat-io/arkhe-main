@@ -3,7 +3,7 @@
         <div class="mb-8 flex justify-start items-center w-full">
             <div>
                 <h2 class="text-2xl font-semibold">
-                        Éditer l'utilisateur
+                        {{ __('Edit User') }}
                 </h2>
             </div>
         </div>
@@ -36,24 +36,14 @@
                     <flux:error name="userEditForm.civility" />
                 </flux:field>
 
-                <flux:field class="md:col-span-2">
+                <flux:field class="md:col-span-4">
                     <flux:label>
-                        {{ __('First name') }}
+                        {{ __('Username') }} *
                     </flux:label>
 
-                    <flux:input wire:model="userEditForm.first_name" type="text" />
+                    <flux:input wire:model="userEditForm.username" type="text" required />
 
-                    <flux:error name="userEditForm.first_name" />
-                </flux:field>
-
-                <flux:field class="md:col-span-2">
-                    <flux:label>
-                        {{ __('Last name') }} *
-                    </flux:label>
-
-                    <flux:input wire:model="userEditForm.last_name" type="text" required />
-
-                    <flux:error name="userEditForm.last_name" />
+                    <flux:error name="userEditForm.username" />
                 </flux:field>
 
                 <flux:field class="md:col-span-3">

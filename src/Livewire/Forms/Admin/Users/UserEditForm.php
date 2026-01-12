@@ -6,15 +6,14 @@ namespace Arkhe\Main\Livewire\Forms\Admin\Users;
 
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Validation\Rules\Password;
 use Livewire\Form;
 
 class UserEditForm extends Form
 {
     public ?User $user = null;
 
-    public ?string $first_name = null;
-
-    public string $last_name = '';
+    public string $username = '';
 
     public string $email = '';
 
@@ -38,8 +37,7 @@ class UserEditForm extends Form
     public function setUser(User $user): void
     {
         $this->user = $user;
-        $this->first_name = $user->first_name;
-        $this->last_name = $user->last_name;
+        $this->username = $user->username;
         $this->email = $user->email;
         $this->date_of_birth = $user->date_of_birth;
         $this->civility = $user->civility;
@@ -56,8 +54,7 @@ class UserEditForm extends Form
     public function rules(): array
     {
         $rules = [
-            'first_name' => ['nullable', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email,'.($this->user?->id ?? ''), 'email:rfc,dns'],
             'date_of_birth' => ['nullable', 'date'],
             'civility' => ['nullable', 'string'],
@@ -66,11 +63,11 @@ class UserEditForm extends Form
         ];
 
         if (! $this->user) {
-            $rules['password'] = ['required', 'min:8', 'confirmed'];
-            $rules['password_confirmation'] = ['required', 'min:8'];
+            $rules['password'] = ['required', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'];
+            $rules['password_confirmation'] = ['required'];
         } else {
-            $rules['password'] = ['nullable', 'min:8', 'confirmed'];
-            $rules['password_confirmation'] = ['nullable', 'min:8'];
+            $rules['password'] = ['nullable', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'];
+            $rules['password_confirmation'] = ['nullable'];
         }
 
         return $rules;
@@ -88,14 +85,13 @@ class UserEditForm extends Form
             '*.confirmed' => __('The :attribute confirmation does not match.'),
         ];
 
-        if (! $this->user) {
-            $messages['password.required'] = __('The password is required.');
-            $messages['password.min'] = __('The password must be at least 8 characters long.');
-            $messages['password.confirmed'] = __('The password confirmation does not match.');
-            $messages['password_confirmation.required'] = __('The password confirmation is required.');
-            $messages['password_confirmation.min'] = __('The password confirmation must be at least 8 characters long.');
-            $messages['password_confirmation.confirmed'] = __('The password confirmation does not match.');
-        }
+        $messages['password.required'] = __('The password is required.');
+        $messages['password.min'] = __('The password must be at least 8 characters long.');
+        $messages['password.mixed'] = __('The password must contain at least one uppercase and one lowercase letter.');
+        $messages['password.numbers'] = __('The password must contain at least one number.');
+        $messages['password.symbols'] = __('The password must contain at least one symbol.');
+        $messages['password.confirmed'] = __('The password confirmation does not match.');
+        $messages['password_confirmation.required'] = __('The password confirmation is required.');
 
         return $messages;
     }
@@ -103,8 +99,7 @@ class UserEditForm extends Form
     public function toUserDtoArray(): array
     {
         return [
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
+            'username' => $this->username,
             'email' => $this->email,
             'date_of_birth' => $this->date_of_birth ? Carbon::parse($this->date_of_birth) : null,
             'civility' => $this->civility,

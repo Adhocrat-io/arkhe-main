@@ -11,9 +11,8 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\LazilyRefreshDatabase::class)
-    ->in('Feature');
+pest()->extend(Arkhe\Main\Tests\TestCase::class)
+    ->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------

@@ -52,6 +52,7 @@
         }
     },
     "scripts": {
+        "test": "php -d error_reporting='E_ALL & ~E_DEPRECATED' ./vendor/bin/pest",
         "post-update-cmd": [
             "@php artisan arkhe:migrate-to-username --quiet || true"
         ]

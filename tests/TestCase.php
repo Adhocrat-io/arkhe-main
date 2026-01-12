@@ -19,11 +19,14 @@ abstract class TestCase extends BaseTestCase
         return [
             ArkheMainServiceProvider::class,
             \Spatie\Permission\PermissionServiceProvider::class,
+            \Livewire\LivewireServiceProvider::class,
         ];
     }
 
     protected function getEnvironmentSetUp($app): void
     {
+        $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
             'driver' => 'sqlite',
@@ -61,6 +64,19 @@ abstract class TestCase extends BaseTestCase
 
         // Create base roles needed for tests
         $this->createBaseRoles();
+
+        // Define routes needed for Livewire component tests
+        $this->defineTestRoutes();
+    }
+
+    private function defineTestRoutes(): void
+    {
+        \Illuminate\Support\Facades\Route::get('/admin/users', fn () => 'users')->name('admin.users.index');
+        \Illuminate\Support\Facades\Route::get('/admin/users/create', fn () => 'create')->name('admin.users.create');
+        \Illuminate\Support\Facades\Route::get('/admin/users/{user}/edit', fn () => 'edit')->name('admin.users.edit');
+        \Illuminate\Support\Facades\Route::get('/admin/roles', fn () => 'roles')->name('admin.users.roles.index');
+        \Illuminate\Support\Facades\Route::get('/admin/roles/create', fn () => 'create')->name('admin.users.roles.edit');
+        \Illuminate\Support\Facades\Route::get('/admin/dashboard', fn () => 'dashboard')->name('admin.dashboard');
     }
 
     private function createBaseRoles(): void

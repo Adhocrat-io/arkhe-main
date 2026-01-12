@@ -39,7 +39,7 @@ class UserEditForm extends Form
         $this->user = $user;
         $this->username = $user->username;
         $this->email = $user->email;
-        $this->date_of_birth = $user->date_of_birth;
+        $this->date_of_birth = $user->date_of_birth?->format('Y-m-d');
         $this->civility = $user->civility;
         $this->profession = $user->profession;
 

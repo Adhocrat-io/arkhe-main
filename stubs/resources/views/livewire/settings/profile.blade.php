@@ -1,11 +1,9 @@
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
+    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your profile information')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="first_name" :label="__('First Name')" type="text" required autofocus autocomplete="first_name" />
-
-            <flux:input wire:model="last_name" :label="__('Last Name')" type="text" required autofocus autocomplete="last_name" />
+            <flux:input wire:model="username" :label="__('Username')" type="text" required autofocus autocomplete="username" />
 
             <div>
                 <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
@@ -29,11 +27,11 @@
                 @endif
             </div>
 
-            <flux:input wire:model="date_of_birth" :label="__('Date of Birth')" type="date" required autofocus autocomplete="date_of_birth" />
+            <flux:input wire:model="date_of_birth" :label="__('Date of Birth')" type="date" autocomplete="date_of_birth" />
 
-            <flux:input wire:model="civility" :label="__('Civility')" type="text" required autofocus autocomplete="civility" />
+            <flux:input wire:model="civility" :label="__('Civility')" type="text" autocomplete="civility" />
 
-            <flux:input wire:model="profession" :label="__('Profession')" type="text" required autofocus autocomplete="profession" />
+            <flux:input wire:model="profession" :label="__('Profession')" type="text" autocomplete="profession" />
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">

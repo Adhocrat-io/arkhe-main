@@ -51,5 +51,10 @@
             "pestphp/pest-plugin": true
         }
     },
+    "scripts": {
+        "post-update-cmd": [
+            "@php artisan arkhe:migrate-to-username --quiet || true"
+        ]
+    },
     "minimum-stability": "dev"
 }

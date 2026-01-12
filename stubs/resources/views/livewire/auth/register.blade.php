@@ -8,25 +8,15 @@
         <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-6">
             @csrf
 
-            <!-- Name -->
+            <!-- Username -->
             <flux:input
-                name="first_name"
-                :label="__('First name')"
+                name="username"
+                :label="__('Username')"
                 type="text"
                 required
                 autofocus
-                autocomplete="first_name"
-                :placeholder="__('Full name')"
-            />
-
-            <!-- Last name -->
-            <flux:input
-                name="last_name"
-                :label="__('Last name')"
-                type="text"
-                required
-                autocomplete="last_name"
-                :placeholder="__('Last name')"
+                autocomplete="username"
+                :placeholder="__('Username')"
             />
 
             <!-- Email Address -->
@@ -74,4 +64,3 @@
         </div>
     </div>
 </x-layouts.auth>
-

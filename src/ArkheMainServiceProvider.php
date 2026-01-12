@@ -6,6 +6,7 @@ namespace Arkhe\Main;
 
 use App\Models\User;
 use Arkhe\Main\Console\Commands\InstallCommand;
+use Arkhe\Main\Console\Commands\MigrateToUsernameCommand;
 use Arkhe\Main\Livewire\Admin\Users\Roles\RoleEdit;
 use Arkhe\Main\Livewire\Admin\Users\Roles\RolesList;
 use Arkhe\Main\Livewire\Admin\Users\UserCreate;
@@ -86,11 +87,10 @@ class ArkheMainServiceProvider extends ServiceProvider
         );
 
         if ($this->app->runningInConsole()) {
-            $this->commands(
-                [
-                    InstallCommand::class
-                ]
-            );
+            $this->commands([
+                InstallCommand::class,
+                MigrateToUsernameCommand::class,
+            ]);
         }
     }
 

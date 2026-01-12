@@ -39,21 +39,20 @@ class TestUsersSeeder extends Seeder
         if ($useRandomPasswords) {
             $this->command->info("Using random password for test users: {$defaultPassword}");
         }
-        $admin = User::updateOrCreate([
+
+        $root = User::updateOrCreate([
             'email' => 'root@arkhe.com',
         ], [
-            'first_name' => 'Root',
-            'last_name' => 'Arkhè',
+            'username' => 'root',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
-        $admin->assignRole(UserRoleEnum::ROOT->value);
+        $root->assignRole(UserRoleEnum::ROOT->value);
 
         $admin = User::updateOrCreate([
             'email' => 'admin@arkhe.com',
         ], [
-            'first_name' => 'Admin',
-            'last_name' => 'Arkhè',
+            'username' => 'admin',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -62,8 +61,7 @@ class TestUsersSeeder extends Seeder
         $editor = User::updateOrCreate([
             'email' => 'editorial@arkhe.com',
         ], [
-            'first_name' => 'Editorial',
-            'last_name' => 'Arkhè',
+            'username' => 'editorial',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -72,8 +70,7 @@ class TestUsersSeeder extends Seeder
         $author = User::updateOrCreate([
             'email' => 'author@arkhe.com',
         ], [
-            'first_name' => 'Author',
-            'last_name' => 'Arkhè',
+            'username' => 'author',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -82,41 +79,28 @@ class TestUsersSeeder extends Seeder
         $contributor = User::updateOrCreate([
             'email' => 'contributor@arkhe.com',
         ], [
-            'first_name' => 'Contributor',
-            'last_name' => 'Arkhè',
+            'username' => 'contributor',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
         $contributor->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
-        // $shopManager = User::updateOrCreate([
-        //     'email' => 'shopmanager@arkhe.com',
-        // ], [
-        //     'first_name' => 'Shop Manager',
-        //     'last_name' => 'Arkhè',
-        //     'password' => $defaultPassword,
-        //     'email_verified_at' => now(),
-        // ]);
-        // $shopManager->assignRole(UserRoleEnum::SHOP_MANAGER->value);
-
-        $abonne = User::updateOrCreate([
+        $subscriber = User::updateOrCreate([
             'email' => 'subscriber@arkhe.com',
         ], [
-            'first_name' => 'Subscriber',
-            'last_name' => 'Arkhè',
+            'username' => 'subscriber',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
-        $abonne->assignRole(UserRoleEnum::SUBSCRIBER->value);
+        $subscriber->assignRole(UserRoleEnum::SUBSCRIBER->value);
 
-        $invite = User::updateOrCreate([
+        $guest = User::updateOrCreate([
             'email' => 'guest@arkhe.com',
         ], [
-            'first_name' => 'Guest',
-            'last_name' => 'Arkhè',
+            'username' => 'guest',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
-        $invite->assignRole(UserRoleEnum::GUEST->value);
+        $guest->assignRole(UserRoleEnum::GUEST->value);
     }
 }

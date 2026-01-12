@@ -54,8 +54,7 @@
     "Mr": "M.",
     "Mrs": "Mme",
     "Miss": "Mlle",
-    "First name": "Prénom",
-    "Last name": "Nom",
+    "Username": "Nom d'utilisateur",
     "Date of birth": "Date de naissance",
     "Profession": "Profession",
     "Password": "Mot de passe",
@@ -138,5 +137,13 @@
     "Edit Role": "Modifier le rôle",
     "Create Role": "Créer un rôle",
     "Back": "Retour",
-    "Cancel": "Annuler"
+    "Cancel": "Annuler",
+    "Update your profile information": "Mettre à jour vos informations de profil",
+    "Migration not needed: first_name/last_name columns do not exist.": "Migration non nécessaire : les colonnes first_name/last_name n'existent pas.",
+    "Migration already completed: username column already exists.": "Migration déjà effectuée : la colonne username existe déjà.",
+    "No users to migrate.": "Aucun utilisateur à migrer.",
+    "Dry run mode - no changes will be made.": "Mode simulation - aucune modification ne sera effectuée.",
+    ":count users would be migrated.": ":count utilisateurs seraient migrés.",
+    "Migrating :count users...": "Migration de :count utilisateurs...",
+    "Migration completed successfully.": "Migration effectuée avec succès."
 }

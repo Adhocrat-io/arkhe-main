@@ -31,8 +31,10 @@ class InstallCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
+        app()->setLocale(config('app.locale'));
+
         $this->info(__('Installing Arkhe Main package...'));
 
         if (confirm(__('Do you want to publish the configuration?'), true)) {

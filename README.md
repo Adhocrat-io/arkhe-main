@@ -48,19 +48,6 @@ php artisan arkhe:main:install
 ```
 et répondre aux questions qui vous mènent le long du chemin.
 
-<!-- Il ne s'agit que de cloner le repo, puis de choisir parmi les différentes branches disponibles celles dont vous avez besoin :
-
-- `main` : juste la base, avec la gestion des rôles et utilisateurs, des pages statiques en Markdown (CGV, FAQ, etc.).
-- `blog` : articles, catégories, tags, commentaires, etc. (TODO)
-- `shop` : produits, commandes, moyens de paiement, etc. (TODO)
-
-Pour mémoire, on se met sur la branche `main`, puis on merge celle (ou celles) souhaitée dans main (marche aussi pour `staging`). -->
-
-<!-- <a id="remplacements"></a>
-### Remplacements
-
-Il est possible de changer le nom du fichier `config/arkhe.php` pour l'adapter au projet, mais il faut ensuite remplacer les références à ce fichier dans le reste du code. Une recherche et remplacement globale devrait suffire : `config('arkhe.` => `config('nouveaunom.`. -->
-
 <a id="recommandations--exigences"></a>
 ## Recommandations & Exigences
 
@@ -85,7 +72,7 @@ On limite les parties mouvantes, et on centralise au maximum les points de passa
 - les Services s'occupent principalement de la logique métier, on corrélation avec les Repositories. `UserService` est le seul endroit où l'on peut transformer un utilisateur, déclencher des actions spécifiques (envoyer un email, etc.).
 - les formulaires permettent d'être validés grâce aux FormRequests (pour [Livewire](https://livewire.laravel.com/docs/forms#extracting-a-form-object) ou pour [Laravel](https://laravel.com/docs/12.x/validation#form-request-validation)).
 - les Enums permettent de centraliser les valeurs possibles pour une propriété, sans avoir à les définir dans la base de données. Un `PostStatusEnum` permet de gérer les statuts possibles pour un article, par exemple.
-- la transmission de données dans un Repository doit être faite via des [DTOs (Data Transfer Objects)](https://antoinebonin.fr/Ecriture/Data-Transfert-Object---DTO). Les tableaux sont pratiques, mais ils sont trop souples pour qu'on leur fasse confiance. Par sa structure même, un DTO est immuable et garantira la cohérence des données transmises.
+- la transmission de données dans un Repository doit être faite via des [DTOs (Data Transfer Objects)](https://antoinebonin.fr/Ecriture/Data-Transfert-Object---DTO) ou des FormRequests (c.f. supra). Les tableaux sont pratiques, mais ils sont trop souples pour qu'on leur fasse confiance. Par leur structure même, un DTO ou un FormRequest est immuable et garantira la cohérence des données transmises.
 
 Et ainsi de suite.
 

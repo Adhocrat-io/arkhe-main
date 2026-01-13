@@ -18,8 +18,10 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    // TODO: permettre de lancer l'installation d'arkhè sans interaction, pour pouvoir l'utiliser sur un serveur distant "-y --seed"
-    protected $signature = 'arkhe:main:install';
+    protected $signature = 'arkhe:main:install
+                            {--y|yes : Accept all default confirmations without prompting}
+                            {--with-test-users : Create test users (ignored in production)}
+                            {--force : Force overwrite existing files}';
 
     /**
      * The console command description.
@@ -35,9 +37,13 @@ class InstallCommand extends Command
     {
         app()->setLocale(config('app.locale'));
 
+        if ($this->isNonInteractive()) {
+            $this->info(__('Running in non-interactive mode...'));
+        }
+
         $this->info(__('Installing Arkhe Main package...'));
 
-        if (confirm(__('Do you want to publish the configuration?'), true)) {
+        if ($this->shouldProceed(__('Do you want to publish the configuration?'))) {
             if (! $this->configExists('arkhe.php')) {
                 $this->publishConfiguration();
                 $this->info(__('Arkhe Main configuration published successfully.'));
@@ -54,7 +60,7 @@ class InstallCommand extends Command
         $this->publishAndModifyFortifyConfig();
         $this->modifyWelcomeBlade();
 
-        if (confirm(__('Do you want to publish the migrations?'), true)) {
+        if ($this->shouldProceed(__('Do you want to publish the migrations?'))) {
             $this->publishMigrations();
             $this->info(__('Arkhe Main migrations published successfully.'));
         }
@@ -62,39 +68,53 @@ class InstallCommand extends Command
         $this->publishSeoAssets();
         $this->info(__('SEO package assets published successfully.'));
 
-        if (confirm(__('Do you want to publish the roles and permissions seeder?'), true)) {
+        if ($this->shouldProceed(__('Do you want to publish the roles and permissions seeder?'))) {
             $this->publishRolesAndPermissionsSeeder();
             $this->info(__('Arkhe Main roles and permissions seeder published successfully.'));
         }
 
-        if (confirm(__('Do you want to run the migrations?'), true)) {
+        if ($this->shouldProceed(__('Do you want to run the migrations?'))) {
             $this->call('migrate');
             $this->info(__('Arkhe Main migrations run successfully.'));
         }
 
-        if (confirm(__('Do you want to publish the lang files?'), true)) {
+        if ($this->shouldProceed(__('Do you want to publish the lang files?'))) {
             $this->publishLangFiles();
             $this->info(__('Arkhe Main lang files published successfully.'));
         }
 
-        if (confirm(__('Do you want to publish the modified files?'), false)) {
+        if ($this->shouldPublishModifiedFiles()) {
             $this->publishFiles();
             $this->info(__('Arkhe Main files published successfully.'));
         } else {
             $this->info(__('You will have to manually modify your files to work with Arhkè. See documentation for more information.'));
         }
 
-        if (confirm(__('Do you want to run the roles and permissions seeder?'), true)) {
+        if ($this->shouldProceed(__('Do you want to run the roles and permissions seeder?'))) {
             $this->call('db:seed', ['--class' => RolesAndPermissionsSeeder::class]);
             $this->info(__('Arkhe Main roles and permissions seeder run successfully.'));
         }
 
-        if (confirm(__("Do you want to create test users (don't do this on production)?"), true)) {
+        if ($this->shouldCreateTestUsers()) {
             $this->call('db:seed', ['--class' => TestUsersSeeder::class]);
             $this->info(__('Arkhe Main test users created successfully.'));
         }
 
         $this->info(__('Arkhe Main package installed successfully.'));
+    }
+
+    private function shouldProceed(string $question, bool $default = true): bool
+    {
+        if ($this->option('yes')) {
+            return $default;
+        }
+
+        return confirm($question, $default);
+    }
+
+    private function isNonInteractive(): bool
+    {
+        return (bool) $this->option('yes');
     }
 
     private function configExists(string $fileName): bool
@@ -117,7 +137,29 @@ class InstallCommand extends Command
 
     private function shouldOverwriteConfig(): bool
     {
+        if ($this->isNonInteractive()) {
+            return (bool) $this->option('force');
+        }
+
         return confirm(label: __('Config file already exists. Do you want to overwrite it?'), default: false);
+    }
+
+    private function shouldPublishModifiedFiles(): bool
+    {
+        if ($this->isNonInteractive()) {
+            return (bool) $this->option('force');
+        }
+
+        return confirm(__('Do you want to publish the modified files?'), false);
+    }
+
+    private function shouldCreateTestUsers(): bool
+    {
+        if ($this->isNonInteractive()) {
+            return (bool) $this->option('with-test-users') && ! app()->isProduction();
+        }
+
+        return confirm(__("Do you want to create test users (don't do this on production)?"), false);
     }
 
     private function publishMigrations(): void
@@ -143,7 +185,11 @@ class InstallCommand extends Command
 
     private function publishFiles(): void
     {
-        if (confirm(label: __('This will overwrite the existing files. Are you sure?'), default: false)) {
+        $shouldPublish = $this->isNonInteractive()
+            ? true
+            : confirm(label: __('This will overwrite the existing files. Are you sure?'), default: false);
+
+        if ($shouldPublish) {
             $this->call(command: 'vendor:publish', arguments: ['--tag' => 'arkhe-main-files', '--force' => true]);
         }
     }

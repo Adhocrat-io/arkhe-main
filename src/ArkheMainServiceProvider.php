@@ -6,7 +6,6 @@ namespace Arkhe\Main;
 
 use App\Models\User;
 use Arkhe\Main\Console\Commands\InstallCommand;
-use Arkhe\Main\Console\Commands\MigrateToUsernameCommand;
 use Arkhe\Main\Livewire\Admin\Users\Roles\RoleEdit;
 use Arkhe\Main\Livewire\Admin\Users\Roles\RolesList;
 use Arkhe\Main\Livewire\Admin\Users\UserCreate;
@@ -33,44 +32,44 @@ class ArkheMainServiceProvider extends ServiceProvider
         $this->configureFortifyRedirects();
 
         $this->publishes(
-            [__DIR__ . '/../config/arkhe.php' => config_path('arkhe.php')],
+            [__DIR__.'/../config/arkhe.php' => config_path('arkhe.php')],
             'arkhe-main-config'
         );
 
         $this->publishes(
-            [__DIR__ . '/../stubs/database/migrations' => database_path('migrations')],
+            [__DIR__.'/../stubs/database/migrations' => database_path('migrations')],
             'arkhe-main-migrations'
         );
 
         $this->publishes(
             [
-                __DIR__ . '/../stubs/database/seeders' => database_path('seeders'),
-                __DIR__ . '/../stubs/database/factories' => database_path('factories'),
+                __DIR__.'/../stubs/database/seeders' => database_path('seeders'),
+                __DIR__.'/../stubs/database/factories' => database_path('factories'),
             ],
             'arkhe-main-roles-seeder'
         );
 
         $this->publishes(
             [
-                __DIR__ . '/../stubs/bootstrap/app.php' => base_path('bootstrap/app.php'),
-                __DIR__ . '/../stubs/routes' => base_path('routes'),
+                __DIR__.'/../stubs/bootstrap/app.php' => base_path('bootstrap/app.php'),
+                __DIR__.'/../stubs/routes' => base_path('routes'),
 
-                __DIR__ . '/../stubs/app/Actions/' => app_path('Actions/'),
-                __DIR__ . '/../stubs/Models/' => app_path('Models/'),
-                __DIR__ . '/../stubs/app/Http/Controllers/' => app_path('Http/Controllers/'),
-                __DIR__ . '/../stubs/app/Livewire/' => app_path('Livewire/'),
-                __DIR__ . '/../stubs/app/Providers/' => app_path('Providers/'),
+                __DIR__.'/../stubs/app/Actions/' => app_path('Actions/'),
+                __DIR__.'/../stubs/Models/' => app_path('Models/'),
+                __DIR__.'/../stubs/app/Http/Controllers/' => app_path('Http/Controllers/'),
+                __DIR__.'/../stubs/app/Livewire/' => app_path('Livewire/'),
+                __DIR__.'/../stubs/app/Providers/' => app_path('Providers/'),
 
-                __DIR__ . '/../stubs/resources/views/livewire/' => resource_path('views/livewire/'),
-                __DIR__ . '/../stubs/resources/views/components/' => resource_path('views/components/'),
+                __DIR__.'/../stubs/resources/views/livewire/' => resource_path('views/livewire/'),
+                __DIR__.'/../stubs/resources/views/components/' => resource_path('views/components/'),
 
-                __DIR__ . '/../stubs/tests/' => base_path('tests/'),
+                __DIR__.'/../stubs/tests/' => base_path('tests/'),
             ],
             'arkhe-main-files'
         );
 
         $this->loadViewsFrom(
-            __DIR__ . '/../resources/views',
+            __DIR__.'/../resources/views',
             'arkhe-main'
         );
 
@@ -80,16 +79,15 @@ class ArkheMainServiceProvider extends ServiceProvider
         Livewire::component('arkhe.main.livewire.admin.users.roles.roles-list', RolesList::class);
         Livewire::component('arkhe.main.livewire.admin.users.roles.role-edit', RoleEdit::class);
 
-        $this->loadJsonTranslationsFrom(__DIR__ . '/../lang');
+        $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
         $this->publishes(
-            [__DIR__ . '/../lang' => $this->app->langPath('vendor/arkhe-main')],
+            [__DIR__.'/../lang' => $this->app->langPath('vendor/arkhe-main')],
             'arkhe-main-lang'
         );
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 InstallCommand::class,
-                MigrateToUsernameCommand::class,
             ]);
         }
     }
@@ -107,7 +105,8 @@ class ArkheMainServiceProvider extends ServiceProvider
 
         if (interface_exists($loginResponseClass)) {
             $this->app->singleton($loginResponseClass, function () {
-                return new class implements \Laravel\Fortify\Contracts\LoginResponse {
+                return new class implements \Laravel\Fortify\Contracts\LoginResponse
+                {
                     public function toResponse($request): RedirectResponse
                     {
                         return redirect()->route('admin.dashboard');
@@ -118,7 +117,8 @@ class ArkheMainServiceProvider extends ServiceProvider
 
         if (interface_exists($logoutResponseClass)) {
             $this->app->singleton($logoutResponseClass, function () {
-                return new class implements \Laravel\Fortify\Contracts\LogoutResponse {
+                return new class implements \Laravel\Fortify\Contracts\LogoutResponse
+                {
                     public function toResponse($request): RedirectResponse
                     {
                         return redirect()->route('login');

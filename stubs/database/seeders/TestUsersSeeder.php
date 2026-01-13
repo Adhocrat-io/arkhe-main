@@ -43,7 +43,7 @@ class TestUsersSeeder extends Seeder
         $root = User::updateOrCreate([
             'email' => 'root@arkhe.com',
         ], [
-            'username' => 'root',
+            'name' => 'root',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -52,7 +52,7 @@ class TestUsersSeeder extends Seeder
         $admin = User::updateOrCreate([
             'email' => 'admin@arkhe.com',
         ], [
-            'username' => 'admin',
+            'name' => 'admin',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -61,7 +61,7 @@ class TestUsersSeeder extends Seeder
         $editor = User::updateOrCreate([
             'email' => 'editorial@arkhe.com',
         ], [
-            'username' => 'editorial',
+            'name' => 'editorial',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -70,7 +70,7 @@ class TestUsersSeeder extends Seeder
         $author = User::updateOrCreate([
             'email' => 'author@arkhe.com',
         ], [
-            'username' => 'author',
+            'name' => 'author',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -79,7 +79,7 @@ class TestUsersSeeder extends Seeder
         $contributor = User::updateOrCreate([
             'email' => 'contributor@arkhe.com',
         ], [
-            'username' => 'contributor',
+            'name' => 'contributor',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -88,7 +88,7 @@ class TestUsersSeeder extends Seeder
         $subscriber = User::updateOrCreate([
             'email' => 'subscriber@arkhe.com',
         ], [
-            'username' => 'subscriber',
+            'name' => 'subscriber',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -97,7 +97,7 @@ class TestUsersSeeder extends Seeder
         $guest = User::updateOrCreate([
             'email' => 'guest@arkhe.com',
         ], [
-            'username' => 'guest',
+            'name' => 'guest',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);

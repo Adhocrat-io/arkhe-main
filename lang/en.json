@@ -55,7 +55,6 @@
     "Mr": "Mr",
     "Mrs": "Mrs",
     "Miss": "Miss",
-    "Username": "Username",
     "Date of birth": "Date of birth",
     "Profession": "Profession",
     "Password": "Password",
@@ -139,12 +138,5 @@
     "Create Role": "Create Role",
     "Back": "Back",
     "Cancel": "Cancel",
-    "Update your profile information": "Update your profile information",
-    "Migration not needed: first_name/last_name columns do not exist.": "Migration not needed: first_name/last_name columns do not exist.",
-    "Migration already completed: username column already exists.": "Migration already completed: username column already exists.",
-    "No users to migrate.": "No users to migrate.",
-    "Dry run mode - no changes will be made.": "Dry run mode - no changes will be made.",
-    ":count users would be migrated.": ":count users would be migrated.",
-    "Migrating :count users...": "Migrating :count users...",
-    "Migration completed successfully.": "Migration completed successfully."
+    "Update your profile information": "Update your profile information"
 }

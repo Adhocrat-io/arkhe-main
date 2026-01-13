@@ -43,7 +43,7 @@ describe('UserCreate', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'newuser')
+                ->set('userEditForm.name', 'newuser')
                 ->set('userEditForm.email', 'newuser@gmail.com')
                 ->set('userEditForm.password', 'Password123!')
                 ->set('userEditForm.password_confirmation', 'Password123!')
@@ -61,10 +61,10 @@ describe('UserCreate', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', '')
+                ->set('userEditForm.name', '')
                 ->set('userEditForm.email', '')
                 ->call('save')
-                ->assertHasErrors(['userEditForm.username', 'userEditForm.email']);
+                ->assertHasErrors(['userEditForm.name', 'userEditForm.email']);
         });
 
         it('fails validation with invalid email', function () {
@@ -73,7 +73,7 @@ describe('UserCreate', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'testuser')
+                ->set('userEditForm.name', 'testuser')
                 ->set('userEditForm.email', 'invalid-email')
                 ->set('userEditForm.password', 'Password123!')
                 ->set('userEditForm.password_confirmation', 'Password123!')
@@ -88,7 +88,7 @@ describe('UserCreate', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'testuser')
+                ->set('userEditForm.name', 'testuser')
                 ->set('userEditForm.email', 'test@example.com')
                 ->set('userEditForm.password', 'weak')
                 ->set('userEditForm.password_confirmation', 'weak')
@@ -103,7 +103,7 @@ describe('UserCreate', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'testuser')
+                ->set('userEditForm.name', 'testuser')
                 ->set('userEditForm.email', 'test@example.com')
                 ->set('userEditForm.password', 'Password123!')
                 ->set('userEditForm.password_confirmation', 'DifferentPassword123!')
@@ -120,7 +120,7 @@ describe('UserCreate', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'testuser')
+                ->set('userEditForm.name', 'testuser')
                 ->set('userEditForm.email', 'existing@example.com')
                 ->set('userEditForm.password', 'Password123!')
                 ->set('userEditForm.password_confirmation', 'Password123!')
@@ -137,7 +137,7 @@ describe('UserCreate', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'fulluser')
+                ->set('userEditForm.name', 'fulluser')
                 ->set('userEditForm.email', 'fulluser@gmail.com')
                 ->set('userEditForm.password', 'Password123!')
                 ->set('userEditForm.password_confirmation', 'Password123!')

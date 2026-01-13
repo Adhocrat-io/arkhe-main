@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class UserDto
 {
     public function __construct(
-        public readonly string $username,
+        public readonly string $name,
         public readonly string $email,
         public readonly ?Carbon $date_of_birth,
         public readonly ?string $civility,
@@ -21,7 +21,7 @@ class UserDto
     public function toArray(): array
     {
         $data = [
-            'username' => $this->username,
+            'name' => $this->name,
             'email' => $this->email,
             'date_of_birth' => $this->date_of_birth,
             'civility' => $this->civility,

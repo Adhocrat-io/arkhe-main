@@ -22,7 +22,7 @@ describe('UsersList', function () {
             $admin = User::factory()->create();
             $admin->assignRole(UserRoleEnum::ROOT->value);
 
-            $user = User::factory()->create(['username' => 'testuser']);
+            $user = User::factory()->create(['name' => 'testuser']);
             $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
             Livewire::actingAs($admin)
@@ -32,14 +32,14 @@ describe('UsersList', function () {
     });
 
     describe('search', function () {
-        it('filters users by username', function () {
-            $admin = User::factory()->create(['username' => 'adminuser']);
+        it('filters users by name', function () {
+            $admin = User::factory()->create(['name' => 'adminuser']);
             $admin->assignRole(UserRoleEnum::ROOT->value);
 
-            $user1 = User::factory()->create(['username' => 'findme']);
+            $user1 = User::factory()->create(['name' => 'findme']);
             $user1->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
-            $user2 = User::factory()->create(['username' => 'hidden']);
+            $user2 = User::factory()->create(['name' => 'hidden']);
             $user2->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
             Livewire::actingAs($admin)
@@ -65,13 +65,13 @@ describe('UsersList', function () {
 
     describe('role filter', function () {
         it('filters users by role', function () {
-            $admin = User::factory()->create(['username' => 'rootadmin']);
+            $admin = User::factory()->create(['name' => 'rootadmin']);
             $admin->assignRole(UserRoleEnum::ROOT->value);
 
-            $contributor = User::factory()->create(['username' => 'contribuser']);
+            $contributor = User::factory()->create(['name' => 'contribuser']);
             $contributor->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
-            $author = User::factory()->create(['username' => 'authoruser']);
+            $author = User::factory()->create(['name' => 'authoruser']);
             $author->assignRole(UserRoleEnum::AUTHOR->value);
 
             Livewire::actingAs($admin)

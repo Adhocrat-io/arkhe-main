@@ -52,10 +52,9 @@ abstract class TestCase extends BaseTestCase
 
     protected function defineDatabaseMigrations(): void
     {
-        // Load test migrations first (creates users table)
+        // Load test migrations only (creates users table with all needed fields)
+        // Stubs migrations are for consuming applications, not package tests
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
-        // Then load package migrations
-        $this->loadMigrationsFrom(__DIR__.'/../stubs/database/migrations');
     }
 
     protected function setUp(): void

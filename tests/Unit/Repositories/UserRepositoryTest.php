@@ -12,7 +12,7 @@ use Arkhe\Main\Repositories\UserRepository;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    $this->repository = new UserRepository();
+    $this->repository = new UserRepository;
 });
 
 describe('UserRepository', function () {
@@ -21,7 +21,7 @@ describe('UserRepository', function () {
             Event::fake([UserCreated::class]);
 
             $userDto = new UserDto(
-                username: 'johndoe',
+                name: 'johndoe',
                 email: 'john@example.com',
                 date_of_birth: null,
                 civility: 'M',
@@ -33,7 +33,7 @@ describe('UserRepository', function () {
             $user = $this->repository->create($userDto);
 
             expect($user)->toBeInstanceOf(User::class)
-                ->and($user->username)->toBe('johndoe')
+                ->and($user->name)->toBe('johndoe')
                 ->and($user->email)->toBe('john@example.com')
                 ->and($user->hasRole(UserRoleEnum::CONTRIBUTOR->value))->toBeTrue();
 
@@ -48,12 +48,12 @@ describe('UserRepository', function () {
             Event::fake([UserUpdated::class]);
 
             $user = User::factory()->create([
-                'username' => 'janesmith',
+                'name' => 'janesmith',
             ]);
             $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
             $userDto = new UserDto(
-                username: 'janeupdated',
+                name: 'janeupdated',
                 email: $user->email,
                 date_of_birth: null,
                 civility: 'Mme',
@@ -64,7 +64,7 @@ describe('UserRepository', function () {
 
             $updatedUser = $this->repository->update($user, $userDto);
 
-            expect($updatedUser->username)->toBe('janeupdated')
+            expect($updatedUser->name)->toBe('janeupdated')
                 ->and($updatedUser->hasRole(UserRoleEnum::AUTHOR->value))->toBeTrue()
                 ->and($updatedUser->hasRole(UserRoleEnum::CONTRIBUTOR->value))->toBeFalse();
 
@@ -78,7 +78,7 @@ describe('UserRepository', function () {
             $originalPasswordHash = $user->password;
 
             $userDto = new UserDto(
-                username: 'updateduser',
+                name: 'updateduser',
                 email: $user->email,
                 date_of_birth: null,
                 civility: null,

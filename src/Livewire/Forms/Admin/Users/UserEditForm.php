@@ -13,7 +13,7 @@ class UserEditForm extends Form
 {
     public ?User $user = null;
 
-    public string $username = '';
+    public string $name = '';
 
     public string $email = '';
 
@@ -37,7 +37,7 @@ class UserEditForm extends Form
     public function setUser(User $user): void
     {
         $this->user = $user;
-        $this->username = $user->username;
+        $this->name = $user->name;
         $this->email = $user->email;
         $this->date_of_birth = $user->date_of_birth?->format('Y-m-d');
         $this->civility = $user->civility;
@@ -54,7 +54,7 @@ class UserEditForm extends Form
     public function rules(): array
     {
         $rules = [
-            'username' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email,'.($this->user?->id ?? ''), 'email:rfc,dns'],
             'date_of_birth' => ['nullable', 'date'],
             'civility' => ['nullable', 'string'],
@@ -99,7 +99,7 @@ class UserEditForm extends Form
     public function toUserDtoArray(): array
     {
         return [
-            'username' => $this->username,
+            'name' => $this->name,
             'email' => $this->email,
             'date_of_birth' => $this->date_of_birth ? Carbon::parse($this->date_of_birth) : null,
             'civility' => $this->civility,

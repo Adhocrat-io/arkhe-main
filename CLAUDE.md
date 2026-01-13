@@ -91,7 +91,6 @@ Factories and fixtures available in `tests/Fixtures/`.
 
 ```bash
 php artisan arkhe-main:install              # Interactive installation wizard
-php artisan arkhe:migrate-to-username --dry-run  # Preview username migration
 ```
 
 ## Code Conventions

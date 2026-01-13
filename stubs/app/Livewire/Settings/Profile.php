@@ -10,7 +10,7 @@ use Livewire\Component;
 
 class Profile extends Component
 {
-    public string $username = '';
+    public string $name = '';
 
     public string $email = '';
 
@@ -25,7 +25,7 @@ class Profile extends Component
      */
     public function mount(): void
     {
-        $this->username = Auth::user()->username;
+        $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
     }
 
@@ -37,7 +37,7 @@ class Profile extends Component
         $user = Auth::user();
 
         $validated = $this->validate([
-            'username' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
 
             'email' => [
                 'required',
@@ -61,7 +61,7 @@ class Profile extends Component
 
         $user->save();
 
-        $this->dispatch('profile-updated', username: $user->username);
+        $this->dispatch('profile-updated', name: $user->name);
     }
 
     /**

@@ -21,7 +21,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'username',
+        'name',
         'email',
         'password',
         'date_of_birth',
@@ -54,11 +54,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the user's initials (first 2 characters of username)
+     * Get the user's initials (first 2 characters of name)
      */
     public function initials(): string
     {
-        return strtoupper(Str::substr($this->username, 0, 2));
+        return strtoupper(Str::substr($this->name, 0, 2));
     }
 
     /**
@@ -66,6 +66,6 @@ class User extends Authenticatable
      */
     public function getDisplayNameAttribute(): string
     {
-        return $this->username ?? '';
+        return $this->name ?? '';
     }
 }

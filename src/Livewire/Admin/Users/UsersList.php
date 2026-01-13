@@ -46,7 +46,7 @@ class UsersList extends Component
             $searchTerm = $this->cleanSearchTerm($this->search);
 
             $users = $users->where(function ($query) use ($searchTerm): void {
-                $query->where('username', 'like', '%'.$searchTerm.'%')
+                $query->where('name', 'like', '%'.$searchTerm.'%')
                     ->orWhere('email', 'like', '%'.$searchTerm.'%');
             });
         }

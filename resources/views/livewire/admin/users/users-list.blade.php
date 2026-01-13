@@ -91,10 +91,10 @@
                             <td class="px-6 py-4 whitespace-nowrap {{ !$this->canEditUser($user) ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                                 @if ($this->canEditUser($user))
                                     <flux:link wire:click='editUser({{ $user->id }})' variant="text">
-                                        {{ $user->username }}
+                                        {{ $user->name }}
                                     </flux:link>
                                 @else
-                                    {{ $user->username }}
+                                    {{ $user->name }}
                                 @endif
                             </td>
 

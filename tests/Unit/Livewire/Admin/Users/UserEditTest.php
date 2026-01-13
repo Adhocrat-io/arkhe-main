@@ -17,7 +17,7 @@ describe('UserEdit', function () {
             $admin->assignRole(UserRoleEnum::ROOT->value);
 
             $user = User::factory()->create([
-                'username' => 'testuser',
+                'name' => 'testuser',
                 'email' => 'test@example.com',
                 'civility' => 'M.',
                 'profession' => 'Developer',
@@ -27,7 +27,7 @@ describe('UserEdit', function () {
             $component = Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $user]);
 
-            expect($component->get('userEditForm.username'))->toBe('testuser')
+            expect($component->get('userEditForm.name'))->toBe('testuser')
                 ->and($component->get('userEditForm.email'))->toBe('test@example.com')
                 ->and($component->get('userEditForm.civility'))->toBe('M.')
                 ->and($component->get('userEditForm.profession'))->toBe('Developer')
@@ -149,14 +149,14 @@ describe('UserEdit', function () {
             $admin->assignRole(UserRoleEnum::ROOT->value);
 
             $user = User::factory()->create([
-                'username' => 'oldname',
+                'name' => 'oldname',
                 'email' => 'old@gmail.com',
             ]);
             $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
             Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $user])
-                ->set('userEditForm.username', 'newname')
+                ->set('userEditForm.name', 'newname')
                 ->set('userEditForm.email', 'new@gmail.com')
                 ->set('userEditForm.role', UserRoleEnum::AUTHOR->value)
                 ->call('save')
@@ -164,7 +164,7 @@ describe('UserEdit', function () {
 
             $user->refresh();
 
-            expect($user->username)->toBe('newname')
+            expect($user->name)->toBe('newname')
                 ->and($user->email)->toBe('new@gmail.com')
                 ->and($user->hasRole(UserRoleEnum::AUTHOR->value))->toBeTrue();
 
@@ -175,7 +175,7 @@ describe('UserEdit', function () {
             $admin = User::factory()->create();
             $admin->assignRole(UserRoleEnum::ADMIN->value);
 
-            $root = User::factory()->create(['username' => 'rootuser']);
+            $root = User::factory()->create(['name' => 'rootuser']);
             $root->assignRole(UserRoleEnum::ROOT->value);
 
             Livewire::actingAs($admin)
@@ -185,7 +185,7 @@ describe('UserEdit', function () {
 
             // Username should remain unchanged
             $root->refresh();
-            expect($root->username)->toBe('rootuser');
+            expect($root->name)->toBe('rootuser');
         });
 
         it('fails validation with invalid data', function () {
@@ -197,10 +197,10 @@ describe('UserEdit', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $user])
-                ->set('userEditForm.username', '')
+                ->set('userEditForm.name', '')
                 ->set('userEditForm.email', 'invalid-email')
                 ->call('save')
-                ->assertHasErrors(['userEditForm.username', 'userEditForm.email']);
+                ->assertHasErrors(['userEditForm.name', 'userEditForm.email']);
         });
 
         it('updates password when provided', function () {
@@ -233,7 +233,7 @@ describe('UserEdit', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $user])
-                ->set('userEditForm.username', 'updatedname')
+                ->set('userEditForm.name', 'updatedname')
                 ->call('save')
                 ->assertHasNoErrors();
 

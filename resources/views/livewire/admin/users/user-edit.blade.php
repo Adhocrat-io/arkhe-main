@@ -38,12 +38,12 @@
 
                 <flux:field class="md:col-span-4">
                     <flux:label>
-                        {{ __('Username') }} *
+                        {{ __('Name') }} *
                     </flux:label>
 
-                    <flux:input wire:model="userEditForm.username" type="text" required />
+                    <flux:input wire:model="userEditForm.name" type="text" required />
 
-                    <flux:error name="userEditForm.username" />
+                    <flux:error name="userEditForm.name" />
                 </flux:field>
 
                 <flux:field class="md:col-span-3">

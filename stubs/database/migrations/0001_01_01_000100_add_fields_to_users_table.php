@@ -11,11 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->date('date_of_birth')->after('id')->nullable();
-            $table->longText('civility')->nullable()->after('date_of_birth');
-            $table->longText('profession')->nullable()->after('civility');
-        });
+        if (! Schema::hasColumn('users', 'date_of_birth')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->date('date_of_birth')->after('id')->nullable();
+            });
+        }
+
+        if (! Schema::hasColumn('users', 'civility')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->longText('civility')->nullable()->after('date_of_birth');
+            });
+        }
+
+        if (! Schema::hasColumn('users', 'profession')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->longText('profession')->nullable()->after('civility');
+            });
+        }
     }
 
     /**

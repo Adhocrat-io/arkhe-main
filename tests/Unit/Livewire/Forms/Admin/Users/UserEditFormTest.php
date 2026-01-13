@@ -15,7 +15,7 @@ describe('UserEditForm', function () {
             $admin->assignRole(UserRoleEnum::ROOT->value);
 
             $user = User::factory()->create([
-                'username' => 'testuser',
+                'name' => 'testuser',
                 'email' => 'test@example.com',
                 'civility' => 'M.',
                 'profession' => 'Developer',
@@ -26,7 +26,7 @@ describe('UserEditForm', function () {
             $component = Livewire::actingAs($admin)
                 ->test(\Arkhe\Main\Livewire\Admin\Users\UserEdit::class, ['user' => $user]);
 
-            expect($component->get('userEditForm.username'))->toBe('testuser')
+            expect($component->get('userEditForm.name'))->toBe('testuser')
                 ->and($component->get('userEditForm.email'))->toBe('test@example.com')
                 ->and($component->get('userEditForm.civility'))->toBe('M.')
                 ->and($component->get('userEditForm.profession'))->toBe('Developer')
@@ -57,7 +57,7 @@ describe('UserEditForm', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'newuser')
+                ->set('userEditForm.name', 'newuser')
                 ->set('userEditForm.email', 'new@example.com')
                 ->set('userEditForm.role', UserRoleEnum::CONTRIBUTOR->value)
                 ->call('save')
@@ -73,7 +73,7 @@ describe('UserEditForm', function () {
 
             Livewire::actingAs($admin)
                 ->test(\Arkhe\Main\Livewire\Admin\Users\UserEdit::class, ['user' => $user])
-                ->set('userEditForm.username', 'updateduser')
+                ->set('userEditForm.name', 'updateduser')
                 ->call('save')
                 ->assertHasNoErrors(['userEditForm.password']);
         });
@@ -96,7 +96,7 @@ describe('UserEditForm', function () {
             // Too short
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'testuser')
+                ->set('userEditForm.name', 'testuser')
                 ->set('userEditForm.email', 'test@example.com')
                 ->set('userEditForm.password', 'short')
                 ->set('userEditForm.password_confirmation', 'short')
@@ -107,7 +107,7 @@ describe('UserEditForm', function () {
             // No uppercase
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'testuser')
+                ->set('userEditForm.name', 'testuser')
                 ->set('userEditForm.email', 'test@example.com')
                 ->set('userEditForm.password', 'lowercase123!')
                 ->set('userEditForm.password_confirmation', 'lowercase123!')
@@ -122,7 +122,7 @@ describe('UserEditForm', function () {
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'testuser')
+                ->set('userEditForm.name', 'testuser')
                 ->set('userEditForm.email', 'test@example.com')
                 ->set('userEditForm.password', 'Password123!')
                 ->set('userEditForm.password_confirmation', 'Different123!')
@@ -139,7 +139,7 @@ describe('UserEditForm', function () {
 
             $component = Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'dtouser')
+                ->set('userEditForm.name', 'dtouser')
                 ->set('userEditForm.email', 'dto@example.com')
                 ->set('userEditForm.password', 'Password123!')
                 ->set('userEditForm.password_confirmation', 'Password123!')
@@ -150,7 +150,7 @@ describe('UserEditForm', function () {
 
             $dtoArray = $component->instance()->userEditForm->toUserDtoArray();
 
-            expect($dtoArray['username'])->toBe('dtouser')
+            expect($dtoArray['name'])->toBe('dtouser')
                 ->and($dtoArray['email'])->toBe('dto@example.com')
                 ->and($dtoArray['password'])->toBe('Password123!')
                 ->and($dtoArray['role'])->toBe(UserRoleEnum::CONTRIBUTOR->value)
@@ -165,7 +165,7 @@ describe('UserEditForm', function () {
 
             $component = Livewire::actingAs($admin)
                 ->test(UserCreate::class)
-                ->set('userEditForm.username', 'nodateuser')
+                ->set('userEditForm.name', 'nodateuser')
                 ->set('userEditForm.email', 'nodate@example.com')
                 ->set('userEditForm.role', UserRoleEnum::CONTRIBUTOR->value);
 

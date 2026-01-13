@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Arkhe\Main\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -47,9 +48,7 @@ class MigrateUserNamesCommand extends Command
         }
 
         if (! $hasName) {
-            $this->error(__('The name column does not exist in the users table. Please run migrations first.'));
-
-            return self::FAILURE;
+            return $this->migrateNewNameColumn();
         }
 
         if ($hasFirstName && $hasLastName) {
@@ -61,6 +60,23 @@ class MigrateUserNamesCommand extends Command
         }
 
         return $this->migrateFromSingleColumn('last_name');
+    }
+
+    private function migrateNewNameColumn(): int
+    {
+        if ($this->option('dry-run')) {
+            $this->line(__("Would create 'name' column after 'id' in users table."));
+
+            return self::SUCCESS;
+        }
+
+        Schema::table('users', function (Blueprint $table): void {
+            $table->string('name')->after('id');
+        });
+
+        $this->info(__("Column 'name' created successfully."));
+
+        return self::SUCCESS;
     }
 
     private function migrateFromFirstNameAndLastName(): int

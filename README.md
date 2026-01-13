@@ -25,18 +25,41 @@ Dans un monde où les projets numériques se multiplient et évoluent sans cesse
 <a id="installation"></a>
 ## Installation
 
-Il ne s'agit que de cloner le repo, puis de choisir parmi les différentes branches disponibles celles dont vous avez besoin :
+Il n'y a qu'à importer le dépôt dans Composer, pour l'instant depuis Github - à terme depuis Packagist.
+
+```php
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:Adhocrat-io/arkhe-main.git"
+        }
+    ],
+    ...
+    "require": {
+        ...
+        "adhocrat-io/arkhe-main": "*",
+        ...
+    }
+```
+
+Ensuite, il faut lancer la commande 
+```php 
+php artisan arkhe:main:install
+```
+et répondre aux questions qui vous mènent le long du chemin.
+
+<!-- Il ne s'agit que de cloner le repo, puis de choisir parmi les différentes branches disponibles celles dont vous avez besoin :
 
 - `main` : juste la base, avec la gestion des rôles et utilisateurs, des pages statiques en Markdown (CGV, FAQ, etc.).
 - `blog` : articles, catégories, tags, commentaires, etc. (TODO)
 - `shop` : produits, commandes, moyens de paiement, etc. (TODO)
 
-Pour mémoire, on se met sur la branche `main`, puis on merge celle (ou celles) souhaitée dans main (marche aussi pour `staging`).
+Pour mémoire, on se met sur la branche `main`, puis on merge celle (ou celles) souhaitée dans main (marche aussi pour `staging`). -->
 
-<a id="remplacements"></a>
+<!-- <a id="remplacements"></a>
 ### Remplacements
 
-Il est possible de changer le nom du fichier `config/arkhe.php` pour l'adapter au projet, mais il faut ensuite remplacer les références à ce fichier dans le reste du code. Une recherche et remplacement globale devrait suffire : `config('arkhe.` => `config('nouveaunom.`.
+Il est possible de changer le nom du fichier `config/arkhe.php` pour l'adapter au projet, mais il faut ensuite remplacer les références à ce fichier dans le reste du code. Une recherche et remplacement globale devrait suffire : `config('arkhe.` => `config('nouveaunom.`. -->
 
 <a id="recommandations--exigences"></a>
 ## Recommandations & Exigences

@@ -50,11 +50,10 @@ et répondre aux questions qui vous mènent le long du chemin.
 
 ## Mise à jour
 
-La première version de ce package a fait des choix de structure de base de données superflus, en remplaçant `users.name` par `users.first_name` et `users.last_name`. Ces choix ont été abandonnés et seule la colonne `users.name` reste désormais. Si la première version de ce package a été utilisée, il faut lancer les commandes :
+La première version de ce package a fait des choix de structure de base de données superflus, en remplaçant `users.name` par `users.first_name` et `users.last_name`. Ces choix ont été abandonnés et seule la colonne `users.name` reste désormais. Si la première version de ce package a été utilisée, il faut lancer la commande :
 
 ```php 
-php artisan vendor:publish --tag=arkhe-main-migrations
-php artisan migrate
+php artisan arkhe:main:migrate-user-names
 ```
 
 <a id="recommandations--exigences"></a>

@@ -52,7 +52,10 @@
         }
     },
     "scripts": {
-        "test": "php -d error_reporting='E_ALL & ~E_DEPRECATED' ./vendor/bin/pest"
+        "test": "php -d error_reporting='E_ALL & ~E_DEPRECATED' ./vendor/bin/pest",
+        "post-update-cmd": [
+            "@php artisan arkhe:migrate-user-names --ansi || true"
+        ]
     },
     "minimum-stability": "dev"
 }

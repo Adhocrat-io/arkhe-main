@@ -138,5 +138,14 @@
     "Create Role": "Créer un rôle",
     "Back": "Retour",
     "Cancel": "Annuler",
-    "Update your profile information": "Mettre à jour vos informations de profil"
+    "Update your profile information": "Mettre à jour vos informations de profil",
+    "Users table does not exist. Skipping migration.": "La table users n'existe pas. Migration ignorée.",
+    "No first_name or last_name columns found. No migration needed.": "Aucune colonne first_name ou last_name trouvée. Aucune migration nécessaire.",
+    "The name column does not exist in the users table. Please run migrations first.": "La colonne name n'existe pas dans la table users. Veuillez d'abord exécuter les migrations.",
+    "No users to migrate.": "Aucun utilisateur à migrer.",
+    "User :id already has name ':name', would become ':new'": "L'utilisateur :id a déjà le nom ':name', deviendrait ':new'",
+    "Would migrate user :id: ':first' + ':last' -> ':name'": "Migrerait l'utilisateur :id : ':first' + ':last' -> ':name'",
+    "Would migrate user :id: ':column' -> ':name'": "Migrerait l'utilisateur :id : ':column' -> ':name'",
+    ":count users would be migrated.": ":count utilisateurs seraient migrés.",
+    ":count users migrated successfully.": ":count utilisateurs migrés avec succès."
 }

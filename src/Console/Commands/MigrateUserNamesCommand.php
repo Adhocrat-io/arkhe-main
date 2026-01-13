@@ -34,9 +34,15 @@ class MigrateUserNamesCommand extends Command
             return self::SUCCESS;
         }
 
+        $hasName = Schema::hasColumn('users', 'name');
+
+        if (! $hasName) {
+            $this->createNameColumn();
+        }
+
         if ($hasFirstName && $hasLastName) {
             $result = $this->migrateUsers(
-                fn () => $this->getUsersWithBothColumns(),
+                fn () => $this->getUsersWithBothColumns($hasName),
                 fn ($user) => $this->extractNameFromBothColumns($user),
                 "Would migrate user :id: ':first' + ':last' -> ':name'"
             );
@@ -44,7 +50,7 @@ class MigrateUserNamesCommand extends Command
             $column = $hasFirstName ? 'first_name' : 'last_name';
 
             $result = $this->migrateUsers(
-                fn () => $this->getUsersWithSingleColumn($column),
+                fn () => $this->getUsersWithSingleColumn($column, $hasName),
                 fn ($user) => trim($user->$column),
                 "Would migrate user :id: $column ':value' -> ':name'"
             );
@@ -57,8 +63,29 @@ class MigrateUserNamesCommand extends Command
         return $result;
     }
 
-    private function getUsersWithBothColumns(): Collection
+    private function createNameColumn(): void
     {
+        if ($this->option('dry-run')) {
+            $this->line(__("Would create 'name' column after 'id' in users table."));
+
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('name')->nullable()->after('id');
+        });
+
+        $this->info(__("Column 'name' created successfully."));
+    }
+
+    private function getUsersWithBothColumns(bool $hasName): Collection
+    {
+        $columns = ['id', 'first_name', 'last_name'];
+
+        if ($hasName) {
+            $columns[] = 'name';
+        }
+
         return DB::table('users')
             ->where(function ($query) {
                 $query->whereNotNull('first_name')
@@ -68,15 +95,21 @@ class MigrateUserNamesCommand extends Command
                 $query->whereNotNull('last_name')
                     ->where('last_name', '!=', '');
             })
-            ->get(['id', 'first_name', 'last_name', 'name']);
+            ->get($columns);
     }
 
-    private function getUsersWithSingleColumn(string $column): Collection
+    private function getUsersWithSingleColumn(string $column, bool $hasName): Collection
     {
+        $columns = ['id', $column];
+
+        if ($hasName) {
+            $columns[] = 'name';
+        }
+
         return DB::table('users')
             ->whereNotNull($column)
             ->where($column, '!=', '')
-            ->get(['id', $column, 'name']);
+            ->get($columns);
     }
 
     private function extractNameFromBothColumns(object $user): string
@@ -136,10 +169,12 @@ class MigrateUserNamesCommand extends Command
 
     private function warnIfNameConflict(object $user, string $newName): void
     {
-        if (! empty($user->name) && $user->name !== $newName) {
+        $existingName = $user->name ?? null;
+
+        if (! empty($existingName) && $existingName !== $newName) {
             $this->line(__("User :id already has name ':name', would become ':new'", [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $existingName,
                 'new' => $newName,
             ]));
         }

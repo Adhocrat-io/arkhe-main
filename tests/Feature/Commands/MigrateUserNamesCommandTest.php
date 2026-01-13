@@ -381,3 +381,68 @@ it('drops columns even when no users to migrate', function () {
     expect(Schema::hasColumn('users', 'first_name'))->toBeFalse();
     expect(Schema::hasColumn('users', 'last_name'))->toBeFalse();
 });
+
+it('creates name column when it does not exist', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('first_name')->nullable();
+        $table->string('last_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'first_name' => 'John', 'last_name' => 'Doe'],
+    ]);
+
+    expect(Schema::hasColumn('users', 'name'))->toBeFalse();
+
+    $this->artisan('arkhe:main:migrate-user-names')
+        ->expectsOutputToContain("Column 'name' created successfully")
+        ->expectsOutputToContain('1 users migrated successfully')
+        ->assertSuccessful();
+
+    expect(Schema::hasColumn('users', 'name'))->toBeTrue();
+    expect(DB::table('users')->where('email', 'john@example.com')->value('name'))->toBe('John Doe');
+});
+
+it('shows name column creation in dry-run mode', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('first_name')->nullable();
+        $table->string('last_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'first_name' => 'John', 'last_name' => 'Doe'],
+    ]);
+
+    $this->artisan('arkhe:main:migrate-user-names', ['--dry-run' => true])
+        ->expectsOutputToContain("Would create 'name' column")
+        ->assertSuccessful();
+
+    expect(Schema::hasColumn('users', 'name'))->toBeFalse();
+});
+
+it('migrates without name column for single column scenario', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('first_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'first_name' => 'John'],
+    ]);
+
+    $this->artisan('arkhe:main:migrate-user-names')
+        ->expectsOutputToContain("Column 'name' created successfully")
+        ->expectsOutputToContain('1 users migrated successfully')
+        ->assertSuccessful();
+
+    expect(Schema::hasColumn('users', 'name'))->toBeTrue();
+    expect(DB::table('users')->where('email', 'john@example.com')->value('name'))->toBe('John');
+});

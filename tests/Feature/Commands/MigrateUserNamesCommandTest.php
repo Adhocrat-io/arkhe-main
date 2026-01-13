@@ -32,61 +32,6 @@ it('reports no migration needed when first_name and last_name columns do not exi
         ->assertSuccessful();
 });
 
-it('creates name column when it does not exist', function () {
-    Schema::create('users', function (Blueprint $table) {
-        $table->id();
-        $table->string('first_name')->nullable();
-        $table->string('last_name')->nullable();
-        $table->string('email')->unique();
-        $table->timestamps();
-    });
-
-    expect(Schema::hasColumn('users', 'name'))->toBeFalse();
-
-    $this->artisan('arkhe:main:migrate-user-names')
-        ->expectsOutputToContain("Column 'name' created successfully")
-        ->assertSuccessful();
-
-    expect(Schema::hasColumn('users', 'name'))->toBeTrue();
-});
-
-it('creates name column after id column', function () {
-    Schema::create('users', function (Blueprint $table) {
-        $table->id();
-        $table->string('first_name')->nullable();
-        $table->string('last_name')->nullable();
-        $table->string('email')->unique();
-        $table->timestamps();
-    });
-
-    $this->artisan('arkhe:main:migrate-user-names')->assertSuccessful();
-
-    $columns = Schema::getColumnListing('users');
-    $idIndex = array_search('id', $columns);
-    $nameIndex = array_search('name', $columns);
-
-    // SQLite doesn't support `after()`, so we only verify the column exists
-    // On MySQL/PostgreSQL, it would be positioned after `id`
-    expect($nameIndex)->not->toBeFalse();
-    expect($idIndex)->not->toBeFalse();
-})->skip(fn () => config('database.default') !== 'mysql', 'Column ordering only works on MySQL');
-
-it('shows dry-run message when creating name column', function () {
-    Schema::create('users', function (Blueprint $table) {
-        $table->id();
-        $table->string('first_name')->nullable();
-        $table->string('last_name')->nullable();
-        $table->string('email')->unique();
-        $table->timestamps();
-    });
-
-    $this->artisan('arkhe:main:migrate-user-names', ['--dry-run' => true])
-        ->expectsOutputToContain("Would create 'name' column")
-        ->assertSuccessful();
-
-    expect(Schema::hasColumn('users', 'name'))->toBeFalse();
-});
-
 it('migrates users from first_name and last_name to name', function () {
     Schema::create('users', function (Blueprint $table) {
         $table->id();
@@ -251,6 +196,24 @@ it('warns when user already has a different name value', function () {
         ->assertSuccessful();
 });
 
+it('warns when user already has a different name value with single column', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name')->nullable();
+        $table->string('first_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'first_name' => 'John', 'name' => 'Johnny'],
+    ]);
+
+    $this->artisan('arkhe:main:migrate-user-names')
+        ->expectsOutputToContain("already has name 'Johnny', would become 'John'")
+        ->assertSuccessful();
+});
+
 it('reports no users to migrate when all users have empty names', function () {
     Schema::create('users', function (Blueprint $table) {
         $table->id();
@@ -287,4 +250,134 @@ it('trims whitespace from names during migration', function () {
     $this->artisan('arkhe:main:migrate-user-names')->assertSuccessful();
 
     expect(DB::table('users')->where('email', 'john@example.com')->value('name'))->toBe('John Doe');
+});
+
+it('uses transaction to ensure atomic updates', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name')->nullable();
+        $table->string('first_name')->nullable();
+        $table->string('last_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'first_name' => 'John', 'last_name' => 'Doe', 'name' => null],
+        ['email' => 'jane@example.com', 'first_name' => 'Jane', 'last_name' => 'Smith', 'name' => null],
+    ]);
+
+    // Verify both users are migrated (transaction commits successfully)
+    $this->artisan('arkhe:main:migrate-user-names')->assertSuccessful();
+
+    expect(DB::table('users')->whereNotNull('name')->count())->toBe(2);
+});
+
+it('drops first_name and last_name columns after migration', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name')->nullable();
+        $table->string('first_name')->nullable();
+        $table->string('last_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'first_name' => 'John', 'last_name' => 'Doe', 'name' => null],
+    ]);
+
+    expect(Schema::hasColumn('users', 'first_name'))->toBeTrue();
+    expect(Schema::hasColumn('users', 'last_name'))->toBeTrue();
+
+    $this->artisan('arkhe:main:migrate-user-names')
+        ->expectsOutputToContain('Columns dropped: first_name, last_name')
+        ->assertSuccessful();
+
+    expect(Schema::hasColumn('users', 'first_name'))->toBeFalse();
+    expect(Schema::hasColumn('users', 'last_name'))->toBeFalse();
+});
+
+it('drops only first_name column when last_name does not exist', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name')->nullable();
+        $table->string('first_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'first_name' => 'John', 'name' => null],
+    ]);
+
+    $this->artisan('arkhe:main:migrate-user-names')
+        ->expectsOutputToContain('Columns dropped: first_name')
+        ->assertSuccessful();
+
+    expect(Schema::hasColumn('users', 'first_name'))->toBeFalse();
+});
+
+it('drops only last_name column when first_name does not exist', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name')->nullable();
+        $table->string('last_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'last_name' => 'Doe', 'name' => null],
+    ]);
+
+    $this->artisan('arkhe:main:migrate-user-names')
+        ->expectsOutputToContain('Columns dropped: last_name')
+        ->assertSuccessful();
+
+    expect(Schema::hasColumn('users', 'last_name'))->toBeFalse();
+});
+
+it('shows columns that would be dropped in dry-run mode', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name')->nullable();
+        $table->string('first_name')->nullable();
+        $table->string('last_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    DB::table('users')->insert([
+        ['email' => 'john@example.com', 'first_name' => 'John', 'last_name' => 'Doe', 'name' => null],
+    ]);
+
+    $this->artisan('arkhe:main:migrate-user-names', ['--dry-run' => true])
+        ->expectsOutputToContain('Would drop columns: first_name, last_name')
+        ->assertSuccessful();
+
+    // Columns should still exist
+    expect(Schema::hasColumn('users', 'first_name'))->toBeTrue();
+    expect(Schema::hasColumn('users', 'last_name'))->toBeTrue();
+});
+
+it('drops columns even when no users to migrate', function () {
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name')->nullable();
+        $table->string('first_name')->nullable();
+        $table->string('last_name')->nullable();
+        $table->string('email')->unique();
+        $table->timestamps();
+    });
+
+    // No users inserted, but columns exist
+
+    $this->artisan('arkhe:main:migrate-user-names')
+        ->expectsOutputToContain('No users to migrate')
+        ->expectsOutputToContain('Columns dropped: first_name, last_name')
+        ->assertSuccessful();
+
+    expect(Schema::hasColumn('users', 'first_name'))->toBeFalse();
+    expect(Schema::hasColumn('users', 'last_name'))->toBeFalse();
 });

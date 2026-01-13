@@ -6,29 +6,17 @@ namespace Arkhe\Main\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class MigrateUserNamesCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'arkhe:main:migrate-user-names
                             {--dry-run : Show what would be migrated without making changes}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Migrate first_name and last_name columns to name column';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
         if (! Schema::hasTable('users')) {
@@ -39,7 +27,6 @@ class MigrateUserNamesCommand extends Command
 
         $hasFirstName = Schema::hasColumn('users', 'first_name');
         $hasLastName = Schema::hasColumn('users', 'last_name');
-        $hasName = Schema::hasColumn('users', 'name');
 
         if (! $hasFirstName && ! $hasLastName) {
             $this->info(__('No first_name or last_name columns found. No migration needed.'));
@@ -47,101 +34,62 @@ class MigrateUserNamesCommand extends Command
             return self::SUCCESS;
         }
 
-        if (! $hasName) {
-            return $this->migrateNewNameColumn();
-        }
-
         if ($hasFirstName && $hasLastName) {
-            return $this->migrateFromFirstNameAndLastName();
-        }
-
-        if ($hasFirstName) {
-            return $this->migrateFromSingleColumn('first_name');
-        }
-
-        return $this->migrateFromSingleColumn('last_name');
-    }
-
-    private function migrateNewNameColumn(): int
-    {
-        if ($this->option('dry-run')) {
-            $this->line(__("Would create 'name' column after 'id' in users table."));
-
-            return self::SUCCESS;
-        }
-
-        Schema::table('users', function (Blueprint $table): void {
-            $table->string('name')->after('id');
-        });
-
-        $this->info(__("Column 'name' created successfully."));
-
-        return self::SUCCESS;
-    }
-
-    private function migrateFromFirstNameAndLastName(): int
-    {
-        $users = DB::table('users')
-            ->whereNotNull('first_name')
-            ->orWhereNotNull('last_name')
-            ->get(['id', 'first_name', 'last_name', 'name']);
-
-        if ($users->isEmpty()) {
-            $this->info(__('No users to migrate.'));
-
-            return self::SUCCESS;
-        }
-
-        $count = 0;
-
-        foreach ($users as $user) {
-            $firstName = trim($user->first_name ?? '');
-            $lastName = trim($user->last_name ?? '');
-            $newName = trim("$firstName $lastName");
-
-            if (empty($newName)) {
-                continue;
-            }
-
-            if (! empty($user->name) && $user->name !== $newName) {
-                $this->line(__("User :id already has name ':name', would become ':new'", [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'new' => $newName,
-                ]));
-            }
-
-            if ($this->option('dry-run')) {
-                $this->line(__("Would migrate user :id: ':first' + ':last' -> ':name'", [
-                    'id' => $user->id,
-                    'first' => $firstName,
-                    'last' => $lastName,
-                    'name' => $newName,
-                ]));
-            } else {
-                DB::table('users')
-                    ->where('id', $user->id)
-                    ->update(['name' => $newName]);
-            }
-
-            $count++;
-        }
-
-        if ($this->option('dry-run')) {
-            $this->info(__(':count users would be migrated.', ['count' => $count]));
+            $result = $this->migrateUsers(
+                fn () => $this->getUsersWithBothColumns(),
+                fn ($user) => $this->extractNameFromBothColumns($user),
+                "Would migrate user :id: ':first' + ':last' -> ':name'"
+            );
         } else {
-            $this->info(__(':count users migrated successfully.', ['count' => $count]));
+            $column = $hasFirstName ? 'first_name' : 'last_name';
+
+            $result = $this->migrateUsers(
+                fn () => $this->getUsersWithSingleColumn($column),
+                fn ($user) => trim($user->$column),
+                "Would migrate user :id: $column ':value' -> ':name'"
+            );
         }
 
-        return self::SUCCESS;
+        if ($result === self::SUCCESS) {
+            $this->dropOldColumns($hasFirstName, $hasLastName);
+        }
+
+        return $result;
     }
 
-    private function migrateFromSingleColumn(string $column): int
+    private function getUsersWithBothColumns(): Collection
     {
-        $users = DB::table('users')
+        return DB::table('users')
+            ->where(function ($query) {
+                $query->whereNotNull('first_name')
+                    ->where('first_name', '!=', '');
+            })
+            ->orWhere(function ($query) {
+                $query->whereNotNull('last_name')
+                    ->where('last_name', '!=', '');
+            })
+            ->get(['id', 'first_name', 'last_name', 'name']);
+    }
+
+    private function getUsersWithSingleColumn(string $column): Collection
+    {
+        return DB::table('users')
             ->whereNotNull($column)
             ->where($column, '!=', '')
             ->get(['id', $column, 'name']);
+    }
+
+    private function extractNameFromBothColumns(object $user): string
+    {
+        $firstName = trim($user->first_name ?? '');
+        $lastName = trim($user->last_name ?? '');
+
+        return trim("$firstName $lastName");
+    }
+
+    private function migrateUsers(callable $queryBuilder, callable $nameExtractor, string $logFormat): int
+    {
+        $users = $queryBuilder();
 
         if ($users->isEmpty()) {
             $this->info(__('No users to migrate.'));
@@ -149,36 +97,105 @@ class MigrateUserNamesCommand extends Command
             return self::SUCCESS;
         }
 
+        $count = $this->processUsers($users, $nameExtractor, $logFormat);
+
+        $this->outputMigrationResult($count);
+
+        return self::SUCCESS;
+    }
+
+    private function processUsers(Collection $users, callable $nameExtractor, string $logFormat): int
+    {
         $count = 0;
+        $isDryRun = $this->option('dry-run');
 
-        foreach ($users as $user) {
-            $newName = trim($user->$column);
+        DB::transaction(function () use ($users, $nameExtractor, $logFormat, &$count, $isDryRun) {
+            foreach ($users as $user) {
+                $newName = $nameExtractor($user);
 
-            if (empty($newName)) {
-                continue;
+                if (empty($newName)) {
+                    continue;
+                }
+
+                $this->warnIfNameConflict($user, $newName);
+
+                if ($isDryRun) {
+                    $this->logDryRunMigration($user, $newName, $logFormat);
+                } else {
+                    DB::table('users')
+                        ->where('id', $user->id)
+                        ->update(['name' => $newName]);
+                }
+
+                $count++;
             }
+        });
 
-            if ($this->option('dry-run')) {
-                $this->line(__("Would migrate user :id: ':column' -> ':name'", [
-                    'id' => $user->id,
-                    'column' => $newName,
-                    'name' => $newName,
-                ]));
-            } else {
-                DB::table('users')
-                    ->where('id', $user->id)
-                    ->update(['name' => $newName]);
-            }
+        return $count;
+    }
 
-            $count++;
+    private function warnIfNameConflict(object $user, string $newName): void
+    {
+        if (! empty($user->name) && $user->name !== $newName) {
+            $this->line(__("User :id already has name ':name', would become ':new'", [
+                'id' => $user->id,
+                'name' => $user->name,
+                'new' => $newName,
+            ]));
+        }
+    }
+
+    private function logDryRunMigration(object $user, string $newName, string $logFormat): void
+    {
+        $params = [
+            'id' => $user->id,
+            'name' => $newName,
+            'value' => $newName,
+        ];
+
+        if (isset($user->first_name)) {
+            $params['first'] = trim($user->first_name ?? '');
         }
 
+        if (isset($user->last_name)) {
+            $params['last'] = trim($user->last_name ?? '');
+        }
+
+        $this->line(__($logFormat, $params));
+    }
+
+    private function outputMigrationResult(int $count): void
+    {
         if ($this->option('dry-run')) {
             $this->info(__(':count users would be migrated.', ['count' => $count]));
         } else {
             $this->info(__(':count users migrated successfully.', ['count' => $count]));
         }
+    }
 
-        return self::SUCCESS;
+    private function dropOldColumns(bool $hasFirstName, bool $hasLastName): void
+    {
+        $columnsToDrop = array_filter([
+            $hasFirstName ? 'first_name' : null,
+            $hasLastName ? 'last_name' : null,
+        ]);
+
+        if (empty($columnsToDrop)) {
+            return;
+        }
+
+        $columnsLabel = implode(', ', $columnsToDrop);
+
+        if ($this->option('dry-run')) {
+            $this->line(__('Would drop columns: :columns', ['columns' => $columnsLabel]));
+
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) use ($columnsToDrop) {
+            $table->dropColumn($columnsToDrop);
+        });
+
+        $this->info(__('Columns dropped: :columns', ['columns' => $columnsLabel]));
     }
 }

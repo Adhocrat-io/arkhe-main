@@ -15,7 +15,7 @@ class MigrateUserNamesCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'arkhe:migrate-user-names
+    protected $signature = 'arkhe:main:migrate-user-names
                             {--dry-run : Show what would be migrated without making changes}';
 
     /**

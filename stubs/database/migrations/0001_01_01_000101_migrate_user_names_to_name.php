@@ -19,6 +19,13 @@ return new class extends Migration
             return;
         }
 
+        // Create the name column if it doesn't exist
+        if (! Schema::hasColumn('users', 'name')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('name')->after('id');
+            });
+        }
+
         // Migrate data: concatenate first_name and last_name into name
         if ($hasFirstName && $hasLastName) {
             DB::table('users')
@@ -64,9 +71,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        $hasName = Schema::hasColumn('users', 'name');
         $hasFirstName = Schema::hasColumn('users', 'first_name');
         $hasLastName = Schema::hasColumn('users', 'last_name');
 
+        // Recreate first_name and last_name columns
         if (! $hasFirstName || ! $hasLastName) {
             Schema::table('users', function (Blueprint $table) use ($hasFirstName, $hasLastName) {
                 if (! $hasFirstName) {
@@ -75,6 +84,13 @@ return new class extends Migration
                 if (! $hasLastName) {
                     $table->string('last_name')->nullable()->after('first_name');
                 }
+            });
+        }
+
+        // Drop name column if it was created by this migration
+        if ($hasName) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('name');
             });
         }
     }

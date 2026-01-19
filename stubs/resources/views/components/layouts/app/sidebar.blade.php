@@ -17,9 +17,7 @@
                 </flux:navlist.group>
             </flux:navlist>
 
-            @hasSection('arkheBlogSidebar')
-                @arkheBlogSidebar
-            @endif
+            @stack('sidebar-modules')
 
             @can(['manage-users'])
                 <flux:navlist.group :heading="__('Users')" class="grid" expandable :expanded="request()->routeIs('admin.users.*')">

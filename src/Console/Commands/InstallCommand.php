@@ -59,6 +59,7 @@ class InstallCommand extends Command
 
         $this->publishAndModifyFortifyConfig();
         $this->modifyWelcomeBlade();
+        $this->replaceDashboardRoutes();
 
         if ($this->shouldProceed(__('Do you want to publish the migrations?'))) {
             $this->publishMigrations();
@@ -263,6 +264,48 @@ class InstallCommand extends Command
                 File::put($welcomeBladePath, $content);
                 $this->info(__('Welcome blade file updated: dashboard route set to /administration/dashboard.'));
             }
+        }
+    }
+
+    private function replaceDashboardRoutes(): void
+    {
+        $viewsPath = resource_path('views');
+
+        if (! File::isDirectory($viewsPath)) {
+            return;
+        }
+
+        $patterns = [
+            "route('dashboard')" => "route('admin.dashboard')",
+            'route("dashboard")' => 'route("admin.dashboard")',
+            "routeIs('dashboard')" => "routeIs('admin.dashboard')",
+            'routeIs("dashboard")' => 'routeIs("admin.dashboard")',
+        ];
+
+        $files = File::allFiles($viewsPath);
+        $modifiedCount = 0;
+
+        foreach ($files as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $content = File::get($file->getPathname());
+            $originalContent = $content;
+
+            foreach ($patterns as $search => $replace) {
+                $content = str_replace($search, $replace, $content);
+            }
+
+            if ($content !== $originalContent) {
+                File::put($file->getPathname(), $content);
+                $modifiedCount++;
+                $this->line(__('  Updated: :file', ['file' => $file->getRelativePathname()]));
+            }
+        }
+
+        if ($modifiedCount > 0) {
+            $this->info(__(':count Blade file(s) updated: dashboard routes replaced with admin.dashboard.', ['count' => $modifiedCount]));
         }
     }
 }

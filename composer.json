@@ -29,7 +29,7 @@
         "spatie/laravel-login-link": "^1.6",
         "spatie/laravel-permission": "^6.21",
         "whitecube/laravel-cookie-consent": "^1.3",
-        "livewire/livewire": "^3.6"
+        "livewire/livewire": "^3.6 || ^4.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

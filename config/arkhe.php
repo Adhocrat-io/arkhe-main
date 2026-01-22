@@ -7,6 +7,7 @@ use Arkhe\Main\Enums\Users\UserRoleEnum;
 return [
     'admin' => [
         'prefix' => env('ARKHE_ADMIN_PREFIX', 'administration'),
+        'layout' => env('ARKHE_ADMIN_LAYOUT', 'components.layouts.app'),
         'roles' => [ // Roles allowed to access the administration
             UserRoleEnum::ROOT->value,
             UserRoleEnum::ADMIN->value,
@@ -48,10 +49,10 @@ return [
     ],
     'roles' => [
         UserRoleEnum::ROOT->value => [
-            '*'
+            '*',
         ],
         UserRoleEnum::ADMIN->value => [
-            '*'
+            '*',
         ],
         UserRoleEnum::AUTHOR->value => [
             'arkhe.permissions.posts.*',
@@ -68,5 +69,5 @@ return [
         UserRoleEnum::GUEST->value => [
             'arkhe.permissions.settings.*',
         ],
-    ]
+    ],
 ];

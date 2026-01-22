@@ -11,17 +11,15 @@ use Livewire\Livewire;
 describe('UserEditForm', function () {
     describe('setUser', function () {
         it('populates form with user data', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
-            $user = User::factory()->create([
+            $user = User::factory()->contributor()->create([
                 'name' => 'testuser',
                 'email' => 'test@example.com',
                 'civility' => 'M.',
                 'profession' => 'Developer',
                 'date_of_birth' => '1990-05-15',
             ]);
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
             $component = Livewire::actingAs($admin)
                 ->test(\Arkhe\Main\Livewire\Admin\Users\UserEdit::class, ['user' => $user]);
@@ -34,11 +32,8 @@ describe('UserEditForm', function () {
         });
 
         it('loads roles relationship if not loaded', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $user = User::factory()->create();
-            $user->assignRole(UserRoleEnum::AUTHOR->value);
+            $admin = User::factory()->root()->create();
+            $user = User::factory()->author()->create();
 
             // Get fresh user without loaded relationships
             $freshUser = User::find($user->id);
@@ -52,8 +47,7 @@ describe('UserEditForm', function () {
 
     describe('rules', function () {
         it('requires password for new users', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -65,11 +59,8 @@ describe('UserEditForm', function () {
         });
 
         it('does not require password for existing users', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $user = User::factory()->create();
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
+            $admin = User::factory()->root()->create();
+            $user = User::factory()->contributor()->create();
 
             Livewire::actingAs($admin)
                 ->test(\Arkhe\Main\Livewire\Admin\Users\UserEdit::class, ['user' => $user])
@@ -79,8 +70,7 @@ describe('UserEditForm', function () {
         });
 
         it('validates email format', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -90,8 +80,7 @@ describe('UserEditForm', function () {
         });
 
         it('validates password strength', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             // Too short
             Livewire::actingAs($admin)
@@ -117,8 +106,7 @@ describe('UserEditForm', function () {
         });
 
         it('validates password confirmation', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -134,8 +122,7 @@ describe('UserEditForm', function () {
 
     describe('toUserDtoArray', function () {
         it('converts form data to DTO array', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             $component = Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -160,8 +147,7 @@ describe('UserEditForm', function () {
         });
 
         it('handles null date_of_birth', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             $component = Livewire::actingAs($admin)
                 ->test(UserCreate::class)

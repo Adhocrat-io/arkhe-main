@@ -13,16 +13,14 @@ use Livewire\Livewire;
 describe('UserEdit', function () {
     describe('mount', function () {
         it('loads user data into form', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
-            $user = User::factory()->create([
+            $user = User::factory()->contributor()->create([
                 'name' => 'testuser',
                 'email' => 'test@example.com',
                 'civility' => 'M.',
                 'profession' => 'Developer',
             ]);
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
             $component = Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $user]);
@@ -37,11 +35,8 @@ describe('UserEdit', function () {
 
     describe('render', function () {
         it('renders the component', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $user = User::factory()->create();
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
+            $admin = User::factory()->root()->create();
+            $user = User::factory()->contributor()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $user])
@@ -51,11 +46,8 @@ describe('UserEdit', function () {
 
     describe('canEditUser', function () {
         it('allows root to edit any user', function () {
-            $root = User::factory()->create();
-            $root->assignRole(UserRoleEnum::ROOT->value);
-
-            $targetUser = User::factory()->create();
-            $targetUser->assignRole(UserRoleEnum::ADMIN->value);
+            $root = User::factory()->root()->create();
+            $targetUser = User::factory()->admin()->create();
 
             $component = Livewire::actingAs($root)
                 ->test(UserEdit::class, ['user' => $targetUser]);
@@ -64,11 +56,8 @@ describe('UserEdit', function () {
         });
 
         it('allows admin to edit non-root users', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ADMIN->value);
-
-            $targetUser = User::factory()->create();
-            $targetUser->assignRole(UserRoleEnum::CONTRIBUTOR->value);
+            $admin = User::factory()->admin()->create();
+            $targetUser = User::factory()->contributor()->create();
 
             $component = Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $targetUser]);
@@ -77,11 +66,8 @@ describe('UserEdit', function () {
         });
 
         it('denies admin from editing root users', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ADMIN->value);
-
-            $root = User::factory()->create();
-            $root->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->admin()->create();
+            $root = User::factory()->root()->create();
 
             $component = Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $root]);
@@ -90,11 +76,8 @@ describe('UserEdit', function () {
         });
 
         it('denies non-admin users from editing', function () {
-            $contributor = User::factory()->create();
-            $contributor->assignRole(UserRoleEnum::CONTRIBUTOR->value);
-
-            $targetUser = User::factory()->create();
-            $targetUser->assignRole(UserRoleEnum::GUEST->value);
+            $contributor = User::factory()->contributor()->create();
+            $targetUser = User::factory()->guest()->create();
 
             $component = Livewire::actingAs($contributor)
                 ->test(UserEdit::class, ['user' => $targetUser]);
@@ -105,11 +88,8 @@ describe('UserEdit', function () {
 
     describe('canDeleteUser', function () {
         it('allows root to delete other users', function () {
-            $root = User::factory()->create();
-            $root->assignRole(UserRoleEnum::ROOT->value);
-
-            $targetUser = User::factory()->create();
-            $targetUser->assignRole(UserRoleEnum::CONTRIBUTOR->value);
+            $root = User::factory()->root()->create();
+            $targetUser = User::factory()->contributor()->create();
 
             $component = Livewire::actingAs($root)
                 ->test(UserEdit::class, ['user' => $targetUser]);
@@ -118,8 +98,7 @@ describe('UserEdit', function () {
         });
 
         it('denies users from deleting themselves', function () {
-            $root = User::factory()->create();
-            $root->assignRole(UserRoleEnum::ROOT->value);
+            $root = User::factory()->root()->create();
 
             $component = Livewire::actingAs($root)
                 ->test(UserEdit::class, ['user' => $root]);
@@ -128,11 +107,8 @@ describe('UserEdit', function () {
         });
 
         it('denies admin from deleting root users', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ADMIN->value);
-
-            $root = User::factory()->create();
-            $root->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->admin()->create();
+            $root = User::factory()->root()->create();
 
             $component = Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $root]);
@@ -145,14 +121,11 @@ describe('UserEdit', function () {
         it('updates user with valid data', function () {
             Event::fake([UserUpdated::class]);
 
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $user = User::factory()->create([
+            $admin = User::factory()->root()->create();
+            $user = User::factory()->contributor()->create([
                 'name' => 'oldname',
                 'email' => 'old@gmail.com',
             ]);
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
 
             Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $user])
@@ -172,11 +145,8 @@ describe('UserEdit', function () {
         });
 
         it('does not update when not authorized to edit', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ADMIN->value);
-
-            $root = User::factory()->create(['name' => 'rootuser']);
-            $root->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->admin()->create();
+            $root = User::factory()->root()->create(['name' => 'rootuser']);
 
             Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $root])
@@ -189,11 +159,8 @@ describe('UserEdit', function () {
         });
 
         it('fails validation with invalid data', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $user = User::factory()->create();
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
+            $admin = User::factory()->root()->create();
+            $user = User::factory()->contributor()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $user])
@@ -204,11 +171,8 @@ describe('UserEdit', function () {
         });
 
         it('updates password when provided', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $user = User::factory()->create();
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
+            $admin = User::factory()->root()->create();
+            $user = User::factory()->contributor()->create();
             $oldPasswordHash = $user->password;
 
             Livewire::actingAs($admin)
@@ -224,11 +188,8 @@ describe('UserEdit', function () {
         });
 
         it('does not update password when not provided', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $user = User::factory()->create();
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
+            $admin = User::factory()->root()->create();
+            $user = User::factory()->contributor()->create();
             $oldPasswordHash = $user->password;
 
             Livewire::actingAs($admin)
@@ -247,11 +208,8 @@ describe('UserEdit', function () {
         it('deletes user when authorized', function () {
             Event::fake([UserDeleted::class]);
 
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $user = User::factory()->create();
-            $user->assignRole(UserRoleEnum::CONTRIBUTOR->value);
+            $admin = User::factory()->root()->create();
+            $user = User::factory()->contributor()->create();
             $userId = $user->id;
 
             Livewire::actingAs($admin)
@@ -265,11 +223,8 @@ describe('UserEdit', function () {
         });
 
         it('shows error when not authorized to delete', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ADMIN->value);
-
-            $root = User::factory()->create();
-            $root->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->admin()->create();
+            $root = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserEdit::class, ['user' => $root])

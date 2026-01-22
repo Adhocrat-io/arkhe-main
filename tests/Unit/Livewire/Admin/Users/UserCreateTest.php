@@ -12,8 +12,7 @@ use Livewire\Livewire;
 describe('UserCreate', function () {
     describe('render', function () {
         it('renders the component', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -23,8 +22,7 @@ describe('UserCreate', function () {
 
     describe('getRoles', function () {
         it('returns all roles', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             $component = Livewire::actingAs($admin)->test(UserCreate::class);
 
@@ -38,8 +36,7 @@ describe('UserCreate', function () {
         it('creates a new user with valid data', function () {
             Event::fake([UserCreated::class]);
 
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -56,8 +53,7 @@ describe('UserCreate', function () {
         });
 
         it('fails validation with missing required fields', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -68,8 +64,7 @@ describe('UserCreate', function () {
         });
 
         it('fails validation with invalid email', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -83,8 +78,7 @@ describe('UserCreate', function () {
         });
 
         it('fails validation with weak password', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -98,8 +92,7 @@ describe('UserCreate', function () {
         });
 
         it('fails validation with mismatched password confirmation', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -113,10 +106,8 @@ describe('UserCreate', function () {
         });
 
         it('fails validation with duplicate email', function () {
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
-
-            $existingUser = User::factory()->create(['email' => 'existing@example.com']);
+            $admin = User::factory()->root()->create();
+            User::factory()->create(['email' => 'existing@example.com']);
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)
@@ -132,8 +123,7 @@ describe('UserCreate', function () {
         it('creates user with optional fields', function () {
             Event::fake([UserCreated::class]);
 
-            $admin = User::factory()->create();
-            $admin->assignRole(UserRoleEnum::ROOT->value);
+            $admin = User::factory()->root()->create();
 
             Livewire::actingAs($admin)
                 ->test(UserCreate::class)

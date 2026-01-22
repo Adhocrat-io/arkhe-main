@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use Arkhe\Main\Enums\Users\UserRoleEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -39,6 +40,19 @@ class UserFactory extends Factory
     }
 
     /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function ($user) {
+            // Assign default role if user has no roles
+            if ($user->roles()->count() === 0) {
+                $user->assignRole(UserRoleEnum::SUBSCRIBER->value);
+            }
+        });
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static
@@ -58,5 +72,71 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
         ]);
+    }
+
+    /**
+     * Assign a specific role to the user after creation.
+     */
+    public function withRole(UserRoleEnum $role): static
+    {
+        return $this->afterCreating(function ($user) use ($role) {
+            $user->syncRoles([$role->value]);
+        });
+    }
+
+    /**
+     * Create a root user.
+     */
+    public function root(): static
+    {
+        return $this->withRole(UserRoleEnum::ROOT);
+    }
+
+    /**
+     * Create an admin user.
+     */
+    public function admin(): static
+    {
+        return $this->withRole(UserRoleEnum::ADMIN);
+    }
+
+    /**
+     * Create an editorial user.
+     */
+    public function editorial(): static
+    {
+        return $this->withRole(UserRoleEnum::EDITORIAL);
+    }
+
+    /**
+     * Create an author user.
+     */
+    public function author(): static
+    {
+        return $this->withRole(UserRoleEnum::AUTHOR);
+    }
+
+    /**
+     * Create a contributor user.
+     */
+    public function contributor(): static
+    {
+        return $this->withRole(UserRoleEnum::CONTRIBUTOR);
+    }
+
+    /**
+     * Create a subscriber user.
+     */
+    public function subscriber(): static
+    {
+        return $this->withRole(UserRoleEnum::SUBSCRIBER);
+    }
+
+    /**
+     * Create a guest user.
+     */
+    public function guest(): static
+    {
+        return $this->withRole(UserRoleEnum::GUEST);
     }
 }

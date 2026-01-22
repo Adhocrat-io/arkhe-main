@@ -13,19 +13,19 @@ return new class extends Migration
     {
         if (! Schema::hasColumn('users', 'date_of_birth')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->date('date_of_birth')->after('id')->nullable();
+                $table->date('date_of_birth')->nullable();
             });
         }
 
         if (! Schema::hasColumn('users', 'civility')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->longText('civility')->nullable()->after('date_of_birth');
+                $table->longText('civility')->nullable();
             });
         }
 
         if (! Schema::hasColumn('users', 'profession')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->longText('profession')->nullable()->after('civility');
+                $table->longText('profession')->nullable();
             });
         }
     }

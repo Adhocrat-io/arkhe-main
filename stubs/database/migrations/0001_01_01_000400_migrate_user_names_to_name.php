@@ -9,24 +9,39 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * Handles three cases:
+     * - first_name + last_name → name
+     * - username → name
+     * - Both present (first_name/last_name takes priority)
      */
     public function up(): void
     {
         $hasFirstName = Schema::hasColumn('users', 'first_name');
         $hasLastName = Schema::hasColumn('users', 'last_name');
+        $hasUsername = Schema::hasColumn('users', 'username');
+        $hasName = Schema::hasColumn('users', 'name');
 
-        if (! $hasFirstName && ! $hasLastName) {
+        // Nothing to migrate if none of the source columns exist
+        if (! $hasFirstName && ! $hasLastName && ! $hasUsername) {
+            // If name column doesn't exist either, create it
+            if (! $hasName) {
+                Schema::table('users', function (Blueprint $table) {
+                    $table->string('name')->after('id');
+                });
+            }
+
             return;
         }
 
         // Create the name column if it doesn't exist
-        if (! Schema::hasColumn('users', 'name')) {
+        if (! $hasName) {
             Schema::table('users', function (Blueprint $table) {
                 $table->string('name')->after('id');
             });
         }
 
-        // Migrate data: concatenate first_name and last_name into name
+        // Migrate data: priority to first_name/last_name, fallback to username
         if ($hasFirstName && $hasLastName) {
             DB::table('users')
                 ->whereNotNull('first_name')
@@ -48,20 +63,28 @@ return new class extends Migration
                 ->whereNotNull('first_name')
                 ->where('first_name', '!=', '')
                 ->update(['name' => DB::raw('first_name')]);
-        } else {
+        } elseif ($hasLastName) {
             DB::table('users')
                 ->whereNotNull('last_name')
                 ->where('last_name', '!=', '')
                 ->update(['name' => DB::raw('last_name')]);
+        } elseif ($hasUsername) {
+            DB::table('users')
+                ->whereNotNull('username')
+                ->where('username', '!=', '')
+                ->update(['name' => DB::raw('username')]);
         }
 
         // Drop the old columns
-        Schema::table('users', function (Blueprint $table) use ($hasFirstName, $hasLastName) {
+        Schema::table('users', function (Blueprint $table) use ($hasFirstName, $hasLastName, $hasUsername) {
             if ($hasFirstName) {
                 $table->dropColumn('first_name');
             }
             if ($hasLastName) {
                 $table->dropColumn('last_name');
+            }
+            if ($hasUsername) {
+                $table->dropColumn('username');
             }
         });
     }
@@ -72,22 +95,22 @@ return new class extends Migration
     public function down(): void
     {
         $hasName = Schema::hasColumn('users', 'name');
-        $hasFirstName = Schema::hasColumn('users', 'first_name');
-        $hasLastName = Schema::hasColumn('users', 'last_name');
 
-        // Recreate first_name and last_name columns
-        if (! $hasFirstName || ! $hasLastName) {
-            Schema::table('users', function (Blueprint $table) use ($hasFirstName, $hasLastName) {
-                if (! $hasFirstName) {
-                    $table->string('first_name')->nullable()->after('id');
-                }
-                if (! $hasLastName) {
-                    $table->string('last_name')->nullable()->after('first_name');
-                }
+        // We can only restore to first_name/last_name since we don't know
+        // the original structure. Username users will get first_name/last_name.
+        if (! Schema::hasColumn('users', 'first_name')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('first_name')->nullable()->after('id');
             });
         }
 
-        // Drop name column if it was created by this migration
+        if (! Schema::hasColumn('users', 'last_name')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('last_name')->nullable()->after('first_name');
+            });
+        }
+
+        // Drop name column if it exists
         if ($hasName) {
             Schema::table('users', function (Blueprint $table) {
                 $table->dropColumn('name');

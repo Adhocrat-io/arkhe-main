@@ -13,13 +13,15 @@ class RoleDto
         public readonly array $permissions = [],
     ) {}
 
+    /**
+     * Convert to array for Role model (excludes permissions as they're synced separately).
+     */
     public function toArray(): array
     {
         return [
             'name' => $this->name,
             'label' => $this->label,
             'guard_name' => $this->guard_name,
-            'permissions' => $this->permissions,
         ];
     }
 }

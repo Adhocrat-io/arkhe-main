@@ -26,29 +26,37 @@ class RoleRepository
 
     public function create(RoleDto $roleDto): Role
     {
-        return DB::transaction(function () use ($roleDto) {
+        $createdBy = Auth::user();
+
+        $role = DB::transaction(function () use ($roleDto) {
             $role = Role::create($roleDto->toArray());
 
             if (! empty($roleDto->permissions)) {
                 $role->syncPermissions($roleDto->permissions);
             }
 
-            RoleCreated::dispatch($role, Auth::user());
-
             return $role;
         });
+
+        RoleCreated::dispatch($role, $createdBy);
+
+        return $role;
     }
 
     public function update(Role $role, RoleDto $roleDto): Role
     {
-        return DB::transaction(function () use ($role, $roleDto) {
+        $updatedBy = Auth::user();
+
+        $role = DB::transaction(function () use ($role, $roleDto) {
             $role->update($roleDto->toArray());
             $role->syncPermissions($roleDto->permissions);
 
-            RoleUpdated::dispatch($role, Auth::user());
-
             return $role;
         });
+
+        RoleUpdated::dispatch($role, $updatedBy);
+
+        return $role;
     }
 
     public function getRoles(): Builder
@@ -100,12 +108,13 @@ class RoleRepository
             throw new \RuntimeException(__('Cannot delete protected system role: :role', ['role' => $role->name]));
         }
 
+        $deletedBy = Auth::user();
+
         DB::transaction(function () use ($role) {
-            $deletedBy = Auth::user();
             $role->syncPermissions([]);
             $role->delete();
-
-            RoleDeleted::dispatch($role, $deletedBy);
         });
+
+        RoleDeleted::dispatch($role, $deletedBy);
     }
 }

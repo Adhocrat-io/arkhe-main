@@ -22,22 +22,28 @@ class UserRepository
 
     public function create(UserDto $userDto): User
     {
-        return DB::transaction(function () use ($userDto) {
+        $createdBy = Auth::user();
+
+        $user = DB::transaction(function () use ($userDto) {
             $user = User::create($userDto->toArray());
 
             if ($userDto->role) {
                 $user->assignRole($userDto->role);
             }
 
-            UserCreated::dispatch($user, Auth::user());
-
             return $user;
         });
+
+        UserCreated::dispatch($user, $createdBy);
+
+        return $user;
     }
 
     public function update(User $user, UserDto $userDto): User
     {
-        return DB::transaction(function () use ($user, $userDto) {
+        $updatedBy = Auth::user();
+
+        $user = DB::transaction(function () use ($user, $userDto) {
             $data = $userDto->toArray();
 
             // Don't update password if empty
@@ -52,10 +58,12 @@ class UserRepository
                 $user->syncRoles([$userDto->role]);
             }
 
-            UserUpdated::dispatch($user, Auth::user());
-
             return $user->refresh();
         });
+
+        UserUpdated::dispatch($user, $updatedBy);
+
+        return $user;
     }
 
     public function find(int $userId): ?User
@@ -75,12 +83,13 @@ class UserRepository
 
     public function delete(User $user): void
     {
+        $deletedBy = Auth::user();
+
         DB::transaction(function () use ($user) {
-            $deletedBy = Auth::user();
             $user->syncRoles([]);
             $user->delete();
-
-            UserDeleted::dispatch($user, $deletedBy);
         });
+
+        UserDeleted::dispatch($user, $deletedBy);
     }
 }

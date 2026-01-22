@@ -59,7 +59,7 @@ class UserEditForm extends Form
             'date_of_birth' => ['nullable', 'date'],
             'civility' => ['nullable', 'string'],
             'profession' => ['nullable', 'string'],
-            'role' => ['required', 'string'],
+            'role' => ['required', 'string', 'exists:roles,name'],
         ];
 
         if (! $this->user) {

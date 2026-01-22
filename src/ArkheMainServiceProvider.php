@@ -30,6 +30,7 @@ class ArkheMainServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+        $this->registerMiddlewareAliases();
         $this->configureFortifyRedirects();
 
         $this->publishes(
@@ -52,17 +53,12 @@ class ArkheMainServiceProvider extends ServiceProvider
 
         $this->publishes(
             [
-                __DIR__.'/../stubs/bootstrap/app.php' => base_path('bootstrap/app.php'),
-                __DIR__.'/../stubs/routes' => base_path('routes'),
-
-                __DIR__.'/../stubs/app/Actions/' => app_path('Actions/'),
-                __DIR__.'/../stubs/Models/' => app_path('Models/'),
-                __DIR__.'/../stubs/app/Http/Controllers/' => app_path('Http/Controllers/'),
-                __DIR__.'/../stubs/app/Livewire/' => app_path('Livewire/'),
-                __DIR__.'/../stubs/app/Providers/' => app_path('Providers/'),
+                __DIR__.'/../stubs/routes/web.php' => base_path('routes/web.php'),
+                __DIR__.'/../stubs/routes/admin.php' => base_path('routes/admin.php'),
 
                 __DIR__.'/../stubs/resources/views/livewire/' => resource_path('views/livewire/'),
                 __DIR__.'/../stubs/resources/views/components/' => resource_path('views/components/'),
+                __DIR__.'/../stubs/resources/views/layouts/' => resource_path('views/layouts/'),
 
                 __DIR__.'/../stubs/tests/' => base_path('tests/'),
             ],
@@ -98,6 +94,17 @@ class ArkheMainServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
+    }
+
+    private function registerMiddlewareAliases(): void
+    {
+        $router = $this->app['router'];
+
+        if (class_exists(\Spatie\Permission\Middleware\RoleMiddleware::class)) {
+            $router->aliasMiddleware('role', \Spatie\Permission\Middleware\RoleMiddleware::class);
+            $router->aliasMiddleware('permission', \Spatie\Permission\Middleware\PermissionMiddleware::class);
+            $router->aliasMiddleware('role_or_permission', \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class);
+        }
     }
 
     private function configureFortifyRedirects(): void

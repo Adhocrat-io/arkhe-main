@@ -82,6 +82,6 @@ class RolesList extends Component
     {
         return view('arkhe-main::livewire.admin.users.roles.roles-list', [
             'roles' => $this->getRoles(),
-        ]);
+        ])->layout(config('arkhe.admin.layout', 'components.layouts.app'));
     }
 }

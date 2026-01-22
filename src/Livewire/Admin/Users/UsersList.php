@@ -156,6 +156,6 @@ class UsersList extends Component
         return view('arkhe-main::livewire.admin.users.users-list', [
             'users' => $this->getUsers(),
             'roles' => $this->getAllRoles(),
-        ]);
+        ])->layout(config('arkhe.admin.layout', 'components.layouts.app'));
     }
 }

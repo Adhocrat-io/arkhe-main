@@ -9,6 +9,7 @@ use Arkhe\Main\Livewire\Forms\Admin\Users\RoleEditForm;
 use Arkhe\Main\Repositories\RoleRepository;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -29,7 +30,7 @@ class RoleEdit extends Component
     {
         $this->allPermissions = Permission::all();
 
-        if ($role->exists) {
+        if ($role && $role->exists) {
             $this->role = $role->load('permissions');
             $this->roleEditForm->setRole($role);
         }
@@ -37,6 +38,20 @@ class RoleEdit extends Component
 
     public function save(): RedirectResponse|Redirector|null
     {
+        if ($this->role && $this->role->exists) {
+            if (Gate::denies('update', $this->role)) {
+                session()->flash('error', __('You are not authorized to update this role.'));
+
+                return redirect()->route('admin.users.roles.index');
+            }
+        } else {
+            if (Gate::denies('create', Role::class)) {
+                session()->flash('error', __('You are not authorized to create roles.'));
+
+                return redirect()->route('admin.users.roles.index');
+            }
+        }
+
         try {
             $this->roleEditForm->validate();
         } catch (ValidationException $e) {
@@ -101,13 +116,13 @@ class RoleEdit extends Component
             return redirect()->route('admin.users.roles.index');
         }
 
-        $roleRepository = new RoleRepository;
+        if (Gate::denies('delete', $this->role)) {
+            session()->flash('error', __('You are not authorized to delete this role.'));
 
-        if ($roleRepository->isProtectedRole($this->role)) {
-            session()->flash('error', __('Cannot delete protected system role.'));
-
-            return null;
+            return redirect()->route('admin.users.roles.index');
         }
+
+        $roleRepository = new RoleRepository;
 
         try {
             $roleRepository->delete($this->role);
@@ -129,6 +144,6 @@ class RoleEdit extends Component
     {
         return view('arkhe-main::livewire.admin.users.roles.role-edit', [
             'role' => $this->role,
-        ]);
+        ])->layout(config('arkhe.admin.layout', 'components.layouts.app'));
     }
 }

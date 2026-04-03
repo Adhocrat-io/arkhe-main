@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Arkhe\Main\Livewire\Admin\Users;
 
 use App\Models\User;
+use Livewire\Component;
+use Illuminate\View\View;
+use Livewire\Attributes\Layout;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
 use Arkhe\Main\Enums\Users\UserRoleEnum;
 use Arkhe\Main\Repositories\RoleRepository;
 use Arkhe\Main\Repositories\UserRepository;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
-use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
 
 class UsersList extends Component
@@ -156,6 +157,6 @@ class UsersList extends Component
         return view('arkhe-main::livewire.admin.users.users-list', [
             'users' => $this->getUsers(),
             'roles' => $this->getAllRoles(),
-        ])->layout(config('arkhe.admin.layout', 'components.layouts.app'));
+        ]);
     }
 }

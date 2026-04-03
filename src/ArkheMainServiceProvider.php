@@ -15,6 +15,7 @@ use Arkhe\Main\Livewire\Admin\Users\UsersList;
 use Arkhe\Main\Policies\RolePolicy;
 use Arkhe\Main\Policies\UserPolicy;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -58,7 +59,6 @@ class ArkheMainServiceProvider extends ServiceProvider
 
                 __DIR__.'/../stubs/resources/views/livewire/' => resource_path('views/livewire/'),
                 __DIR__.'/../stubs/resources/views/components/' => resource_path('views/components/'),
-                __DIR__.'/../stubs/resources/views/layouts/' => resource_path('views/layouts/'),
 
                 __DIR__.'/../stubs/tests/' => base_path('tests/'),
             ],
@@ -68,6 +68,16 @@ class ArkheMainServiceProvider extends ServiceProvider
         $this->loadViewsFrom(
             __DIR__.'/../resources/views',
             'arkhe-main'
+        );
+
+        Blade::anonymousComponentNamespace(
+            __DIR__.'/../resources/views/layouts',
+            'layouts'
+        );
+
+        $this->publishes(
+            [__DIR__.'/../resources/views/layouts/' => resource_path('views/vendor/layouts/')],
+            'arkhe-main-layouts'
         );
 
         Livewire::component('arkhe.main.livewire.admin.users.users-list', UsersList::class);

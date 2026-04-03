@@ -19,12 +19,6 @@ class TestUsersSeeder extends Seeder
     public function run(): void
     {
         // Security check: Only run in local or testing environments
-        if (App::environment('production')) {
-            $this->command->error('TestUsersSeeder cannot run in production environment!');
-
-            return;
-        }
-
         if (! App::environment(['local', 'testing'])) {
             $this->command->warn('TestUsersSeeder is intended for local/testing environments only.');
             if (! $this->command->confirm('Are you sure you want to continue?', false)) {
@@ -43,7 +37,7 @@ class TestUsersSeeder extends Seeder
         $root = User::updateOrCreate([
             'email' => 'root@arkhe.com',
         ], [
-            'name' => 'root',
+            'name' => 'Root User',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -52,7 +46,7 @@ class TestUsersSeeder extends Seeder
         $admin = User::updateOrCreate([
             'email' => 'admin@arkhe.com',
         ], [
-            'name' => 'admin',
+            'name' => 'Admin User',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -61,7 +55,7 @@ class TestUsersSeeder extends Seeder
         $editor = User::updateOrCreate([
             'email' => 'editorial@arkhe.com',
         ], [
-            'name' => 'editorial',
+            'name' => 'Editorial User',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -70,7 +64,7 @@ class TestUsersSeeder extends Seeder
         $author = User::updateOrCreate([
             'email' => 'author@arkhe.com',
         ], [
-            'name' => 'author',
+            'name' => 'Author User',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -79,7 +73,7 @@ class TestUsersSeeder extends Seeder
         $contributor = User::updateOrCreate([
             'email' => 'contributor@arkhe.com',
         ], [
-            'name' => 'contributor',
+            'name' => 'Contributor User',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -88,7 +82,7 @@ class TestUsersSeeder extends Seeder
         $subscriber = User::updateOrCreate([
             'email' => 'subscriber@arkhe.com',
         ], [
-            'name' => 'subscriber',
+            'name' => 'Subscriber User',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);
@@ -97,7 +91,7 @@ class TestUsersSeeder extends Seeder
         $guest = User::updateOrCreate([
             'email' => 'guest@arkhe.com',
         ], [
-            'name' => 'guest',
+            'name' => 'Guest User',
             'password' => $defaultPassword,
             'email_verified_at' => now(),
         ]);

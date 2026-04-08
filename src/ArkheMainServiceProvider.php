@@ -76,7 +76,7 @@ class ArkheMainServiceProvider extends ServiceProvider
         );
 
         $this->publishes(
-            [__DIR__.'/../resources/views/layouts/' => resource_path('views/vendor/layouts/')],
+            [__DIR__.'/../resources/views/layouts/' => resource_path('views/vendor/arkhe-main/layouts/')],
             'arkhe-main-layouts'
         );
 

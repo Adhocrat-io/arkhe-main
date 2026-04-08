@@ -107,6 +107,6 @@ class UserEdit extends Component
         return view('arkhe-main::livewire.admin.users.user-edit', [
             'userEditForm' => $this->userEditForm,
             'allRoles' => $this->getAllRoles(),
-        ])->layout(config('arkhe.admin.layout', 'components.layouts.app'));
+        ])->layout(config('arkhe.admin.layout', 'layouts::app'));
     }
 }

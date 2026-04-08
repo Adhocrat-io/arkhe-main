@@ -144,6 +144,6 @@ class RoleEdit extends Component
     {
         return view('arkhe-main::livewire.admin.users.roles.role-edit', [
             'role' => $this->role,
-        ])->layout(config('arkhe.admin.layout', 'components.layouts.app'));
+        ])->layout(config('arkhe.admin.layout', 'layouts::app'));
     }
 }

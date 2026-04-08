@@ -66,6 +66,6 @@ class UserCreate extends Component
     {
         return view('arkhe-main::livewire.admin.users.user-create', [
             'allRoles' => $this->getRoles(),
-        ])->layout(config('arkhe.admin.layout', 'components.layouts.app'));
+        ])->layout(config('arkhe.admin.layout', 'layouts::app'));
     }
 }

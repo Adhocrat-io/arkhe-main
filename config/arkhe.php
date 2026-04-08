@@ -7,7 +7,7 @@ use Arkhe\Main\Enums\Users\UserRoleEnum;
 return [
     'admin' => [
         'prefix' => env('ARKHE_ADMIN_PREFIX', 'administration'),
-        'layout' => env('ARKHE_ADMIN_LAYOUT', 'components.layouts.app'),
+        'layout' => env('ARKHE_ADMIN_LAYOUT', 'layouts::app'),
         'roles' => [ // Roles allowed to access the administration
             UserRoleEnum::ROOT->value,
             UserRoleEnum::ADMIN->value,

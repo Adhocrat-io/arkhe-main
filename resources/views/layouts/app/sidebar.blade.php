@@ -11,39 +11,37 @@
                 <x-app-logo />
             </a>
 
-            <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                </flux:navlist.group>
-            </flux:navlist>
+            <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:sidebar.item>
+            </flux:sidebar.group>
 
             @stack('sidebar-modules')
 
             @can(['manage-users'])
-                <flux:navlist.group :heading="__('Users')" class="grid" expandable :expanded="request()->routeIs('admin.users.*')">
-                    <flux:navlist.item icon="users" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.index')" wire:navigate>
+                <flux:sidebar.group :heading="__('Users')" class="grid" expandable :expanded="request()->routeIs('admin.users.*')">
+                    <flux:sidebar.item icon="users" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.index')" wire:navigate>
                         {{ __('Users') }}
-                    </flux:navlist.item>
+                    </flux:sidebar.item>
 
                     @can('manage-roles')
-                        <flux:navlist.item icon="wrench" :href="route('admin.users.roles.index')" :current="request()->routeIs('admin.users.roles.*')" wire:navigate>
+                        <flux:sidebar.item icon="wrench" :href="route('admin.users.roles.index')" :current="request()->routeIs('admin.users.roles.*')" wire:navigate>
                             {{ __('Roles & Permissions') }}
-                        </flux:navlist.item>
+                        </flux:sidebar.item>
                     @endcan
-                </flux:navlist.group>
+                </flux:sidebar.group>
             @endcan
 
             <flux:spacer />
 
-            <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
+            <flux:sidebar.group>
+                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
                 {{ __('Repository') }}
-                </flux:navlist.item>
+                </flux:sidebar.item>
 
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
+                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
                 {{ __('Documentation') }}
-                </flux:navlist.item>
-            </flux:navlist>
+                </flux:sidebar.item>
+            </flux:sidebar.group>
 
             <!-- Desktop User Menu -->
             <flux:dropdown class="hidden lg:block" position="bottom" align="start">

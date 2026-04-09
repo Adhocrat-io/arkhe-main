@@ -64,6 +64,7 @@ class InstallCommand extends Command
 
         $this->modifyWelcomeBlade();
         $this->replaceDashboardRoutes();
+        $this->updateFortifyHomePath();
 
         if ($this->shouldProceed(__('Do you want to publish the migrations?'))) {
             $this->publishMigrations();
@@ -282,6 +283,39 @@ class InstallCommand extends Command
 
         if ($modifiedCount > 0) {
             $this->info(__(':count Blade file(s) updated: dashboard routes replaced with admin.dashboard.', ['count' => $modifiedCount]));
+        }
+    }
+
+    /**
+     * Update Fortify's home path to point to the admin dashboard.
+     */
+    private function updateFortifyHomePath(): void
+    {
+        $fortifyConfigPath = config_path('fortify.php');
+
+        if (! File::exists($fortifyConfigPath)) {
+            return;
+        }
+
+        $content = File::get($fortifyConfigPath);
+        $adminPrefix = config('arkhe.admin.prefix', 'administration');
+
+        $patterns = [
+            "'home' => '/dashboard'" => "'home' => '/{$adminPrefix}/dashboard'",
+            '"home" => "/dashboard"' => '"home" => "/'.$adminPrefix.'/dashboard"',
+            "'home' => '/home'" => "'home' => '/{$adminPrefix}/dashboard'",
+            '"home" => "/home"' => '"home" => "/'.$adminPrefix.'/dashboard"',
+        ];
+
+        $originalContent = $content;
+
+        foreach ($patterns as $search => $replace) {
+            $content = str_replace($search, $replace, $content);
+        }
+
+        if ($content !== $originalContent) {
+            File::put($fortifyConfigPath, $content);
+            $this->info(__('Fortify home path updated to admin dashboard.'));
         }
     }
 

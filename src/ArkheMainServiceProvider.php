@@ -57,8 +57,11 @@ class ArkheMainServiceProvider extends ServiceProvider
                 __DIR__.'/../stubs/routes/web.php' => base_path('routes/web.php'),
                 __DIR__.'/../stubs/routes/admin.php' => base_path('routes/admin.php'),
 
+                __DIR__.'/../stubs/app/Livewire/' => app_path('Livewire/'),
+
                 __DIR__.'/../stubs/resources/views/livewire/' => resource_path('views/livewire/'),
                 __DIR__.'/../stubs/resources/views/components/' => resource_path('views/components/'),
+                __DIR__.'/../stubs/resources/views/partials/' => resource_path('views/partials/'),
 
                 __DIR__.'/../stubs/tests/' => base_path('tests/'),
             ],

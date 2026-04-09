@@ -108,8 +108,8 @@
                                 @endforeach
                             </td>
 
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <flux:dropdown>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-end">
+                                <flux:dropdown align="end">
                                     <flux:button icon="ellipsis-vertical"></flux:button>
 
                                     <flux:menu>

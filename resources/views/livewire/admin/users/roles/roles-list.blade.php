@@ -1,4 +1,4 @@
-<section class="w-full max-w-5xl mx-auto">
+<section class="w-full">
     {{-- If you look to others for fulfillment, you will never truly be fulfilled. --}}
     <div class="mb-8 flex flex-col gap-4 md:flex-row md:justify-between md:items-center w-full">
         <div class="">
@@ -32,7 +32,7 @@
 
     <div class="rounded-lg shadow-sm p-6 mb-6 bg-gray-50 dark:bg-zinc-800">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50 dark:bg-zinc-800">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
@@ -43,7 +43,7 @@
                             {{ __('Permission') }}
                         </th>
 
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
                             {{ __('Actions') }}
                         </th>
                     </tr>
@@ -63,8 +63,8 @@
                                 {{ Str::limit($role->permissions->pluck('name')->implode(', '), 100) }}
                             </td>
 
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <flux:dropdown>
+                            <td class="px-6 py-4 whitespace-nowrap flex justify-end">
+                                <flux:dropdown align="end">
                                     <flux:button icon="ellipsis-vertical" />
 
                                     <flux:menu>
@@ -106,7 +106,4 @@
             {{ $roles->links() }}
         </div>
     </div>
-</section>
-
-
 </section>

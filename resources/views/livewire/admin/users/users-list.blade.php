@@ -79,7 +79,7 @@
                             {{ __('Roles') }}
                         </th>
 
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
                             {{ __('Actions') }}
                         </th>
                     </tr>

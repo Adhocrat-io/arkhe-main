@@ -1,4 +1,4 @@
-<section class="w-full max-w-5xl mx-auto">
+<section class="w-full">
     {{-- The whole world belongs to you. --}}
     <div class="mb-8 flex flex-col gap-4 md:flex-row md:justify-between md:items-center w-full">
         <div class="">
@@ -63,7 +63,7 @@
 
     <div class="rounded-lg shadow-sm p-6 mb-6 bg-gray-50 dark:bg-zinc-800">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50 dark:bg-zinc-800 w-full">
                     {{-- TODO: make the columns sortable --}}
                     <tr>

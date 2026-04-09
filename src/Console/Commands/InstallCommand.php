@@ -252,6 +252,10 @@ class InstallCommand extends Command
             'route("profile.edit")' => 'route("admin.settings.profile")',
             "routeIs('profile.edit')" => "routeIs('admin.settings.profile')",
             'routeIs("profile.edit")' => 'routeIs("admin.settings.profile")',
+            "route('home')" => "route('front.home')",
+            'route("home")' => 'route("front.home")',
+            "routeIs('home')" => "routeIs('front.home')",
+            'routeIs("home")' => 'routeIs("front.home")',
         ];
 
         $files = File::allFiles($viewsPath);

@@ -34,6 +34,8 @@ abstract class TestCase extends BaseTestCase
             'prefix' => '',
         ]);
 
+        $app['config']->set('auth.providers.users.model', \App\Models\User::class);
+
         $app['config']->set('permission.table_names', [
             'roles' => 'roles',
             'permissions' => 'permissions',

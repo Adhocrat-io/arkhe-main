@@ -6,7 +6,9 @@ use App\Models\User;
 use Arkhe\Main\Enums\Users\UserRoleEnum;
 use Arkhe\Main\Events\UserCreated;
 use Arkhe\Main\Livewire\Admin\Users\UserCreate;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 describe('UserCreate', function () {
@@ -118,6 +120,67 @@ describe('UserCreate', function () {
                 ->set('userEditForm.role', UserRoleEnum::CONTRIBUTOR->value)
                 ->call('save')
                 ->assertHasErrors(['userEditForm.email']);
+        });
+
+        it('creates a new user with send_email mode and sends password reset notification', function () {
+            Event::fake([UserCreated::class]);
+            Notification::fake();
+
+            $admin = User::factory()->root()->create();
+
+            Livewire::actingAs($admin)
+                ->test(UserCreate::class)
+                ->set('userEditForm.name', 'emailuser')
+                ->set('userEditForm.email', 'emailuser@gmail.com')
+                ->set('userEditForm.password_mode', 'send_email')
+                ->set('userEditForm.role', UserRoleEnum::CONTRIBUTOR->value)
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertSessionHas('message', __('User created successfully. A password setup email has been sent.'));
+
+            $user = User::where('email', 'emailuser@gmail.com')->first();
+
+            expect($user)->not->toBeNull();
+            Event::assertDispatched(UserCreated::class);
+            Notification::assertSentTo($user, ResetPassword::class);
+        });
+
+        it('does not require password fields in send_email mode', function () {
+            Event::fake([UserCreated::class]);
+            Notification::fake();
+
+            $admin = User::factory()->root()->create();
+
+            Livewire::actingAs($admin)
+                ->test(UserCreate::class)
+                ->set('userEditForm.name', 'nopwduser')
+                ->set('userEditForm.email', 'nopwduser@gmail.com')
+                ->set('userEditForm.password_mode', 'send_email')
+                ->set('userEditForm.role', UserRoleEnum::CONTRIBUTOR->value)
+                ->call('save')
+                ->assertHasNoErrors();
+
+            expect(User::where('email', 'nopwduser@gmail.com')->exists())->toBeTrue();
+        });
+
+        it('does not send email when password_mode is set_password', function () {
+            Event::fake([UserCreated::class]);
+            Notification::fake();
+
+            $admin = User::factory()->root()->create();
+
+            Livewire::actingAs($admin)
+                ->test(UserCreate::class)
+                ->set('userEditForm.name', 'manualuser')
+                ->set('userEditForm.email', 'manualuser@gmail.com')
+                ->set('userEditForm.password', 'Password123!')
+                ->set('userEditForm.password_confirmation', 'Password123!')
+                ->set('userEditForm.role', UserRoleEnum::CONTRIBUTOR->value)
+                ->call('save')
+                ->assertHasNoErrors();
+
+            $user = User::where('email', 'manualuser@gmail.com')->first();
+            Notification::assertNotSentTo($user, ResetPassword::class);
         });
 
         it('creates user with optional fields', function () {

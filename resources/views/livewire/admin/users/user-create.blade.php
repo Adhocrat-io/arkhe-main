@@ -76,25 +76,40 @@
                 <flux:error name="userEditForm.email" />
             </flux:field>
 
-            <flux:field class="md:col-span-3">
+            <flux:field class="md:col-span-6">
                 <flux:label>
-                    {{ __('Password') }}
+                    {{ __('Password') }} *
                 </flux:label>
 
-                <flux:input wire:model.live.debounce.500ms="userEditForm.password" type="password" viewable />
+                <flux:radio.group wire:model.live="userEditForm.password_mode">
+                    <flux:radio value="set_password" label="{{ __('Set password manually') }}" />
+                    <flux:radio value="send_email" label="{{ __('Send an email to the user to set their password') }}" />
+                </flux:radio.group>
 
-                <flux:error name="userEditForm.password" />
+                <flux:error name="userEditForm.password_mode" />
             </flux:field>
 
-            <flux:field class="md:col-span-3">
-                <flux:label>
-                    {{ __('Password confirmation') }}
-                </flux:label>
+            @if ($userEditForm->password_mode === 'set_password')
+                <flux:field class="md:col-span-3">
+                    <flux:label>
+                        {{ __('Password') }}
+                    </flux:label>
 
-                <flux:input wire:model.live.debounce.500ms="userEditForm.password_confirmation" type="password" viewable />
+                    <flux:input wire:model.live.debounce.500ms="userEditForm.password" type="password" viewable />
 
-                <flux:error name="userEditForm.password_confirmation" class="text-xs mt-1!" />
-            </flux:field>
+                    <flux:error name="userEditForm.password" />
+                </flux:field>
+
+                <flux:field class="md:col-span-3">
+                    <flux:label>
+                        {{ __('Password confirmation') }}
+                    </flux:label>
+
+                    <flux:input wire:model.live.debounce.500ms="userEditForm.password_confirmation" type="password" viewable />
+
+                    <flux:error name="userEditForm.password_confirmation" class="text-xs mt-1!" />
+                </flux:field>
+            @endif
 
             <flux:field class="md:col-span-6">
                 <flux:label>

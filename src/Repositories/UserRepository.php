@@ -12,6 +12,7 @@ use Arkhe\Main\Events\UserUpdated;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class UserRepository
 {
@@ -25,7 +26,13 @@ class UserRepository
         $createdBy = Auth::user();
 
         $user = DB::transaction(function () use ($userDto) {
-            $user = User::create($userDto->toArray());
+            $data = $userDto->toArray();
+
+            if (empty($data['password'])) {
+                $data['password'] = Str::random(32);
+            }
+
+            $user = User::create($data);
 
             if ($userDto->role) {
                 $user->assignRole($userDto->role);

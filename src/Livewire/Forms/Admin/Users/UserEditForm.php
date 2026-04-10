@@ -25,6 +25,8 @@ class UserEditForm extends Form
 
     public ?string $role = null;
 
+    public string $password_mode = 'set_password';
+
     public ?string $password = null;
 
     public ?string $password_confirmation = null;
@@ -62,7 +64,7 @@ class UserEditForm extends Form
             'role' => ['required', 'string', 'exists:roles,name'],
         ];
 
-        if (! $this->user) {
+        if (! $this->user && $this->password_mode === 'set_password') {
             $rules['password'] = ['required', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'];
             $rules['password_confirmation'] = ['required'];
         } else {

@@ -12,6 +12,7 @@ use Arkhe\Main\Repositories\UserRepository;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
@@ -56,8 +57,14 @@ class UserCreate extends Component
         }
 
         $userService = new UserRepository;
-        $userService->create(new UserDto(...$this->userEditForm->toUserDtoArray()));
-        session()->flash('message', __('User created successfully.'));
+        $user = $userService->create(new UserDto(...$this->userEditForm->toUserDtoArray()));
+
+        if ($this->userEditForm->password_mode === 'send_email') {
+            Password::broker()->sendResetLink(['email' => $user->email]);
+            session()->flash('message', __('User created successfully. A password setup email has been sent.'));
+        } else {
+            session()->flash('message', __('User created successfully.'));
+        }
 
         return redirect()->route('admin.users.index');
     }

@@ -7,6 +7,7 @@ namespace Arkhe\Main;
 use App\Models\User;
 use Arkhe\Main\Console\Commands\InstallCommand;
 use Arkhe\Main\Console\Commands\MigrateUserNamesCommand;
+use Arkhe\Main\Http\Middleware\InjectArkheStyles;
 use Arkhe\Main\Livewire\Admin\Users\Roles\RoleEdit;
 use Arkhe\Main\Livewire\Admin\Users\Roles\RolesList;
 use Arkhe\Main\Livewire\Admin\Users\UserCreate;
@@ -17,6 +18,7 @@ use Arkhe\Main\Policies\UserPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -32,6 +34,8 @@ class ArkheMainServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
         $this->registerMiddlewareAliases();
+        $this->registerAssetRoutes();
+        $this->registerMiddleware();
         $this->configureFortifyRedirects();
 
         $this->publishes(
@@ -108,6 +112,24 @@ class ArkheMainServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
+    }
+
+    private function registerAssetRoutes(): void
+    {
+        Route::get('/arkhe-main/assets/arkhe-main.css', function () {
+            $path = __DIR__.'/../resources/dist/arkhe-main.css';
+
+            return response()->file($path, [
+                'Content-Type' => 'text/css',
+                'Cache-Control' => 'public, max-age=31536000, immutable',
+            ]);
+        })->name('arkhe-main.asset.css');
+    }
+
+    private function registerMiddleware(): void
+    {
+        $router = $this->app['router'];
+        $router->pushMiddlewareToGroup('web', InjectArkheStyles::class);
     }
 
     private function registerMiddlewareAliases(): void

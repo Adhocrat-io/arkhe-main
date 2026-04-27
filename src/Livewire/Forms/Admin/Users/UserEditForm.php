@@ -6,6 +6,7 @@ namespace Arkhe\Main\Livewire\Forms\Admin\Users;
 
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Form;
 
@@ -57,7 +58,7 @@ class UserEditForm extends Form
     {
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,'.($this->user?->id ?? ''), 'email:rfc,dns'],
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->user?->id), 'email:rfc,dns'],
             'date_of_birth' => ['nullable', 'date'],
             'civility' => ['nullable', 'string'],
             'profession' => ['nullable', 'string'],

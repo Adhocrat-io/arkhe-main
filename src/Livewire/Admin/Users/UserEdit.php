@@ -6,10 +6,10 @@ namespace Arkhe\Main\Livewire\Admin\Users;
 
 use App\Models\User;
 use Arkhe\Main\DataTransferObjects\UserDto;
-use Arkhe\Main\Enums\Users\UserRoleEnum;
 use Arkhe\Main\Livewire\Forms\Admin\Users\UserEditForm;
 use Arkhe\Main\Repositories\RoleRepository;
 use Arkhe\Main\Repositories\UserRepository;
+use Arkhe\Main\Services\RoleResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +33,7 @@ class UserEdit extends Component
     public function getAllRoles(): Collection
     {
         $currentUser = Auth::user();
-        $allowedRoles = UserRoleEnum::fromUser($currentUser)->getAllowedRoles();
+        $allowedRoles = RoleResolver::allowedRolesFor($currentUser);
 
         return (new RoleRepository)->getAllRoles()
             ->filter(fn ($role) => in_array($role->name, $allowedRoles, true));
@@ -42,7 +42,7 @@ class UserEdit extends Component
     public function canAssignRole(string $role): bool
     {
         $currentUser = Auth::user();
-        $allowedRoles = UserRoleEnum::fromUser($currentUser)->getAllowedRoles();
+        $allowedRoles = RoleResolver::allowedRolesFor($currentUser);
 
         return in_array($role, $allowedRoles, true);
     }

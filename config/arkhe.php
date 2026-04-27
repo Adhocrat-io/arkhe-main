@@ -70,4 +70,32 @@ return [
             'arkhe.permissions.settings.*',
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom role hierarchy
+    |--------------------------------------------------------------------------
+    |
+    | For each custom (non-enum) role, list the role names this user can
+    | assign to others. System roles (UserRoleEnum) use their own
+    | getAllowedRoles(). If a custom role is not listed here, the user
+    | can only assign their own role.
+    |
+    */
+    'role_hierarchy' => [
+        // 'treasurer' => ['treasurer'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom role labels
+    |--------------------------------------------------------------------------
+    |
+    | Human-readable labels for custom (non-enum) roles. System roles use
+    | UserRoleEnum::label(). Fallback: humanized role name.
+    |
+    */
+    'role_labels' => [
+        // 'treasurer' => 'Trésorier',
+    ],
 ];

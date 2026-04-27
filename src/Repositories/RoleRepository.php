@@ -6,10 +6,10 @@ namespace Arkhe\Main\Repositories;
 
 use App\Models\User;
 use Arkhe\Main\DataTransferObjects\RoleDto;
-use Arkhe\Main\Enums\Users\UserRoleEnum;
 use Arkhe\Main\Events\RoleCreated;
 use Arkhe\Main\Events\RoleDeleted;
 use Arkhe\Main\Events\RoleUpdated;
+use Arkhe\Main\Services\RoleResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -19,11 +19,6 @@ use Spatie\Permission\Models\Role;
 
 class RoleRepository
 {
-    /**
-     * System roles that cannot be deleted.
-     */
-    private const PROTECTED_ROLES = ['root', 'admin'];
-
     public function create(RoleDto $roleDto): Role
     {
         $createdBy = Auth::user();
@@ -70,7 +65,7 @@ class RoleRepository
     public function getRolesFor(User $user): Collection
     {
         return $this->getRoles()
-            ->whereIn('name', UserRoleEnum::fromUser($user)?->getAllowedRoles() ?? [])
+            ->whereIn('name', RoleResolver::allowedRolesFor($user))
             ->get();
     }
 
@@ -99,7 +94,7 @@ class RoleRepository
      */
     public function isProtectedRole(Role $role): bool
     {
-        return in_array($role->name, self::PROTECTED_ROLES, true);
+        return RoleResolver::isProtected($role->name);
     }
 
     public function delete(Role $role): void

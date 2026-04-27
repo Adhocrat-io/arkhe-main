@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Arkhe\Main\Enums\Users\UserRoleEnum;
+use Arkhe\Main\Services\RoleResolver;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -30,12 +30,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $rolesConfig = config('arkhe.roles');
 
         foreach ($rolesConfig as $roleName => $rolePermissions) {
-            $roleEnum = UserRoleEnum::tryFrom($roleName);
-            $roleLabel = $roleEnum?->label() ?? ucfirst($roleName);
-
             $role = Role::updateOrCreate(
                 ['name' => $roleName],
-                ['label' => $roleLabel]
+                ['label' => RoleResolver::label($roleName)]
             );
 
             // Handle wildcard (*) - give all permissions

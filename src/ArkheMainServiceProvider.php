@@ -83,6 +83,16 @@ class ArkheMainServiceProvider extends ServiceProvider
             'layouts'
         );
 
+        // Same path also registered as a regular view namespace so that
+        // `view('layouts::app')` (e.g. via Livewire's HandlesPageComponents,
+        // configured in arkhe.admin.layout) resolves through ViewFactory.
+        // anonymousComponentPath only registers a *hashed* namespace for the
+        // component compiler — not usable by view() directly.
+        $this->loadViewsFrom(
+            __DIR__.'/../resources/views/layouts',
+            'layouts'
+        );
+
         $this->publishes(
             [__DIR__.'/../resources/views/layouts/' => resource_path('views/vendor/arkhe-main/layouts/')],
             'arkhe-main-layouts'

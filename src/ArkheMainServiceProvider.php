@@ -78,7 +78,7 @@ class ArkheMainServiceProvider extends ServiceProvider
             'arkhe-main'
         );
 
-        Blade::anonymousComponentNamespace(
+        Blade::anonymousComponentPath(
             __DIR__.'/../resources/views/layouts',
             'layouts'
         );

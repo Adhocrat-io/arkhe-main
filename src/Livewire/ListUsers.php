@@ -145,10 +145,19 @@ class ListUsers extends Component
             perPage: $this->perPage,
         );
 
+        $currentAvatarUrl = null;
+        if ($this->selectedUser !== null) {
+            $editing = $repository->find($this->selectedUser);
+            if ($editing !== null) {
+                $currentAvatarUrl = $editing->avatar_url ?? null;
+            }
+        }
+
         return view('arkhe::livewire.list-users', [
-            'users'          => $users,
-            'availableRoles' => Role::query()->orderBy('name')->pluck('name'),
-            'availablePerms' => Permission::query()->orderBy('name')->pluck('name'),
+            'users'            => $users,
+            'availableRoles'   => Role::query()->orderBy('name')->pluck('name'),
+            'availablePerms'   => Permission::query()->orderBy('name')->pluck('name'),
+            'currentAvatarUrl' => $currentAvatarUrl,
         ])->layout((string) config('arkhe.layout', 'arkhe::layouts.app'));
     }
 }

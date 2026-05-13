@@ -178,7 +178,27 @@
 
                 <flux:field class="md:col-span-2">
                     <flux:label>{{ __('arkhe::arkhe.users.fields.avatar') }}</flux:label>
-                    <input type="file" accept="image/*" wire:model="userForm.avatar" class="block w-full text-sm" />
+
+                    <div class="flex items-center gap-4">
+                        @if($userForm->avatar)
+                            <img src="{{ $userForm->avatar->temporaryUrl() }}" alt="" class="size-12 rounded-full object-cover" />
+                        @elseif($currentAvatarUrl)
+                            <img src="{{ $currentAvatarUrl }}" alt="" class="size-12 rounded-full object-cover" />
+                        @endif
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            wire:model="userForm.avatar"
+                            class="block w-full text-sm text-zinc-600 dark:text-zinc-300
+                                   file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2
+                                   file:text-sm file:font-medium
+                                   file:bg-zinc-100 file:text-zinc-800 hover:file:bg-zinc-200
+                                   dark:file:bg-zinc-800 dark:file:text-zinc-100 dark:hover:file:bg-zinc-700
+                                   file:cursor-pointer cursor-pointer"
+                        />
+                    </div>
+
                     <flux:error name="userForm.avatar" />
                 </flux:field>
 

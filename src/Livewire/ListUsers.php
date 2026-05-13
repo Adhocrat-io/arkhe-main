@@ -8,7 +8,6 @@ use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
 use Adhocrat\Arkhe\Livewire\Forms\UserForm;
 use Adhocrat\Arkhe\Services\UserService;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -127,7 +126,6 @@ class ListUsers extends Component
         $this->resetPage();
     }
 
-    #[Layout('arkhe::layouts.app')]
     public function render(UserRepositoryInterface $repository): View
     {
         $users = $repository->paginate(
@@ -141,9 +139,9 @@ class ListUsers extends Component
         );
 
         return view('arkhe::livewire.list-users', [
-            'users'           => $users,
-            'availableRoles'  => Role::query()->orderBy('name')->pluck('name'),
-            'availablePerms'  => Permission::query()->orderBy('name')->pluck('name'),
-        ]);
+            'users'          => $users,
+            'availableRoles' => Role::query()->orderBy('name')->pluck('name'),
+            'availablePerms' => Permission::query()->orderBy('name')->pluck('name'),
+        ])->layout((string) config('arkhe.layout', 'arkhe::layouts.app'));
     }
 }

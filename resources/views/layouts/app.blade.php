@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? __('arkhe::arkhe.users.title') }}</title>
 
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
 </head>
 <body class="min-h-full bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-900 dark:text-zinc-100">

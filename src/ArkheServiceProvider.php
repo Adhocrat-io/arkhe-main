@@ -6,8 +6,10 @@ namespace Adhocrat\Arkhe;
 
 use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
 use Adhocrat\Arkhe\Http\Middleware\EnsureUserHasBackendAccess;
+use Adhocrat\Arkhe\Livewire\ListUsers;
 use Adhocrat\Arkhe\Repositories\UserRepository;
 use Illuminate\Routing\Router;
+use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -34,5 +36,7 @@ class ArkheServiceProvider extends PackageServiceProvider
         /** @var Router $router */
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('arkhe.backend', EnsureUserHasBackendAccess::class);
+
+        Livewire::component('arkhe::list-users', ListUsers::class);
     }
 }

@@ -159,6 +159,12 @@ class UserService
         /** @var Model|null $actor */
         $actor = $this->auth->guard()->user();
 
+        // CLI / artisan / queued jobs have no auth context. Skip the rank
+        // check there — those callers already require shell access to run.
+        if ($actor === null && app()->runningInConsole()) {
+            return;
+        }
+
         foreach ($roles as $role) {
             if (! RoleHierarchy::canAssign($actor, (string) $role)) {
                 throw new AuthorizationException(

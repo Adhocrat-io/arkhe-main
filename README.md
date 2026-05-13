@@ -32,6 +32,25 @@ The interactive installer walks through every step in order:
 7. Offer to add the `HasBackendProfile` trait to your `App\Models\User` automatically (skipped if the model already uses `HasRoles`, which would conflict).
 8. Create a first **root** user via interactive prompts.
 
+## Creating users from the CLI
+
+Once installed, add new users without leaving the terminal:
+
+```bash
+# fully interactive
+php artisan arkhe:main:add-user
+
+# one-liner with explicit options
+php artisan arkhe:main:add-user \
+    --email=ops@example.com \
+    --first=Ops \
+    --last=Team \
+    --role=administrateur \
+    --password=...
+```
+
+The command lets you pick the role from a prompt populated by the `roles` table. CLI calls bypass the runtime role-hierarchy check (the assumption being that anyone with shell access already has full authority), so you can seed a `root` user from a deploy script without auth context.
+
 ## Configuration
 
 `.env`:

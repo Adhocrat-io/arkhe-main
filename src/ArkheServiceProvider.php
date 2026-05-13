@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Adhocrat\Arkhe;
 
+use Adhocrat\Arkhe\Commands\AddUserCommand;
 use Adhocrat\Arkhe\Commands\InstallCommand;
 use Adhocrat\Arkhe\Contracts\PermissionRepositoryInterface;
 use Adhocrat\Arkhe\Contracts\RoleRepositoryInterface;
@@ -34,7 +35,8 @@ class ArkheServiceProvider extends PackageServiceProvider
             ->hasTranslations()
             ->hasRoute('arkhe')
             ->hasMigration('add_arkhe_profile_columns_to_users_table')
-            ->hasCommand(InstallCommand::class);
+            ->hasCommand(InstallCommand::class)
+            ->hasCommand(AddUserCommand::class);
     }
 
     public function packageRegistered(): void

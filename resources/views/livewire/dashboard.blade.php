@@ -1,4 +1,4 @@
-<div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
+<flux:main class="flex h-full w-full flex-1 flex-col gap-6">
     <flux:heading size="xl">{{ __('arkhe::arkhe.dashboard.title') }}</flux:heading>
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -18,4 +18,4 @@
     <flux:button :href="route('arkhe.users.index')" icon="users" variant="primary">
         {{ __('arkhe::arkhe.users.title') }}
     </flux:button>
-</div>
+</flux:main>

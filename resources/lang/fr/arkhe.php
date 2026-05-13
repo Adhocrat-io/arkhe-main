@@ -67,6 +67,10 @@ return [
         'done'               => 'Installation terminée.',
         'permission_missing' => "spatie/laravel-permission ne semble pas installé/migré. Installez-le puis relancez cette commande.",
         'trait_missing'      => "Le modèle :model n'utilise pas le trait Adhocrat\\Arkhe\\Concerns\\HasBackendProfile (qui fournit HasRoles). Ajoutez-le à votre modèle User, puis relancez : php artisan arkhe:main:install — répondez Non aux étapes déjà faites.",
+        'patch_prompt'       => 'Ajouter automatiquement le trait HasBackendProfile à :model ?',
+        'patch_done'         => 'Trait HasBackendProfile ajouté à :file.',
+        'patch_restart'      => "Relancez la commande pour terminer la création du user root : php artisan arkhe:main:install — répondez Non aux étapes déjà faites.",
+        'patch_failed'       => 'Patch automatique impossible : :reason',
     ],
 
 ];

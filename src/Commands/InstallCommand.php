@@ -107,6 +107,18 @@ class InstallCommand extends Command
         $modelClass = $this->resolveUserModel($config);
 
         if (! $this->userModelHasRolesTrait($modelClass)) {
+            if (confirm(__('arkhe::arkhe.install.patch_prompt', ['model' => $modelClass]), default: true)) {
+                $patch = $this->patchUserModel($modelClass);
+                if ($patch['ok']) {
+                    $this->components->info(__('arkhe::arkhe.install.patch_done', ['file' => $patch['file']]));
+                    $this->components->warn(__('arkhe::arkhe.install.patch_restart'));
+
+                    return;
+                }
+
+                $this->components->error(__('arkhe::arkhe.install.patch_failed', ['reason' => $patch['reason']]));
+            }
+
             $this->components->error(__('arkhe::arkhe.install.trait_missing', ['model' => $modelClass]));
 
             return;
@@ -140,6 +152,76 @@ class InstallCommand extends Command
     {
         return method_exists($modelClass, 'assignRole')
             || in_array(\Spatie\Permission\Traits\HasRoles::class, class_uses_recursive($modelClass), true);
+    }
+
+    /**
+     * Best-effort patch of the consumer's User model. Conservative on purpose:
+     * refuses to touch the file if the layout is non-standard, leaves a clear
+     * reason for the user to act manually.
+     *
+     * @param  class-string  $modelClass
+     * @return array{ok: bool, file?: string, reason?: string}
+     */
+    private function patchUserModel(string $modelClass): array
+    {
+        try {
+            $reflection = new \ReflectionClass($modelClass);
+        } catch (\ReflectionException) {
+            return ['ok' => false, 'reason' => "Reflection failed on {$modelClass}"];
+        }
+
+        $file = $reflection->getFileName();
+        if (! is_string($file) || ! is_file($file)) {
+            return ['ok' => false, 'reason' => 'User model file not found on disk'];
+        }
+        if (! is_writable($file)) {
+            return ['ok' => false, 'reason' => "Not writable: {$file}"];
+        }
+
+        $content = (string) file_get_contents($file);
+        if ($content === '') {
+            return ['ok' => false, 'reason' => "Empty or unreadable: {$file}"];
+        }
+
+        if (str_contains($content, 'HasBackendProfile')) {
+            return ['ok' => true, 'file' => $file];
+        }
+
+        // Refuse to auto-patch if HasRoles is present anywhere — would conflict
+        // with the HasRoles already wrapped by HasBackendProfile.
+        if (preg_match('/\bHasRoles\b/', $content) === 1) {
+            return ['ok' => false, 'reason' => 'Model already uses Spatie\\Permission\\Traits\\HasRoles — remove it manually then add `use HasBackendProfile;`.'];
+        }
+
+        $importLine = 'use Adhocrat\\Arkhe\\Concerns\\HasBackendProfile;';
+
+        // 1) Insert the import after the last top-level `use X;` (or after the namespace declaration).
+        if (preg_match_all('/^use\s+[^;]+;[\t ]*$/m', $content, $matches, PREG_OFFSET_CAPTURE) === false || $matches[0] === []) {
+            if (preg_match('/^namespace\s+[^;]+;[\t ]*$/m', $content, $nsMatch, PREG_OFFSET_CAPTURE) !== 1) {
+                return ['ok' => false, 'reason' => 'Could not locate a namespace or use block to insert the import'];
+            }
+            $insertAt = $nsMatch[0][1] + strlen($nsMatch[0][0]);
+            $content  = substr($content, 0, $insertAt)."\n\n".$importLine.substr($content, $insertAt);
+        } else {
+            /** @var array<int, array{0: string, 1: int}> $hits */
+            $hits     = $matches[0];
+            $lastUse  = end($hits);
+            $insertAt = $lastUse[1] + strlen($lastUse[0]);
+            $content  = substr($content, 0, $insertAt)."\n".$importLine.substr($content, $insertAt);
+        }
+
+        // 2) Insert `use HasBackendProfile;` right after the opening class brace.
+        if (preg_match('/(class\s+\w+[^{]*\{)/', $content, $classMatch, PREG_OFFSET_CAPTURE) !== 1) {
+            return ['ok' => false, 'reason' => 'Could not locate the class opening brace'];
+        }
+        $bracePos = $classMatch[1][1] + strlen($classMatch[1][0]);
+        $content  = substr($content, 0, $bracePos)."\n    use HasBackendProfile;\n".substr($content, $bracePos);
+
+        if (file_put_contents($file, $content) === false) {
+            return ['ok' => false, 'reason' => "Failed to write {$file}"];
+        }
+
+        return ['ok' => true, 'file' => $file];
     }
 
     /**

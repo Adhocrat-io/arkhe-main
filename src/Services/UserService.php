@@ -97,6 +97,15 @@ class UserService
 
     public function delete(Model $user): void
     {
+        /** @var Model|null $actor */
+        $actor = $this->auth->guard()->user();
+
+        if (! RoleHierarchy::canManage($actor, $user)) {
+            throw new AuthorizationException(
+                'You are not allowed to delete a user with a higher role than your own.'
+            );
+        }
+
         $this->deleteAvatar($user->avatar_path ?? null);
 
         $user->delete();

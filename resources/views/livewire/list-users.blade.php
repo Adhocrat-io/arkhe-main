@@ -93,9 +93,11 @@
                                     <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $user->getKey() }})">
                                         {{ __('arkhe::arkhe.actions.edit') }}
                                     </flux:menu.item>
-                                    <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $user->getKey() }})">
-                                        {{ __('arkhe::arkhe.actions.delete') }}
-                                    </flux:menu.item>
+                                    @if(\Adhocrat\Arkhe\Support\RoleHierarchy::canManage(auth()->user(), $user))
+                                        <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $user->getKey() }})">
+                                            {{ __('arkhe::arkhe.actions.delete') }}
+                                        </flux:menu.item>
+                                    @endif
                                 </flux:menu>
                             </flux:dropdown>
                         </td>

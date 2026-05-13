@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Adhocrat\Arkhe\Concerns;
 
+use Adhocrat\Arkhe\Support\RoleHierarchy;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -51,5 +53,10 @@ trait HasBackendProfile
             (string) config('arkhe.roles.root'),
             (string) config('arkhe.roles.administrator'),
         ]);
+    }
+
+    public function canManage(?Model $other): bool
+    {
+        return RoleHierarchy::canManage($this, $other);
     }
 }

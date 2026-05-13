@@ -92,8 +92,14 @@ class ListUsers extends Component
         $this->resetPage();
     }
 
-    public function confirmDelete(int $id): void
+    public function confirmDelete(int $id, UserRepositoryInterface $repository): void
     {
+        $target = $repository->find($id);
+
+        if ($target === null || ! RoleHierarchy::canManage(Auth::user(), $target)) {
+            abort(403);
+        }
+
         $this->selectedUser    = $id;
         $this->showDeleteModal = true;
     }
@@ -105,9 +111,18 @@ class ListUsers extends Component
         }
 
         $user = $repository->find($this->selectedUser);
-        if ($user !== null) {
-            $service->delete($user);
+        if ($user === null) {
+            $this->showDeleteModal = false;
+            $this->selectedUser    = null;
+
+            return;
         }
+
+        if (! RoleHierarchy::canManage(Auth::user(), $user)) {
+            abort(403);
+        }
+
+        $service->delete($user);
 
         $this->showDeleteModal = false;
         $this->selectedUser    = null;

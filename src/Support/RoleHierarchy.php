@@ -149,6 +149,20 @@ final class RoleHierarchy
     }
 
     /**
+     * Whether an actor is allowed to act on (delete/manage) a target user.
+     * True when the target's highest rank is less than or equal to the
+     * actor's highest rank. False if the actor is null or outranked.
+     */
+    public static function canManage(?Model $actor, ?Model $target): bool
+    {
+        if ($actor === null || $target === null) {
+            return false;
+        }
+
+        return self::highestRankOf($target) <= self::highestRankOf($actor);
+    }
+
+    /**
      * @return array<int, string>
      */
     public static function rolesAssignableBy(?Model $actor): array

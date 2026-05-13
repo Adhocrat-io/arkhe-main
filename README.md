@@ -142,9 +142,13 @@ The hierarchy is enforced at three layers:
 
 ### Extending the hierarchy
 
-You can slot your own roles into the hierarchy in two ways.
+Two extension paths are available — pick the one that matches your situation.
 
-**1. From the config file** — order of `config('arkhe.roles')` IS the hierarchy:
+#### Option A — Static, via `config/arkhe.php`
+
+Use this when the roles are known at deploy time and live with the application: the values you want are part of the codebase, not contributed by an external package.
+
+The **order** of `config('arkhe.roles')` IS the hierarchy (first entry = highest rank). Insert your role at the right position between two existing entries:
 
 ```php
 // config/arkhe.php
@@ -157,19 +161,52 @@ You can slot your own roles into the hierarchy in two ways.
 ],
 ```
 
-The `arkhe:main:install` seeder picks up new entries automatically.
+Then create the matching row in the `roles` table by re-running the bundled seeder:
 
-**2. From a service provider** — useful when a separate package or module contributes a role:
+```bash
+php artisan arkhe:main:install   # answer No to publish + migrate, Yes is automatic on the seed step
+# or, equivalently in a one-liner:
+php artisan tinker --execute="app(\Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder::class)->run();"
+```
+
+Pros: declarative, version-controlled, visible to every dev reading the config. Cons: requires editing the published file in each host app.
+
+#### Option B — Runtime, via `RoleHierarchy::register()`
+
+Use this when the role is contributed by a **package, module or feature flag** — i.e. you cannot (or do not want to) require the host app to edit `config/arkhe.php`.
+
+From your package's service provider:
 
 ```php
 use Adhocrat\Arkhe\Support\RoleHierarchy;
 
-RoleHierarchy::register('manager', after: 'administrateur');
-RoleHierarchy::register('editor',  before: 'user');
-RoleHierarchy::register('intern'); // append at the lowest rank
+public function boot(): void
+{
+    RoleHierarchy::register('manager', after: 'administrateur');
+    RoleHierarchy::register('editor',  before: 'user');
+    RoleHierarchy::register('intern');                 // append at the lowest rank
+}
 ```
 
-`register()` also repositions an existing role if you call it again with a different anchor.
+`register()` can also reposition an already-known role on subsequent calls. Your package is still responsible for creating the matching row in the `roles` table (typically via its own seeder).
+
+Pros: zero config edit on the host side, perfect for distributed packages. Cons: invisible at first glance — document loudly which role(s) your package contributes.
+
+#### Which one to pick?
+
+| Scenario | Recommended |
+|---|---|
+| You own the app code end-to-end and the role belongs there | **A — config** |
+| The role ships in a Composer/Git submodule that you `require` from many apps | **B — register()** |
+| You want a flag to enable/disable a role per environment | **B — register()** inside an `if (config('feature.x'))` |
+
+#### Contract
+
+The four canonical Arkhe keys — `root`, `administrator`, `user`, `guest` — must remain in `config('arkhe.roles')`. Internal Arkhe code references them directly (`config('arkhe.roles.root')`, …). You can:
+
+- ✅ insert new roles between them,
+- ✅ change the **value** (the actual role name stored in DB), e.g. `'user' => 'membre'`,
+- ❌ rename or remove the four canonical **keys**.
 
 ## Styling — Tailwind / Flux
 

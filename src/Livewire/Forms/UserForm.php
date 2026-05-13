@@ -49,9 +49,7 @@ class UserForm extends Form
             'first_name'    => ['required', 'string', 'max:120'],
             'last_name'     => ['required', 'string', 'max:120'],
             'email'         => ['required', 'email', 'max:255', Rule::unique($userTable, 'email')->ignore($this->id)],
-            'password'      => $this->id === null
-                ? ['required', 'string', 'min:8', 'confirmed']
-                : ['nullable', 'string', 'min:8', 'confirmed'],
+            'password'      => $this->passwordRules(),
             'phone'         => ['nullable', 'string', 'max:32'],
             'date_of_birth' => ['nullable', 'date'],
             'civility'      => ['nullable', 'string', 'max:32'],
@@ -105,6 +103,25 @@ class UserForm extends Form
             'roles'         => $this->role !== null && $this->role !== '' ? [$this->role] : [],
             'permissions'   => $this->permissions,
         ];
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function passwordRules(): array
+    {
+        // Creating: password is mandatory + must be confirmed.
+        if ($this->id === null) {
+            return ['required', 'string', 'min:8', 'confirmed'];
+        }
+
+        // Editing with an empty field: keep the existing password, skip validation.
+        if ($this->password === '') {
+            return [];
+        }
+
+        // Editing with a new value: enforce strength + match the confirmation.
+        return ['string', 'min:8', 'confirmed'];
     }
 
     private function resolveUserTable(): string

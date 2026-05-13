@@ -65,6 +65,12 @@ class ListUsers extends Component
 
     public function save(UserRepositoryInterface $repository, UserService $service): void
     {
+        // Keep the form's id in sync with the component's selectedUser so that
+        // Rule::unique(...)->ignore() and the create-vs-edit branching in
+        // passwordRules() see the correct value even if a prior Livewire hop
+        // (e.g. file upload) reset the form property.
+        $this->userForm->id = $this->selectedUser;
+
         $data = $this->userForm->validate();
         // validate() returns rule keys; pass the full form payload (incl. avatar).
         $payload = array_merge($data, $this->userForm->toArray());

@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
     <flux:heading size="xl">{{ __('arkhe::arkhe.dashboard.title') }}</flux:heading>
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">

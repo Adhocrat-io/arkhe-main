@@ -70,7 +70,13 @@
                                     :initials="$user->initials ?? null"
                                     size="sm"
                                 />
-                                <span class="font-medium">{{ $user->full_name ?: $user->email }}</span>
+                                <button
+                                    type="button"
+                                    wire:click="openEdit({{ $user->getKey() }})"
+                                    class="font-medium text-left hover:underline focus:underline focus:outline-none"
+                                >
+                                    {{ $user->full_name ?: $user->email }}
+                                </button>
                             </div>
                         </td>
                         <td class="px-4 py-3">{{ $user->email }}</td>

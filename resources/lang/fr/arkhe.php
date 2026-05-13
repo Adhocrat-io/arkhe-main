@@ -41,7 +41,9 @@ return [
     ],
 
     'roles' => [
-        'label' => 'Rôles',
+        'label'       => 'Rôle',
+        'placeholder' => 'Sélectionner un rôle…',
+        'none'        => 'Aucun',
     ],
 
     'actions' => [

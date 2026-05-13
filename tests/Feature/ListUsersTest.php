@@ -76,7 +76,7 @@ it('creates a user through the Livewire form', function (): void {
         ->set('userForm.last_name', 'Doe')
         ->set('userForm.email', 'alice@example.test')
         ->set('userForm.password', 'password123')
-        ->set('userForm.roles', ['user'])
+        ->set('userForm.role', 'user')
         ->call('save')
         ->assertHasNoErrors();
 

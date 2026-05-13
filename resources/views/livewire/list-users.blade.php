@@ -184,12 +184,13 @@
 
                 <flux:field class="md:col-span-2">
                     <flux:label>{{ __('arkhe::arkhe.roles.label') }}</flux:label>
-                    <flux:select wire:model="userForm.roles" multiple>
+                    <flux:select wire:model="userForm.role" placeholder="{{ __('arkhe::arkhe.roles.placeholder') }}">
+                        <flux:select.option value="">{{ __('arkhe::arkhe.roles.none') }}</flux:select.option>
                         @foreach($availableRoles as $role)
                             <flux:select.option value="{{ $role }}">{{ $role }}</flux:select.option>
                         @endforeach
                     </flux:select>
-                    <flux:error name="userForm.roles" />
+                    <flux:error name="userForm.role" />
                 </flux:field>
             </div>
 

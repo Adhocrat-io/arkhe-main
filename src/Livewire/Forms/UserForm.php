@@ -31,8 +31,7 @@ class UserForm extends Form
 
     public ?TemporaryUploadedFile $avatar = null;
 
-    /** @var array<int, string> */
-    public array $roles = [];
+    public ?string $role = null;
 
     /** @var array<int, string> */
     public array $permissions = [];
@@ -56,8 +55,7 @@ class UserForm extends Form
             'civility'      => ['nullable', 'string', 'max:32'],
             'bio'           => ['nullable', 'string', 'max:5000'],
             'avatar'        => ['nullable', 'image', 'max:4096'],
-            'roles'         => ['array'],
-            'roles.*'       => ['string', 'exists:roles,name'],
+            'role'          => ['nullable', 'string', 'exists:roles,name'],
             'permissions'   => ['array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
         ];
@@ -76,9 +74,9 @@ class UserForm extends Form
         $this->bio           = $user->bio ?? null;
         $this->avatar        = null;
 
-        $this->roles = method_exists($user, 'getRoleNames')
-            ? $user->getRoleNames()->all()
-            : [];
+        $this->role = method_exists($user, 'getRoleNames')
+            ? ($user->getRoleNames()->first() ?: null)
+            : null;
 
         $this->permissions = method_exists($user, 'getPermissionNames')
             ? $user->getPermissionNames()->all()
@@ -100,7 +98,8 @@ class UserForm extends Form
             'civility'      => $this->civility,
             'bio'           => $this->bio,
             'avatar'        => $this->avatar,
-            'roles'         => $this->roles,
+            'role'          => $this->role,
+            'roles'         => $this->role !== null && $this->role !== '' ? [$this->role] : [],
             'permissions'   => $this->permissions,
         ];
     }

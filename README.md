@@ -18,29 +18,19 @@ Bootstrap a Laravel backend with **users, roles and permissions** management, se
 
 ```bash
 composer require adhocrat-io/arkhe-main
-```
-
-Run Spatie's permission setup if you haven't already (the package depends on it):
-
-```bash
-php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
-php artisan migrate
-```
-
-Then run the interactive installer:
-
-```bash
 php artisan arkhe:main:install
 ```
 
-The installer will:
+The interactive installer walks through every step in order:
 
 1. Publish `config/arkhe.php`.
-2. Publish the migration that adds the profile columns (`first_name`, `last_name`, `avatar_path`, `phone`, `date_of_birth`, `civility`, `bio`) to the `users` table.
-3. Optionally publish the views.
-4. Run `php artisan migrate`.
-5. Seed the four default roles: `root`, `administrateur`, `user`, `guest`.
-6. Create a first **root** user (interactive prompts).
+2. Publish the migration that adds profile columns (`first_name`, `last_name`, `avatar_path`, `phone`, `date_of_birth`, `civility`, `bio`) to the `users` table.
+3. If `spatie/laravel-permission` is not migrated yet, publish its config and migrations automatically — no need to run its setup separately.
+4. Optionally publish the views.
+5. Run `php artisan migrate`.
+6. Seed the four default roles: `root`, `administrateur`, `user`, `guest`.
+7. Offer to add the `HasBackendProfile` trait to your `App\Models\User` automatically (skipped if the model already uses `HasRoles`, which would conflict).
+8. Create a first **root** user via interactive prompts.
 
 ## Configuration
 

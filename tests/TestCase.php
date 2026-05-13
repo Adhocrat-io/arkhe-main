@@ -37,6 +37,7 @@ abstract class TestCase extends Orchestra
     protected function defineEnvironment($app): void
     {
         /** @var Application $app */
+        $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
             'driver'   => 'sqlite',
@@ -57,10 +58,18 @@ abstract class TestCase extends Orchestra
         ]);
 
         $app['config']->set('arkhe.avatar_disk', 'local');
+
+        // A stub login route so the auth middleware can redirect anonymous
+        // visitors during HTTP tests instead of throwing RouteNotFoundException.
+        $app['router']->get('/login', fn () => 'login')->name('login');
     }
 
     protected function setUpDatabase(): void
     {
+        if (Schema::hasTable('users')) {
+            return;
+        }
+
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
             $table->string('first_name')->nullable();
@@ -77,7 +86,57 @@ abstract class TestCase extends Orchestra
             $table->timestamps();
         });
 
-        // Spatie permission tables.
-        $this->artisan('migrate', ['--database' => 'testing'])->run();
+        $this->setUpSpatiePermissionTables();
+    }
+
+    /**
+     * Mirror of spatie/laravel-permission's create_permission_tables.php.stub.
+     * Hand-rolled here because the package ships its migrations as .php.stub
+     * files (unsuitable for loadMigrationsFrom), and Testbench has no clean
+     * way to publish + run them in-memory.
+     */
+    protected function setUpSpatiePermissionTables(): void
+    {
+        Schema::create('permissions', function (Blueprint $table): void {
+            $table->bigIncrements('id');
+            $table->string('name');
+            $table->string('guard_name');
+            $table->timestamps();
+            $table->unique(['name', 'guard_name']);
+        });
+
+        Schema::create('roles', function (Blueprint $table): void {
+            $table->bigIncrements('id');
+            $table->string('name');
+            $table->string('guard_name');
+            $table->timestamps();
+            $table->unique(['name', 'guard_name']);
+        });
+
+        Schema::create('model_has_permissions', function (Blueprint $table): void {
+            $table->unsignedBigInteger('permission_id');
+            $table->string('model_type');
+            $table->unsignedBigInteger('model_id');
+            $table->index(['model_id', 'model_type'], 'model_has_permissions_model_id_model_type_index');
+            $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
+            $table->primary(['permission_id', 'model_id', 'model_type'], 'model_has_permissions_permission_model_type_primary');
+        });
+
+        Schema::create('model_has_roles', function (Blueprint $table): void {
+            $table->unsignedBigInteger('role_id');
+            $table->string('model_type');
+            $table->unsignedBigInteger('model_id');
+            $table->index(['model_id', 'model_type'], 'model_has_roles_model_id_model_type_index');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->primary(['role_id', 'model_id', 'model_type'], 'model_has_roles_role_model_type_primary');
+        });
+
+        Schema::create('role_has_permissions', function (Blueprint $table): void {
+            $table->unsignedBigInteger('permission_id');
+            $table->unsignedBigInteger('role_id');
+            $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->primary(['permission_id', 'role_id'], 'role_has_permissions_permission_id_role_id_primary');
+        });
     }
 }

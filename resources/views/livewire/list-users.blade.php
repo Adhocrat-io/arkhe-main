@@ -156,8 +156,8 @@
 
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.users.fields.password_confirmation') }}</flux:label>
-                    <flux:input type="password" wire:model="userForm.password_confirmation" autocomplete="new-password" viewable />
-                    <flux:error name="userForm.password_confirmation" />
+                    <flux:input type="password" wire:model="userForm.passwordConfirmation" autocomplete="new-password" viewable />
+                    <flux:error name="userForm.passwordConfirmation" />
                 </flux:field>
 
                 <flux:field>

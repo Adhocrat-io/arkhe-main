@@ -24,7 +24,7 @@ class UserForm extends Form
 
     public string $password = '';
 
-    public string $password_confirmation = '';
+    public string $passwordConfirmation = '';
 
     public ?string $phone = null;
 
@@ -57,8 +57,9 @@ class UserForm extends Form
             'date_of_birth' => ['nullable', 'date'],
             'civility'      => ['nullable', 'string', 'max:32'],
             'bio'           => ['nullable', 'string', 'max:5000'],
-            'avatar'        => ['nullable', 'image', 'max:4096'],
-            'role'          => ['nullable', 'string', 'exists:roles,name', $this->roleAssignableRule()],
+            'avatar'                => ['nullable', 'image', 'max:4096'],
+            'passwordConfirmation' => ['nullable', 'string'],
+            'role'                  => ['nullable', 'string', 'exists:roles,name', $this->roleAssignableRule()],
             'permissions'   => ['array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
         ];
@@ -69,9 +70,9 @@ class UserForm extends Form
         $this->id            = (int) $user->getKey();
         $this->first_name    = (string) ($user->first_name ?? '');
         $this->last_name     = (string) ($user->last_name ?? '');
-        $this->email                 = (string) ($user->email ?? '');
-        $this->password              = '';
-        $this->password_confirmation = '';
+        $this->email                = (string) ($user->email ?? '');
+        $this->password             = '';
+        $this->passwordConfirmation = null;
         $this->phone         = $user->phone ?? null;
         $this->date_of_birth = $user->date_of_birth?->format('Y-m-d') ?? ($user->date_of_birth ?: null);
         $this->civility      = $user->civility ?? null;
@@ -131,7 +132,7 @@ class UserForm extends Form
     {
         // Creating: password is mandatory + must be confirmed.
         if ($this->id === null) {
-            return ['required', 'string', 'min:8', 'confirmed'];
+            return ['required', 'string', 'min:8', $this->passwordConfirmedRule()];
         }
 
         // Editing with an empty field: keep the existing password, skip validation.
@@ -140,7 +141,23 @@ class UserForm extends Form
         }
 
         // Editing with a new value: enforce strength + match the confirmation.
-        return ['string', 'min:8', 'confirmed'];
+        return ['string', 'min:8', $this->passwordConfirmedRule()];
+    }
+
+    /**
+     * Closure-based replacement for Laravel's `confirmed` rule. We compare
+     * directly against $this->password_confirmation instead of relying on the
+     * validator's data dictionary — that pipeline drops the confirmation
+     * field for Form Object snapshots, which made `confirmed` fail with a
+     * matching pair.
+     */
+    private function passwordConfirmedRule(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if ((string) $value !== (string) ($this->passwordConfirmation ?? '')) {
+                $fail(trans('validation.confirmed', ['attribute' => $attribute]));
+            }
+        };
     }
 
     private function resolveUserTable(): string

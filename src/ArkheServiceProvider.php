@@ -40,7 +40,7 @@ class ArkheServiceProvider extends PackageServiceProvider
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('arkhe.backend', EnsureUserHasBackendAccess::class);
 
-        Livewire::component('arkhe::list-users', ListUsers::class);
+        Livewire::component('arkhe.list-users', ListUsers::class);
 
         $this->bootFeatures();
     }

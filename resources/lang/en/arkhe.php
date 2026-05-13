@@ -66,6 +66,7 @@ return [
         'root_last_name'     => 'Last name',
         'done'               => 'Installation complete.',
         'permission_missing' => 'spatie/laravel-permission does not appear to be installed/migrated. Install it then re-run this command.',
+        'trait_missing'      => 'The :model model does not use the Adhocrat\\Arkhe\\Concerns\\HasBackendProfile trait (which provides HasRoles). Add it to your User model, then re-run: php artisan arkhe:main:install — answer No to the steps already done.',
     ],
 
 ];

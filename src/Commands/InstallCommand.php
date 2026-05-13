@@ -105,6 +105,13 @@ class InstallCommand extends Command
         $lastName  = text(label: __('arkhe::arkhe.install.root_last_name'), required: true);
 
         $modelClass = $this->resolveUserModel($config);
+
+        if (! $this->userModelHasRolesTrait($modelClass)) {
+            $this->components->error(__('arkhe::arkhe.install.trait_missing', ['model' => $modelClass]));
+
+            return;
+        }
+
         /** @var Model $user */
         $user = new $modelClass();
 
@@ -115,9 +122,6 @@ class InstallCommand extends Command
             'password'   => $hasher->make($rawPassword),
         ];
 
-        // Some host apps (Breeze/Jetstream defaults) keep a NOT NULL `name`
-        // column on `users`. If present, back-fill it from the profile so the
-        // insert doesn't fail.
         if (Schema::hasColumn($user->getTable(), 'name')) {
             $attributes['name'] = trim($firstName.' '.$lastName);
         }
@@ -127,6 +131,15 @@ class InstallCommand extends Command
         $user->assignRole((string) $config->get('arkhe.roles.root'));
 
         $this->components->info("Utilisateur root créé ({$email}).");
+    }
+
+    /**
+     * @param  class-string  $modelClass
+     */
+    private function userModelHasRolesTrait(string $modelClass): bool
+    {
+        return method_exists($modelClass, 'assignRole')
+            || in_array(\Spatie\Permission\Traits\HasRoles::class, class_uses_recursive($modelClass), true);
     }
 
     /**

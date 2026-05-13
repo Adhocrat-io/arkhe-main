@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Adhocrat\Arkhe;
 
+use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
 use Adhocrat\Arkhe\Http\Middleware\EnsureUserHasBackendAccess;
+use Adhocrat\Arkhe\Repositories\UserRepository;
 use Illuminate\Routing\Router;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -20,6 +22,11 @@ class ArkheServiceProvider extends PackageServiceProvider
             ->hasTranslations()
             ->hasRoute('arkhe')
             ->hasMigration('add_arkhe_profile_columns_to_users_table');
+    }
+
+    public function packageRegistered(): void
+    {
+        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
     }
 
     public function packageBooted(): void

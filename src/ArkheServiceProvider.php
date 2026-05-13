@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Adhocrat\Arkhe;
 
+use Adhocrat\Arkhe\Http\Middleware\EnsureUserHasBackendAccess;
+use Illuminate\Routing\Router;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -22,7 +24,8 @@ class ArkheServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        // Component registration, middleware aliasing and bindings
-        // are wired up in subsequent commits.
+        /** @var Router $router */
+        $router = $this->app->make(Router::class);
+        $router->aliasMiddleware('arkhe.backend', EnsureUserHasBackendAccess::class);
     }
 }

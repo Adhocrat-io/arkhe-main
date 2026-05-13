@@ -1,8 +1,8 @@
 <flux:main class="flex h-full w-full flex-1 flex-col gap-6">
 
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <flux:heading size="xl">{{ __('arkhe::arkhe.users.title') }}</flux:heading>
+    <flux:heading size="xl">{{ __('arkhe::arkhe.users.title') }}</flux:heading>
 
+    <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2">
             <flux:input
                 wire:model.live.debounce.300ms="search"
@@ -17,11 +17,11 @@
                     <flux:select.option value="{{ $role }}">{{ $role }}</flux:select.option>
                 @endforeach
             </flux:select>
-
-            <flux:button variant="primary" icon="plus" wire:click="openCreate">
-                {{ __('arkhe::arkhe.users.create') }}
-            </flux:button>
         </div>
+
+        <flux:button variant="primary" icon="plus" wire:click="openCreate">
+            {{ __('arkhe::arkhe.users.create') }}
+        </flux:button>
     </div>
 
     <div class="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">

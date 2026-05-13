@@ -35,7 +35,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Adhocrat\\Arkhe\\": "src/"
+            "Adhocrat\\Arkhe\\": "src/",
+            "Adhocrat\\Arkhe\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {

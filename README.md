@@ -124,6 +124,53 @@ php artisan vendor:publish --tag=arkhe-views
 # then edit resources/views/vendor/arkhe/partials/sidebar-items.blade.php
 ```
 
+## Role hierarchy & authorization
+
+The `Adhocrat\Arkhe\Support\RoleHierarchy` helper encodes a configurable role hierarchy. A user can only assign roles whose rank is less than or equal to their own. The default order, highest first, is:
+
+```
+root > administrateur > user > guest
+```
+
+This means: only `root` can assign `root`; an `administrateur` cannot promote anyone to `root`; and so on.
+
+The hierarchy is enforced at three layers:
+
+- the role `<select>` only lists roles the acting user can assign;
+- a closure rule on `UserForm` rejects any out-of-rank role at validation time;
+- `UserService::syncRolesAndPermissions()` throws `AuthorizationException` as a backstop for direct service callers.
+
+### Extending the hierarchy
+
+You can slot your own roles into the hierarchy in two ways.
+
+**1. From the config file** — order of `config('arkhe.roles')` IS the hierarchy:
+
+```php
+// config/arkhe.php
+'roles' => [
+    'root'          => 'root',
+    'administrator' => 'administrateur',
+    'manager'       => 'manager',   // new role, ranks between admin and user
+    'user'          => 'user',
+    'guest'         => 'guest',
+],
+```
+
+The `arkhe:main:install` seeder picks up new entries automatically.
+
+**2. From a service provider** — useful when a separate package or module contributes a role:
+
+```php
+use Adhocrat\Arkhe\Support\RoleHierarchy;
+
+RoleHierarchy::register('manager', after: 'administrateur');
+RoleHierarchy::register('editor',  before: 'user');
+RoleHierarchy::register('intern'); // append at the lowest rank
+```
+
+`register()` also repositions an existing role if you call it again with a different anchor.
+
 ## Styling — Tailwind / Flux
 
 Tailwind only compiles classes it can **see**. Since this package's Blade files live in `vendor/adhocrat-io/arkhe-main/resources/views/`, they are not scanned by the default Laravel setup. Add the package's view path to your Tailwind source list, then rebuild your assets.

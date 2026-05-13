@@ -73,8 +73,27 @@ return [
     | Roles
     |--------------------------------------------------------------------------
     |
-    | Role names seeded by the install command and used by the backend
-    | access middleware.
+    | Role names seeded by the install command, used by the backend access
+    | middleware AND by the role hierarchy. The ORDER of this array IS the
+    | hierarchy: the first entry is the highest rank, the last is the lowest.
+    |
+    | To insert a new role at a given rank, just add it at the right position
+    | between two existing entries — both the seeder and the hierarchy will
+    | pick it up:
+    |
+    |   'roles' => [
+    |       'root'          => 'root',
+    |       'administrator' => 'administrateur',
+    |       'manager'       => 'manager',   // new role between admin and user
+    |       'user'          => 'user',
+    |       'guest'         => 'guest',
+    |   ],
+    |
+    | Alternatively, register roles at runtime from a service provider:
+    |
+    |   use Adhocrat\Arkhe\Support\RoleHierarchy;
+    |
+    |   RoleHierarchy::register('manager', after: 'administrateur');
     |
     */
     'roles' => [

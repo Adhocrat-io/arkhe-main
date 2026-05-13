@@ -75,6 +75,46 @@ By default: `GET /administration/users` (the prefix is configurable).
 
 Access is granted to users carrying either the `root` or `administrateur` role; everyone else gets a `403` via the `arkhe.backend` middleware.
 
+## Styling — Tailwind / Flux
+
+Tailwind only compiles classes it can **see**. Since this package's Blade files live in `vendor/adhocrat-io/arkhe-main/resources/views/`, they are not scanned by the default Laravel setup. Add the package's view path to your Tailwind source list, then rebuild your assets.
+
+**Tailwind 4 (recommended, used by Flux 2):**
+
+```css
+/* resources/css/app.css */
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source '../views';
+@source '../../app/Livewire';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+@source '../../vendor/adhocrat-io/arkhe-main/resources/views';
+```
+
+**Tailwind 3:**
+
+```js
+// tailwind.config.js
+export default {
+  content: [
+    './resources/views/**/*.blade.php',
+    './app/Livewire/**/*.php',
+    './vendor/livewire/flux/stubs/**/*.blade.php',
+    './vendor/adhocrat-io/arkhe-main/resources/views/**/*.blade.php',
+  ],
+  // ...
+}
+```
+
+Then:
+
+```bash
+pnpm build   # or npm run build / yarn build
+```
+
+The layout published with the package uses `@fluxAppearance` and `@fluxScripts` from `livewire/flux` — make sure those directives are reachable (they ship with Flux automatically).
+
 ## Architecture
 
 The package strictly follows the **Repository + Service** pattern:

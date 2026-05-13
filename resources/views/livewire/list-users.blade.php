@@ -212,7 +212,7 @@
                     <flux:label>{{ __('arkhe::arkhe.roles.label') }}</flux:label>
                     <flux:select wire:model="userForm.role" placeholder="{{ __('arkhe::arkhe.roles.placeholder') }}">
                         <flux:select.option value="">{{ __('arkhe::arkhe.roles.none') }}</flux:select.option>
-                        @foreach($availableRoles as $role)
+                        @foreach($assignableRoles as $role)
                             <flux:select.option value="{{ $role }}">{{ $role }}</flux:select.option>
                         @endforeach
                     </flux:select>

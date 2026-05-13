@@ -7,7 +7,9 @@ namespace Adhocrat\Arkhe\Livewire;
 use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
 use Adhocrat\Arkhe\Livewire\Forms\UserForm;
 use Adhocrat\Arkhe\Services\UserService;
+use Adhocrat\Arkhe\Support\RoleHierarchy;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -159,9 +161,13 @@ class ListUsers extends Component
             }
         }
 
+        $assignable     = RoleHierarchy::rolesAssignableBy(Auth::user());
+        $availableRoles = Role::query()->orderBy('name')->pluck('name');
+
         return view('arkhe::livewire.list-users', [
             'users'            => $users,
-            'availableRoles'   => Role::query()->orderBy('name')->pluck('name'),
+            'availableRoles'   => $availableRoles, // unfiltered: drives the filter dropdown
+            'assignableRoles'  => $availableRoles->filter(fn (string $name): bool => in_array($name, $assignable, true))->values(),
             'availablePerms'   => Permission::query()->orderBy('name')->pluck('name'),
             'currentAvatarUrl' => $currentAvatarUrl,
         ])->layout((string) config('arkhe.layout', 'arkhe::layouts.app'));

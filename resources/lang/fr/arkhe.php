@@ -56,8 +56,9 @@ return [
     ],
 
     'validation' => [
-        'email_unique'    => 'Cet email est déjà utilisé.',
-        'password_min'    => 'Le mot de passe doit contenir au moins :min caractères.',
+        'email_unique'     => 'Cet email est déjà utilisé.',
+        'password_min'     => 'Le mot de passe doit contenir au moins :min caractères.',
+        'role_above_rank'  => "Vous ne pouvez pas attribuer un rôle supérieur au vôtre.",
     ],
 
     'install' => [

@@ -56,8 +56,9 @@ return [
     ],
 
     'validation' => [
-        'email_unique' => 'This email is already in use.',
-        'password_min' => 'Password must be at least :min characters.',
+        'email_unique'    => 'This email is already in use.',
+        'password_min'    => 'Password must be at least :min characters.',
+        'role_above_rank' => 'You cannot assign a role higher than your own.',
     ],
 
     'install' => [

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Adhocrat\Arkhe\Livewire\Forms;
 
+use Adhocrat\Arkhe\Support\RoleHierarchy;
+use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
@@ -55,7 +58,7 @@ class UserForm extends Form
             'civility'      => ['nullable', 'string', 'max:32'],
             'bio'           => ['nullable', 'string', 'max:5000'],
             'avatar'        => ['nullable', 'image', 'max:4096'],
-            'role'          => ['nullable', 'string', 'exists:roles,name'],
+            'role'          => ['nullable', 'string', 'exists:roles,name', $this->roleAssignableRule()],
             'permissions'   => ['array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
         ];
@@ -103,6 +106,22 @@ class UserForm extends Form
             'roles'         => $this->role !== null && $this->role !== '' ? [$this->role] : [],
             'permissions'   => $this->permissions,
         ];
+    }
+
+    private function roleAssignableRule(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if ($value === null || $value === '') {
+                return;
+            }
+
+            /** @var Model|null $actor */
+            $actor = Auth::user();
+
+            if (! RoleHierarchy::canAssign($actor, (string) $value)) {
+                $fail(__('arkhe::arkhe.validation.role_above_rank'));
+            }
+        };
     }
 
     /**

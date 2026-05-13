@@ -8,6 +8,9 @@ use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
 use Adhocrat\Arkhe\Events\UserCreated;
 use Adhocrat\Arkhe\Events\UserDeleted;
 use Adhocrat\Arkhe\Events\UserUpdated;
+use Adhocrat\Arkhe\Support\RoleHierarchy;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Events\Dispatcher as EventsDispatcher;
 use Illuminate\Contracts\Filesystem\Factory as StorageFactory;
@@ -37,6 +40,7 @@ class UserService
         private readonly StorageFactory $storage,
         private readonly ConfigRepository $config,
         private readonly EventsDispatcher $events,
+        private readonly AuthFactory $auth,
     ) {
     }
 
@@ -127,11 +131,31 @@ class UserService
     private function syncRolesAndPermissions(Model $user, array $data): void
     {
         if (array_key_exists('roles', $data) && is_array($data['roles'])) {
+            $this->assertCanAssignRoles($data['roles']);
             $user->syncRoles($data['roles']);
         }
 
         if (array_key_exists('permissions', $data) && is_array($data['permissions'])) {
             $user->syncPermissions($data['permissions']);
+        }
+    }
+
+    /**
+     * @param  array<int, string>  $roles
+     *
+     * @throws AuthorizationException
+     */
+    private function assertCanAssignRoles(array $roles): void
+    {
+        /** @var Model|null $actor */
+        $actor = $this->auth->guard()->user();
+
+        foreach ($roles as $role) {
+            if (! RoleHierarchy::canAssign($actor, (string) $role)) {
+                throw new AuthorizationException(
+                    "You are not allowed to assign the role [{$role}]."
+                );
+            }
         }
     }
 

@@ -148,8 +148,14 @@
                             <span class="text-xs text-zinc-500">{{ __('arkhe::arkhe.users.fields.password_hint') }}</span>
                         @endif
                     </flux:label>
-                    <flux:input type="password" wire:model="userForm.password" />
+                    <flux:input type="password" wire:model="userForm.password" autocomplete="new-password" />
                     <flux:error name="userForm.password" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>{{ __('arkhe::arkhe.users.fields.password_confirmation') }}</flux:label>
+                    <flux:input type="password" wire:model="userForm.password_confirmation" autocomplete="new-password" />
+                    <flux:error name="userForm.password_confirmation" />
                 </flux:field>
 
                 <flux:field>

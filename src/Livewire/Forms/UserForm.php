@@ -21,6 +21,8 @@ class UserForm extends Form
 
     public string $password = '';
 
+    public string $password_confirmation = '';
+
     public ?string $phone = null;
 
     public ?string $date_of_birth = null;
@@ -48,8 +50,8 @@ class UserForm extends Form
             'last_name'     => ['required', 'string', 'max:120'],
             'email'         => ['required', 'email', 'max:255', Rule::unique($userTable, 'email')->ignore($this->id)],
             'password'      => $this->id === null
-                ? ['required', 'string', 'min:8']
-                : ['nullable', 'string', 'min:8'],
+                ? ['required', 'string', 'min:8', 'confirmed']
+                : ['nullable', 'string', 'min:8', 'confirmed'],
             'phone'         => ['nullable', 'string', 'max:32'],
             'date_of_birth' => ['nullable', 'date'],
             'civility'      => ['nullable', 'string', 'max:32'],
@@ -66,8 +68,9 @@ class UserForm extends Form
         $this->id            = (int) $user->getKey();
         $this->first_name    = (string) ($user->first_name ?? '');
         $this->last_name     = (string) ($user->last_name ?? '');
-        $this->email         = (string) ($user->email ?? '');
-        $this->password      = '';
+        $this->email                 = (string) ($user->email ?? '');
+        $this->password              = '';
+        $this->password_confirmation = '';
         $this->phone         = $user->phone ?? null;
         $this->date_of_birth = $user->date_of_birth?->format('Y-m-d') ?? ($user->date_of_birth ?: null);
         $this->civility      = $user->civility ?? null;

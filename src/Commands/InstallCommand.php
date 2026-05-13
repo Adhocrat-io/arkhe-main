@@ -108,12 +108,21 @@ class InstallCommand extends Command
         /** @var Model $user */
         $user = new $modelClass();
 
-        $user->forceFill([
+        $attributes = [
             'first_name' => $firstName,
             'last_name'  => $lastName,
             'email'      => $email,
             'password'   => $hasher->make($rawPassword),
-        ])->save();
+        ];
+
+        // Some host apps (Breeze/Jetstream defaults) keep a NOT NULL `name`
+        // column on `users`. If present, back-fill it from the profile so the
+        // insert doesn't fail.
+        if (Schema::hasColumn($user->getTable(), 'name')) {
+            $attributes['name'] = trim($firstName.' '.$lastName);
+        }
+
+        $user->forceFill($attributes)->save();
 
         $user->assignRole((string) $config->get('arkhe.roles.root'));
 

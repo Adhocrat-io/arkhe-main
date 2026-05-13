@@ -14,6 +14,7 @@ use Illuminate\Contracts\Filesystem\Factory as StorageFactory;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 
 class UserService
 {
@@ -108,6 +109,15 @@ class UserService
             if (array_key_exists($field, $data)) {
                 $user->{$field} = $data[$field] === '' ? null : $data[$field];
             }
+        }
+
+        // Some host apps keep a NOT NULL `name` column on `users` from
+        // the Laravel starter kits. Mirror it from first_name/last_name
+        // if it exists, so we don't break the insert.
+        if (Schema::hasColumn($user->getTable(), 'name')) {
+            $first = (string) ($data['first_name'] ?? $user->first_name ?? '');
+            $last  = (string) ($data['last_name']  ?? $user->last_name  ?? '');
+            $user->name = trim($first.' '.$last);
         }
     }
 

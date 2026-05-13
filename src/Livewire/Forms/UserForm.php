@@ -72,7 +72,7 @@ class UserForm extends Form
         $this->last_name     = (string) ($user->last_name ?? '');
         $this->email                = (string) ($user->email ?? '');
         $this->password             = '';
-        $this->passwordConfirmation = null;
+        $this->passwordConfirmation = '';
         $this->phone         = $user->phone ?? null;
         $this->date_of_birth = $user->date_of_birth?->format('Y-m-d') ?? ($user->date_of_birth ?: null);
         $this->civility      = $user->civility ?? null;

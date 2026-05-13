@@ -9,6 +9,10 @@ return [
         'total_users' => 'Utilisateurs au total',
     ],
 
+    'access' => [
+        'title' => 'Accès',
+    ],
+
     'users' => [
         'title'              => 'Utilisateurs',
         'create'             => 'Créer un utilisateur',

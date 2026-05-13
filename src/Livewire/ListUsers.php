@@ -126,6 +126,13 @@ class ListUsers extends Component
         $this->resetPage();
     }
 
+    public function resetFilters(): void
+    {
+        $this->search     = '';
+        $this->roleFilter = null;
+        $this->resetPage();
+    }
+
     public function render(UserRepositoryInterface $repository): View
     {
         $users = $repository->paginate(

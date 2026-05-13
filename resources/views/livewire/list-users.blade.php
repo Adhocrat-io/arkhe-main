@@ -8,7 +8,7 @@
         </flux:button>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2">
+    <div class="flex items-center gap-2">
         <flux:input
             wire:model.live.debounce.300ms="search"
             icon="magnifying-glass"
@@ -16,12 +16,16 @@
             class="w-72"
         />
 
-        <flux:select wire:model.live="roleFilter" placeholder="{{ __('arkhe::arkhe.users.filter_by_role') }}">
+        <flux:select wire:model.live="roleFilter" placeholder="{{ __('arkhe::arkhe.users.filter_by_role') }}" class="w-56">
             <flux:select.option value="">{{ __('arkhe::arkhe.users.all_roles') }}</flux:select.option>
             @foreach($availableRoles as $role)
                 <flux:select.option value="{{ $role }}">{{ $role }}</flux:select.option>
             @endforeach
         </flux:select>
+
+        <flux:button variant="ghost" icon="x-mark" wire:click="resetFilters">
+            {{ __('arkhe::arkhe.actions.reset') }}
+        </flux:button>
     </div>
 
     <div class="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">

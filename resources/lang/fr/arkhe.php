@@ -49,6 +49,7 @@ return [
         'cancel' => 'Annuler',
         'edit'   => 'Modifier',
         'delete' => 'Supprimer',
+        'reset'  => 'Réinitialiser',
     ],
 
     'validation' => [

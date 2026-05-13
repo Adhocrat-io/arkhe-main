@@ -16,6 +16,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard route (opt-in)
+    |--------------------------------------------------------------------------
+    |
+    | When set, Arkhe registers a top-level dashboard at this path with the
+    | named route `arkhe.dashboard`. Leave null to keep your app's existing
+    | dashboard untouched. Typical value: `dashboard`.
+    |
+    */
+    'dashboard_route' => env('ARKHE_DASHBOARD_ROUTE'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Middleware
     |--------------------------------------------------------------------------
     |

@@ -75,6 +75,51 @@ By default: `GET /administration/users` (the prefix is configurable).
 
 Access is granted to users carrying either the `root` or `administrateur` role; everyone else gets a `403` via the `arkhe.backend` middleware.
 
+## Coexisting with a custom admin (Livewire starter kit)
+
+Arkhe is designed to **plug into** your existing admin shell rather than replace it. Two integration points:
+
+### 1. Use your app's layout
+
+In `config/arkhe.php`:
+
+```php
+'layout' => 'components.layouts.app', // your starter kit layout
+```
+
+Arkhe pages will render inside your existing chrome (sidebar, topbar, your CSS).
+
+### 2. Take over the `/dashboard` route (opt-in)
+
+Comment out the dashboard route in your `routes/web.php` and set:
+
+```dotenv
+ARKHE_DASHBOARD_ROUTE=dashboard
+```
+
+Arkhe registers `arkhe.dashboard` at `/dashboard` with a minimal users-by-role overview. Keep the env var unset and your own dashboard remains untouched.
+
+### 3. Inject Arkhe entries into your sidebar
+
+Include the bundled partial inside your `<flux:navlist>`:
+
+```blade
+<flux:navlist>
+    {{-- your custom admin links --}}
+    <flux:navlist.item icon="folder" :href="route('admin.projects.index')">Projects</flux:navlist.item>
+
+    {{-- Arkhe entries (Dashboard if enabled, Users) --}}
+    @include('arkhe::partials.sidebar-items')
+</flux:navlist>
+```
+
+You can also publish the partial to customise it:
+
+```bash
+php artisan vendor:publish --tag=arkhe-views
+# then edit resources/views/vendor/arkhe/partials/sidebar-items.blade.php
+```
+
 ## Styling — Tailwind / Flux
 
 Tailwind only compiles classes it can **see**. Since this package's Blade files live in `vendor/adhocrat-io/arkhe-main/resources/views/`, they are not scanned by the default Laravel setup. Add the package's view path to your Tailwind source list, then rebuild your assets.

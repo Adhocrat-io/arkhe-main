@@ -23,21 +23,23 @@
     </flux:sidebar.item>
 @endif
 
-<flux:sidebar.item
-    icon="users"
-    :href="route('arkhe.users.index')"
-    :current="request()->routeIs('arkhe.users.*')"
-    wire:navigate
->
-    {{ __('arkhe::arkhe.users.title') }}
-</flux:sidebar.item>
+@php($isArkheRoot = (bool) auth()->user()?->isArkheRoot())
 
-@if(auth()->user()?->isArkheRoot())
-    <flux:sidebar.group
-        expandable
-        :heading="__('arkhe::arkhe.access.title')"
-        :expanded="request()->routeIs('arkhe.roles.*') || request()->routeIs('arkhe.permissions.*')"
+<flux:sidebar.group
+    expandable
+    :heading="__('arkhe::arkhe.access.title')"
+    :expanded="request()->routeIs('arkhe.users.*') || request()->routeIs('arkhe.roles.*') || request()->routeIs('arkhe.permissions.*')"
+>
+    <flux:sidebar.item
+        icon="users"
+        :href="route('arkhe.users.index')"
+        :current="request()->routeIs('arkhe.users.*')"
+        wire:navigate
     >
+        {{ __('arkhe::arkhe.users.title') }}
+    </flux:sidebar.item>
+
+    @if($isArkheRoot)
         <flux:sidebar.item
             icon="key"
             :href="route('arkhe.roles.index')"
@@ -55,5 +57,5 @@
         >
             {{ __('arkhe::arkhe.permissions.title') }}
         </flux:sidebar.item>
-    </flux:sidebar.group>
-@endif
+    @endif
+</flux:sidebar.group>

@@ -12,10 +12,11 @@
 --}}
 
 @if(config('arkhe.dashboard_route'))
+    @php($arkheDashboardRoute = (string) config('arkhe.dashboard_route_name', 'arkhe.dashboard'))
     <flux:sidebar.item
         icon="home"
-        :href="route('arkhe.dashboard')"
-        :current="request()->routeIs('arkhe.dashboard')"
+        :href="route($arkheDashboardRoute)"
+        :current="request()->routeIs($arkheDashboardRoute)"
         wire:navigate
     >
         {{ __('arkhe::arkhe.dashboard.title') }}

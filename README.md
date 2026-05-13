@@ -79,15 +79,28 @@ In `config/arkhe.php`:
 
 Arkhe pages will render inside your existing chrome (sidebar, topbar, your CSS).
 
-### 2. Take over the `/dashboard` route (opt-in)
+### 2. Take over the dashboard route (opt-in)
 
-Comment out the dashboard route in your `routes/web.php` and set:
+Comment out the dashboard route in your `routes/web.php` and set the path:
 
 ```dotenv
-ARKHE_DASHBOARD_ROUTE=dashboard
+ARKHE_DASHBOARD_ROUTE=administration/dashboard
 ```
 
-Arkhe registers `arkhe.dashboard` at `/dashboard` with a minimal users-by-role overview. Keep the env var unset and your own dashboard remains untouched.
+Arkhe mounts a minimal users-by-role dashboard at the path you choose. Keep the env var unset and your own dashboard remains untouched.
+
+**Login redirect.** The Laravel starter kits redirect to `route('dashboard', absolute: false)` after authentication. Two ways to point that at Arkhe:
+
+- **A — re-use the `dashboard` route name** (zero patch on your starter):
+
+  ```dotenv
+  ARKHE_DASHBOARD_ROUTE=administration/dashboard
+  ARKHE_DASHBOARD_ROUTE_NAME=dashboard
+  ```
+
+  `route('dashboard')` now resolves to `/administration/dashboard`, the after-login redirect just works.
+
+- **B — keep `arkhe.dashboard` and patch the starter's login**: open the login Livewire/Volt component and replace `route('dashboard', absolute: false)` with `route('arkhe.dashboard', absolute: false)`. Pick this when another part of your app still needs `dashboard` to mean something else.
 
 ### 3. Inject Arkhe entries into your sidebar
 

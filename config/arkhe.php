@@ -28,6 +28,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard route name
+    |--------------------------------------------------------------------------
+    |
+    | Named route under which the dashboard is registered. Defaults to
+    | `arkhe.dashboard`. Set to `dashboard` (via ARKHE_DASHBOARD_ROUTE_NAME)
+    | so the Laravel starter kit's `route('dashboard')` after-login redirect
+    | resolves to Arkhe's dashboard without having to patch the login form.
+    |
+    */
+    'dashboard_route_name' => env('ARKHE_DASHBOARD_ROUTE_NAME', 'arkhe.dashboard'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Middleware
     |--------------------------------------------------------------------------
     |

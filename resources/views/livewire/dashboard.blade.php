@@ -15,7 +15,7 @@
         @endforeach
     </div>
 
-    <flux:button :href="route('arkhe.users.index')" icon="users" variant="primary">
+    <flux:button :href="route('arkhe.users.index')" icon="users" variant="primary" wire:navigate>
         {{ __('arkhe::arkhe.users.title') }}
     </flux:button>
 </flux:main>

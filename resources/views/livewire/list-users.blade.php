@@ -115,8 +115,8 @@
         {{ $users->links() }}
     </div>
 
-    {{-- Create / Edit modal --}}
-    <flux:modal wire:model="showFormModal" name="user-form" class="w-full max-w-2xl">
+    {{-- Create / Edit modal (right-anchored flyout, full viewport height) --}}
+    <flux:modal wire:model="showFormModal" name="user-form" variant="flyout" position="right" class="w-full max-w-2xl">
         <form wire:submit="save" class="space-y-4" enctype="multipart/form-data">
             <flux:heading size="lg">
                 {{ $selectedUser ? __('arkhe::arkhe.users.edit') : __('arkhe::arkhe.users.create') }}

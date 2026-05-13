@@ -42,9 +42,48 @@ return [
     ],
 
     'roles' => [
-        'label'       => 'Rôle',
-        'placeholder' => 'Sélectionner un rôle…',
-        'none'        => 'Aucun',
+        'label'              => 'Rôle',
+        'placeholder'        => 'Sélectionner un rôle…',
+        'none'               => 'Aucun',
+        'title'              => 'Rôles',
+        'create'             => 'Créer un rôle',
+        'edit'               => 'Modifier le rôle',
+        'empty'              => 'Aucun rôle.',
+        'search_placeholder' => 'Rechercher par nom…',
+        'canonical'          => 'canonique',
+        'canonical_hint'     => 'Ce rôle est canonique à Arkhe : son nom est immuable, mais ses permissions sont modifiables.',
+        'delete_title'       => 'Supprimer ce rôle',
+        'delete_confirm'     => 'Les utilisateurs portant ce rôle le perdront. Continuer ?',
+        'columns' => [
+            'name'        => 'Nom',
+            'guard'       => 'Guard',
+            'permissions' => 'Permissions',
+            'actions'     => 'Actions',
+        ],
+        'fields' => [
+            'name'        => 'Nom',
+            'guard'       => 'Guard',
+            'permissions' => 'Permissions',
+        ],
+    ],
+
+    'permissions' => [
+        'title'              => 'Permissions',
+        'create'             => 'Créer une permission',
+        'edit'               => 'Modifier la permission',
+        'empty'              => 'Aucune permission.',
+        'search_placeholder' => 'Rechercher par nom…',
+        'delete_title'       => 'Supprimer cette permission',
+        'delete_confirm'     => 'Tous les rôles et utilisateurs qui portent cette permission la perdront. Continuer ?',
+        'columns' => [
+            'name'    => 'Nom',
+            'guard'   => 'Guard',
+            'actions' => 'Actions',
+        ],
+        'fields' => [
+            'name'  => 'Nom',
+            'guard' => 'Guard',
+        ],
     ],
 
     'actions' => [

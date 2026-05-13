@@ -42,9 +42,48 @@ return [
     ],
 
     'roles' => [
-        'label'       => 'Role',
-        'placeholder' => 'Select a role…',
-        'none'        => 'None',
+        'label'              => 'Role',
+        'placeholder'        => 'Select a role…',
+        'none'               => 'None',
+        'title'              => 'Roles',
+        'create'             => 'Create role',
+        'edit'               => 'Edit role',
+        'empty'              => 'No roles.',
+        'search_placeholder' => 'Search by name…',
+        'canonical'          => 'canonical',
+        'canonical_hint'     => 'This role is canonical to Arkhe: its name is immutable, but its permissions are editable.',
+        'delete_title'       => 'Delete this role',
+        'delete_confirm'     => 'Users carrying this role will lose it. Continue?',
+        'columns' => [
+            'name'        => 'Name',
+            'guard'       => 'Guard',
+            'permissions' => 'Permissions',
+            'actions'     => 'Actions',
+        ],
+        'fields' => [
+            'name'        => 'Name',
+            'guard'       => 'Guard',
+            'permissions' => 'Permissions',
+        ],
+    ],
+
+    'permissions' => [
+        'title'              => 'Permissions',
+        'create'             => 'Create permission',
+        'edit'               => 'Edit permission',
+        'empty'              => 'No permissions.',
+        'search_placeholder' => 'Search by name…',
+        'delete_title'       => 'Delete this permission',
+        'delete_confirm'     => 'All roles and users carrying this permission will lose it. Continue?',
+        'columns' => [
+            'name'    => 'Name',
+            'guard'   => 'Guard',
+            'actions' => 'Actions',
+        ],
+        'fields' => [
+            'name'  => 'Name',
+            'guard' => 'Guard',
+        ],
     ],
 
     'actions' => [

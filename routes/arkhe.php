@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Adhocrat\Arkhe\Livewire\Dashboard;
+use Adhocrat\Arkhe\Livewire\ListPermissions;
+use Adhocrat\Arkhe\Livewire\ListRoles;
 use Adhocrat\Arkhe\Livewire\ListUsers;
 use Illuminate\Support\Facades\Route;
 
@@ -23,4 +25,10 @@ Route::middleware($middleware)
     ->name('arkhe.')
     ->group(function (): void {
         Route::get('/users', ListUsers::class)->name('users.index');
+
+        // Roles + permissions management is restricted to the `root` role.
+        Route::middleware('arkhe.root')->group(function (): void {
+            Route::get('/roles',       ListRoles::class)->name('roles.index');
+            Route::get('/permissions', ListPermissions::class)->name('permissions.index');
+        });
     });

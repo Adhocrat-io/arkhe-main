@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace Adhocrat\Arkhe;
 
 use Adhocrat\Arkhe\Commands\InstallCommand;
+use Adhocrat\Arkhe\Contracts\PermissionRepositoryInterface;
+use Adhocrat\Arkhe\Contracts\RoleRepositoryInterface;
 use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
 use Adhocrat\Arkhe\Http\Middleware\EnsureUserHasBackendAccess;
+use Adhocrat\Arkhe\Http\Middleware\EnsureUserIsRoot;
 use Adhocrat\Arkhe\Livewire\Dashboard;
+use Adhocrat\Arkhe\Livewire\ListPermissions;
+use Adhocrat\Arkhe\Livewire\ListRoles;
 use Adhocrat\Arkhe\Livewire\ListUsers;
+use Adhocrat\Arkhe\Repositories\PermissionRepository;
+use Adhocrat\Arkhe\Repositories\RoleRepository;
 use Adhocrat\Arkhe\Repositories\UserRepository;
 use Adhocrat\Arkhe\Support\Features;
 use Illuminate\Routing\Router;
@@ -33,6 +40,8 @@ class ArkheServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
+        $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
     }
 
     public function packageBooted(): void
@@ -40,9 +49,12 @@ class ArkheServiceProvider extends PackageServiceProvider
         /** @var Router $router */
         $router = $this->app->make(Router::class);
         $router->aliasMiddleware('arkhe.backend', EnsureUserHasBackendAccess::class);
+        $router->aliasMiddleware('arkhe.root',    EnsureUserIsRoot::class);
 
-        Livewire::component('arkhe.list-users', ListUsers::class);
-        Livewire::component('arkhe.dashboard', Dashboard::class);
+        Livewire::component('arkhe.list-users',       ListUsers::class);
+        Livewire::component('arkhe.list-roles',       ListRoles::class);
+        Livewire::component('arkhe.list-permissions', ListPermissions::class);
+        Livewire::component('arkhe.dashboard',        Dashboard::class);
 
         $this->overrideFortifyHome();
 

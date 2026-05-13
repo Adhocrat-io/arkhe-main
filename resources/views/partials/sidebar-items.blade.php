@@ -31,3 +31,23 @@
 >
     {{ __('arkhe::arkhe.users.title') }}
 </flux:sidebar.item>
+
+@if(auth()->user()?->isArkheRoot())
+    <flux:sidebar.item
+        icon="key"
+        :href="route('arkhe.roles.index')"
+        :current="request()->routeIs('arkhe.roles.*')"
+        wire:navigate
+    >
+        {{ __('arkhe::arkhe.roles.title') }}
+    </flux:sidebar.item>
+
+    <flux:sidebar.item
+        icon="shield-check"
+        :href="route('arkhe.permissions.index')"
+        :current="request()->routeIs('arkhe.permissions.*')"
+        wire:navigate
+    >
+        {{ __('arkhe::arkhe.permissions.title') }}
+    </flux:sidebar.item>
+@endif

@@ -101,16 +101,20 @@ Arkhe registers `arkhe.dashboard` at `/dashboard` with a minimal users-by-role o
 
 ### 3. Inject Arkhe entries into your sidebar
 
-Include the bundled partial inside your `<flux:navlist>`:
+Include the bundled partial inside one of your `<flux:sidebar.group>` blocks (the partial emits plain `<flux:sidebar.item>` entries, no wrapper — you decide the group and the order):
 
 ```blade
-<flux:navlist>
-    {{-- your custom admin links --}}
-    <flux:navlist.item icon="folder" :href="route('admin.projects.index')">Projects</flux:navlist.item>
+<flux:sidebar.nav>
+    <flux:sidebar.group :heading="__('Platform')" class="grid">
+        {{-- your custom admin links --}}
+        <flux:sidebar.item icon="folder" :href="route('admin.projects.index')" wire:navigate>
+            Projects
+        </flux:sidebar.item>
 
-    {{-- Arkhe entries (Dashboard if enabled, Users) --}}
-    @include('arkhe::partials.sidebar-items')
-</flux:navlist>
+        {{-- Arkhe entries (Dashboard if enabled, Users) --}}
+        @include('arkhe::partials.sidebar-items')
+    </flux:sidebar.group>
+</flux:sidebar.nav>
 ```
 
 You can also publish the partial to customise it:

@@ -41,6 +41,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Override Fortify's `home` redirect
+    |--------------------------------------------------------------------------
+    |
+    | When Fortify is installed and `dashboard_route` is set, Arkhe rewrites
+    | `config('fortify.home')` at boot so the post-login (and post-2FA, post
+    | password confirm) redirect lands on the Arkhe dashboard instead of the
+    | starter kit's hard-coded `/dashboard`. Disable if you want to manage
+    | Fortify's redirect yourself.
+    |
+    */
+    'override_fortify_redirect' => env('ARKHE_OVERRIDE_FORTIFY_REDIRECT', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Middleware
     |--------------------------------------------------------------------------
     |

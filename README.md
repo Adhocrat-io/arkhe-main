@@ -102,6 +102,8 @@ Arkhe mounts a minimal users-by-role dashboard at the path you choose. Keep the 
 
 - **B — keep `arkhe.dashboard` and patch the starter's login**: open the login Livewire/Volt component and replace `route('dashboard', absolute: false)` with `route('arkhe.dashboard', absolute: false)`. Pick this when another part of your app still needs `dashboard` to mean something else.
 
+> **Fortify users** (Laravel 12 Livewire starter kit included): the starter's login form posts to Fortify, which redirects to the literal value of `config('fortify.home')` after auth — not via the named `dashboard` route. Arkhe detects Fortify automatically and rewrites that value to your `ARKHE_DASHBOARD_ROUTE` at boot, so neither A nor B is needed for the form submission to land on the right page. Set `ARKHE_OVERRIDE_FORTIFY_REDIRECT=false` to opt out.
+
 ### 3. Inject Arkhe entries into your sidebar
 
 Include the bundled partial inside one of your `<flux:sidebar.group>` blocks (the partial emits plain `<flux:sidebar.item>` entries, no wrapper — you decide the group and the order):

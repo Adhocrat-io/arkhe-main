@@ -44,7 +44,29 @@ class ArkheServiceProvider extends PackageServiceProvider
         Livewire::component('arkhe.list-users', ListUsers::class);
         Livewire::component('arkhe.dashboard', Dashboard::class);
 
+        $this->overrideFortifyHome();
+
         $this->bootFeatures();
+    }
+
+    private function overrideFortifyHome(): void
+    {
+        if (! (bool) config('arkhe.override_fortify_redirect', true)) {
+            return;
+        }
+
+        $dashboard = (string) config('arkhe.dashboard_route', '');
+        if ($dashboard === '') {
+            return;
+        }
+
+        // Only act when Fortify is actually wired up — Arkhe doesn't depend on it.
+        if (! interface_exists(\Laravel\Fortify\Contracts\LoginResponse::class)) {
+            return;
+        }
+
+        $path = '/'.ltrim($dashboard, '/');
+        config(['fortify.home' => $path]);
     }
 
     private function bootFeatures(): void

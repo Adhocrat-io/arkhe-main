@@ -67,8 +67,17 @@ return [
     |--------------------------------------------------------------------------
     | Layout
     |--------------------------------------------------------------------------
+    |
+    | The Blade layout wrapping Arkhe's Livewire pages (users, roles,
+    | permissions, dashboard). Defaults to `layouts::app`, which Livewire 4
+    | registers out of the box as a namespace mapping to
+    | `resources/views/layouts/` — the Livewire starter kit's sidebar lives
+    | there. Override if your layout lives elsewhere. Set to
+    | `arkhe::layouts.app` to fall back to the package's own minimal
+    | header-only layout (no sidebar, useful for headless installs).
+    |
     */
-    'layout' => 'arkhe::layouts.app',
+    'layout' => 'layouts::app',
 
     /*
     |--------------------------------------------------------------------------
@@ -124,10 +133,10 @@ return [
     |
     */
     'roles' => [
-        'root'          => 'root',
+        'root' => 'root',
         'administrator' => 'administrateur',
-        'user'          => 'user',
-        'guest'         => 'guest',
+        'user' => 'user',
+        'guest' => 'guest',
     ],
 
     /*
@@ -141,7 +150,7 @@ return [
     */
     'features' => [
         'cookie_consent' => false,
-        'seo'            => false,
+        'seo' => false,
     ],
 
 ];

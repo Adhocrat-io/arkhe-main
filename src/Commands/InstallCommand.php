@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Adhocrat\Arkhe\Commands;
 
 use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Traits\HasRoles;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\password;
@@ -61,6 +63,10 @@ class InstallCommand extends Command
 
         $this->components->info('Roles seeded.');
 
+        if (confirm(__('arkhe::arkhe.install.patch_sidebar_prompt'), default: true)) {
+            $this->installSidebar();
+        }
+
         if (confirm(__('arkhe::arkhe.install.create_root'), default: true)) {
             $this->createRootUser($container, $config, $hasher);
         }
@@ -102,7 +108,7 @@ class InstallCommand extends Command
         }
 
         $firstName = text(label: __('arkhe::arkhe.install.root_first_name'), required: true);
-        $lastName  = text(label: __('arkhe::arkhe.install.root_last_name'), required: true);
+        $lastName = text(label: __('arkhe::arkhe.install.root_last_name'), required: true);
 
         $modelClass = $this->resolveUserModel($config);
 
@@ -125,13 +131,13 @@ class InstallCommand extends Command
         }
 
         /** @var Model $user */
-        $user = new $modelClass();
+        $user = new $modelClass;
 
         $attributes = [
             'first_name' => $firstName,
-            'last_name'  => $lastName,
-            'email'      => $email,
-            'password'   => $hasher->make($rawPassword),
+            'last_name' => $lastName,
+            'email' => $email,
+            'password' => $hasher->make($rawPassword),
         ];
 
         if (Schema::hasColumn($user->getTable(), 'name')) {
@@ -151,7 +157,7 @@ class InstallCommand extends Command
     private function userModelHasRolesTrait(string $modelClass): bool
     {
         return method_exists($modelClass, 'assignRole')
-            || in_array(\Spatie\Permission\Traits\HasRoles::class, class_uses_recursive($modelClass), true);
+            || in_array(HasRoles::class, class_uses_recursive($modelClass), true);
     }
 
     /**
@@ -201,13 +207,13 @@ class InstallCommand extends Command
                 return ['ok' => false, 'reason' => 'Could not locate a namespace or use block to insert the import'];
             }
             $insertAt = $nsMatch[0][1] + strlen($nsMatch[0][0]);
-            $content  = substr($content, 0, $insertAt)."\n\n".$importLine.substr($content, $insertAt);
+            $content = substr($content, 0, $insertAt)."\n\n".$importLine.substr($content, $insertAt);
         } else {
             /** @var array<int, array{0: string, 1: int}> $hits */
-            $hits     = $matches[0];
-            $lastUse  = end($hits);
+            $hits = $matches[0];
+            $lastUse = end($hits);
             $insertAt = $lastUse[1] + strlen($lastUse[0]);
-            $content  = substr($content, 0, $insertAt)."\n".$importLine.substr($content, $insertAt);
+            $content = substr($content, 0, $insertAt)."\n".$importLine.substr($content, $insertAt);
         }
 
         // 2) Insert `use HasBackendProfile;` right after the opening class brace.
@@ -215,13 +221,155 @@ class InstallCommand extends Command
             return ['ok' => false, 'reason' => 'Could not locate the class opening brace'];
         }
         $bracePos = $classMatch[1][1] + strlen($classMatch[1][0]);
-        $content  = substr($content, 0, $bracePos)."\n    use HasBackendProfile;\n".substr($content, $bracePos);
+        $content = substr($content, 0, $bracePos)."\n    use HasBackendProfile;\n".substr($content, $bracePos);
 
         if (file_put_contents($file, $content) === false) {
             return ['ok' => false, 'reason' => "Failed to write {$file}"];
         }
 
         return ['ok' => true, 'file' => $file];
+    }
+
+    private function installSidebar(): void
+    {
+        $file = $this->locateSidebarFile();
+
+        if ($file === null) {
+            $this->components->warn(__('arkhe::arkhe.install.patch_sidebar_failed', [
+                'reason' => 'No sidebar.blade.php containing <flux:sidebar.nav> found under resources/views/.',
+            ]));
+
+            return;
+        }
+
+        $result = $this->patchSidebarFile($file);
+
+        if ($result['status'] === 'patched') {
+            $this->components->info(__('arkhe::arkhe.install.patch_sidebar_done', ['file' => $result['file']]));
+
+            return;
+        }
+
+        if ($result['status'] === 'already') {
+            $this->components->info(__('arkhe::arkhe.install.patch_sidebar_already', ['file' => $result['file']]));
+
+            return;
+        }
+
+        $this->components->warn(__('arkhe::arkhe.install.patch_sidebar_failed', [
+            'reason' => $result['reason'] ?? 'unknown',
+        ]));
+    }
+
+    /**
+     * Locate the consumer's sidebar Blade file. Returns null if no plausible
+     * candidate is found. Prefers the Livewire starter kit / Flux convention,
+     * then falls back to globbing for any sidebar*.blade.php containing
+     * <flux:sidebar.nav>.
+     *
+     * The $resourcesPath argument exists for tests; in real use it defaults
+     * to the app's resource_path().
+     */
+    private function locateSidebarFile(?string $resourcesPath = null): ?string
+    {
+        $resourcesPath ??= resource_path();
+
+        $primary = $resourcesPath.'/views/layouts/app/sidebar.blade.php';
+        if (is_file($primary) && $this->fileContainsSidebarNav($primary)) {
+            return $primary;
+        }
+
+        $matches = [];
+
+        $views = $resourcesPath.'/views';
+        if (! is_dir($views)) {
+            return null;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($views, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        /** @var \SplFileInfo $entry */
+        foreach ($iterator as $entry) {
+            if (! $entry->isFile()) {
+                continue;
+            }
+            $name = $entry->getFilename();
+            if (! str_contains($name, 'sidebar') || ! str_ends_with($name, '.blade.php')) {
+                continue;
+            }
+            $path = $entry->getPathname();
+            // Skip the package's own published partial.
+            if (str_contains($path, 'vendor/arkhe') || str_contains($path, 'vendor'.DIRECTORY_SEPARATOR.'arkhe')) {
+                continue;
+            }
+            if ($this->fileContainsSidebarNav($path)) {
+                $matches[] = $path;
+            }
+        }
+
+        // Only auto-patch when exactly one candidate exists — if multiple
+        // layouts have a sidebar, the user picks manually.
+        return count($matches) === 1 ? $matches[0] : null;
+    }
+
+    private function fileContainsSidebarNav(string $file): bool
+    {
+        $content = @file_get_contents($file);
+
+        return is_string($content) && str_contains($content, '<flux:sidebar.nav');
+    }
+
+    /**
+     * Inject `@include('arkhe::partials.sidebar-items')` just before the first
+     * closing </flux:sidebar.nav> tag. Idempotent.
+     *
+     * @return array{status: 'patched'|'already'|'failed', file?: string, reason?: string}
+     */
+    private function patchSidebarFile(string $file): array
+    {
+        if (! is_file($file)) {
+            return ['status' => 'failed', 'reason' => "File not found: {$file}"];
+        }
+        if (! is_writable($file)) {
+            return ['status' => 'failed', 'reason' => "Not writable: {$file}"];
+        }
+
+        $content = (string) file_get_contents($file);
+        if ($content === '') {
+            return ['status' => 'failed', 'reason' => "Empty or unreadable: {$file}"];
+        }
+
+        if (str_contains($content, 'arkhe::partials.sidebar-items')) {
+            return ['status' => 'already', 'file' => $file];
+        }
+
+        $needle = '</flux:sidebar.nav>';
+        $pos = strpos($content, $needle);
+        if ($pos === false) {
+            return ['status' => 'failed', 'reason' => "Could not find </flux:sidebar.nav> in {$file}"];
+        }
+
+        // Preserve indentation: copy the indent of the line that holds the closing tag.
+        $lineStart = strrpos(substr($content, 0, $pos), "\n");
+        $lineStart = $lineStart === false ? 0 : $lineStart + 1;
+        $indent = substr($content, $lineStart, $pos - $lineStart);
+        // The closing tag's indent is one step out from its children. Add
+        // 4 spaces if the indent is purely whitespace (typical case).
+        $childIndent = preg_match('/^\s*$/', $indent) === 1 ? $indent.'    ' : $indent;
+
+        $injection = "\n".$childIndent."@include('arkhe::partials.sidebar-items')\n".$indent;
+
+        $patched = substr($content, 0, $pos)
+            .$injection
+            .substr($content, $pos);
+
+        if (file_put_contents($file, $patched) === false) {
+            return ['status' => 'failed', 'reason' => "Failed to write {$file}"];
+        }
+
+        return ['status' => 'patched', 'file' => $file];
     }
 
     /**
@@ -236,7 +384,7 @@ class InstallCommand extends Command
         }
 
         /** @var class-string<Model> $default */
-        $default = $config->get('auth.providers.users.model', \App\Models\User::class);
+        $default = $config->get('auth.providers.users.model', User::class);
 
         return $default;
     }

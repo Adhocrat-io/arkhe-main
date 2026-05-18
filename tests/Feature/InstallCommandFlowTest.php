@@ -12,6 +12,7 @@ it('runs end-to-end without prompts, seeding roles and creating the root user', 
         ->expectsConfirmation('Publish the migrations?', 'no')
         ->expectsConfirmation('Publish the views? (optional)', 'no')
         ->expectsConfirmation('Run migrations now?', 'no')
+        ->expectsConfirmation('Add the Arkhe links to your sidebar automatically?', 'no')
         ->expectsConfirmation('Create the first root user?', 'yes')
         ->expectsQuestion('Root user email', 'root@cli.test')
         ->expectsQuestion('Root user password', 'secret123')

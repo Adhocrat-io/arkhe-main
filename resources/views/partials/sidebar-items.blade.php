@@ -1,14 +1,19 @@
 {{--
     Sidebar items provided by Arkhe Main.
 
-    Paste an @include inside one of your <flux:sidebar.group> blocks so
-    Arkhe's pages show up alongside your own custom admin links. Order and
-    grouping stay under your control. Example:
+    Include this partial inside your <flux:sidebar.nav> block — it ships its
+    own Dashboard item and an "Access" group, so it should sit at the same
+    level as your own groups, not nested inside one. Example:
 
-        <flux:sidebar.group :heading="__('Platform')" class="grid">
-            <flux:sidebar.item ...>Your custom item</flux:sidebar.item>
+        <flux:sidebar.nav>
+            <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.item ...>Your custom item</flux:sidebar.item>
+            </flux:sidebar.group>
+
             @include('arkhe::partials.sidebar-items')
-        </flux:sidebar.group>
+        </flux:sidebar.nav>
+
+    The InstallCommand will try to insert this @include for you automatically.
 --}}
 
 @if(config('arkhe.dashboard_route'))

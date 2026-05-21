@@ -14,6 +14,7 @@ Bootstrap a Laravel backend with **users, roles and permissions** management, se
 | Flux UI | `^2.1` (Free edition) |
 | Spatie laravel-permission | `^7.0` |
 | ralphjsmit/laravel-seo | `^1.8` |
+| spatie/laravel-sitemap | `^8.1` |
 
 ## Installation
 
@@ -357,6 +358,45 @@ The merge order (highest priority first):
 ### Disabling the integration
 
 Set `arkhe.features.seo` to `false` in your `config/arkhe.php` to skip the SEOData transformer registration. The `seo()` helper still works (the upstream package is always loaded), it just won't pick up Arkhe's site defaults.
+
+## Sitemap
+
+Arkhe ships [`spatie/laravel-sitemap`](https://github.com/spatie/laravel-sitemap) since 3.1.0. The package registers a scheduled `GenerateSitemap` job and exposes a root-only admin page at `/administration/sitemap` (route `arkhe.sitemap.edit`) to inspect status and trigger a regeneration on demand.
+
+### Configuration
+
+`config/arkhe.php`:
+
+```php
+'sitemap' => [
+    'enabled'  => env('ARKHE_SITEMAP_ENABLED', true),
+    'url'      => env('ARKHE_SITEMAP_URL'),      // null → falls back to config('app.url')
+    'path'     => env('ARKHE_SITEMAP_PATH'),     // null → falls back to public_path('sitemap.xml')
+    'schedule' => env('ARKHE_SITEMAP_SCHEDULE', '0 3 * * *'),
+],
+```
+
+The cron expression is registered with `callAfterResolving(Schedule::class, …)` so it lights up as soon as the host app's scheduler runs. To skip the automatic scheduling without losing the admin button, set `ARKHE_SITEMAP_ENABLED=false`.
+
+### Running the job manually
+
+```bash
+php artisan queue:work          # if the queue isn't already running
+# then click "Regenerate now" on /administration/sitemap
+```
+
+The `Regenerate now` button dispatches `Arkhe\Main\Jobs\GenerateSitemap` onto the host app's default queue. With the `sync` driver, the regeneration runs inline — same code path, no scheduler dependency.
+
+### Customising the generator
+
+Subclass `Arkhe\Main\Services\SitemapService` and override `configureGenerator(SitemapGenerator $generator): void` to add URLs, swap the crawl profile, or filter pages. Then point the binding at your subclass:
+
+```php
+// AppServiceProvider::register
+$this->app->bind(\Arkhe\Main\Services\SitemapService::class, \App\Services\MySitemapService::class);
+```
+
+For per-model integration, implement Spatie's `Sitemapable` contract on any Eloquent model — see the [upstream docs](https://github.com/spatie/laravel-sitemap).
 
 ## Phase 2 (preview)
 

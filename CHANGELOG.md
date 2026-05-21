@@ -5,6 +5,15 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 ## [Unreleased] — 3.1.0
 
 ### Added
+- `spatie/laravel-sitemap` (`^8.1`) integration. `Arkhe\Main\Services\SitemapService`
+  wraps `SitemapGenerator` with config-driven URL/path; a scheduled
+  `Arkhe\Main\Jobs\GenerateSitemap` job runs daily at the cron expression
+  set by `arkhe.sitemap.schedule` (defaults `0 3 * * *`); the root-only
+  Livewire page at `/administration/sitemap` exposes a "Regenerate now"
+  button that dispatches the same job onto the host app's queue. Last
+  generation timestamp persisted on the `arkhe_site_seo` table via a new
+  `sitemap_generated_at` column. Three new permissions
+  (`manage-sitemap`, `view-sitemap`, `update-sitemap`).
 - `ralphjsmit/laravel-seo` (`^1.8`) is now a first-class dependency. The
   package's `seo()` helper is rendered in the Arkhe layout's `<head>` so
   every backend page emits sensible meta tags out of the box. See the new

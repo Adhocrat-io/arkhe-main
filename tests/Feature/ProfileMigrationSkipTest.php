@@ -15,9 +15,11 @@ use Illuminate\Support\Facades\Schema;
 
 function loadProfileMigration(): object
 {
-    $stub = file_get_contents(__DIR__.'/../../database/migrations/add_arkhe_profile_columns_to_users_table.php.stub');
-
-    return eval('?>'.$stub);
+    // The .stub file is plain PHP (starts with <?php and returns an
+    // anonymous class). require it instead of eval()'ing — paratest workers
+    // silently crash with exit code 2 when eval()'ing anonymous classes
+    // under parallel execution.
+    return require __DIR__.'/../../database/migrations/add_arkhe_profile_columns_to_users_table.php.stub';
 }
 
 beforeEach(function (): void {

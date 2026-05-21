@@ -6,6 +6,7 @@ namespace Arkhe\Main;
 
 use Arkhe\Main\Commands\AddUserCommand;
 use Arkhe\Main\Commands\InstallCommand;
+use Arkhe\Main\Commands\UpgradeFromV2Command;
 use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
@@ -36,7 +37,8 @@ class ArkheMainServiceProvider extends PackageServiceProvider
             ->hasRoute('arkhe')
             ->hasMigration('add_arkhe_profile_columns_to_users_table')
             ->hasCommand(InstallCommand::class)
-            ->hasCommand(AddUserCommand::class);
+            ->hasCommand(AddUserCommand::class)
+            ->hasCommand(UpgradeFromV2Command::class);
     }
 
     public function packageRegistered(): void

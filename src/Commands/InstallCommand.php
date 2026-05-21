@@ -6,13 +6,13 @@ namespace Arkhe\Main\Commands;
 
 use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
 use App\Models\User;
+use Composer\Autoload\ClassLoader;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
-use Spatie\Permission\Traits\HasRoles;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\password;
@@ -84,6 +84,12 @@ class InstallCommand extends Command
         ConfigRepository $config,
         Hasher $hasher,
     ): void {
+        $modelClass = $this->resolveUserModel($config);
+
+        if (! $this->ensureUserModelHasTrait($modelClass)) {
+            return;
+        }
+
         $email = text(
             label: __('arkhe::arkhe.install.root_email'),
             required: true,
@@ -110,26 +116,6 @@ class InstallCommand extends Command
         $firstName = text(label: __('arkhe::arkhe.install.root_first_name'), required: true);
         $lastName = text(label: __('arkhe::arkhe.install.root_last_name'), required: true);
 
-        $modelClass = $this->resolveUserModel($config);
-
-        if (! $this->userModelHasRolesTrait($modelClass)) {
-            if (confirm(__('arkhe::arkhe.install.patch_prompt', ['model' => $modelClass]), default: true)) {
-                $patch = $this->patchUserModel($modelClass);
-                if ($patch['ok']) {
-                    $this->components->info(__('arkhe::arkhe.install.patch_done', ['file' => $patch['file']]));
-                    $this->components->warn(__('arkhe::arkhe.install.patch_restart'));
-
-                    return;
-                }
-
-                $this->components->error(__('arkhe::arkhe.install.patch_failed', ['reason' => $patch['reason']]));
-            }
-
-            $this->components->error(__('arkhe::arkhe.install.trait_missing', ['model' => $modelClass]));
-
-            return;
-        }
-
         /** @var Model $user */
         $user = new $modelClass;
 
@@ -152,12 +138,70 @@ class InstallCommand extends Command
     }
 
     /**
+     * Ensure the consumer's User model uses HasBackendProfile, patching the
+     * file on disk if needed. The check is done by reading file contents —
+     * never by introspecting the class — so that the class can be autoloaded
+     * fresh (with the trait applied) later in the same command run.
+     *
      * @param  class-string  $modelClass
      */
-    private function userModelHasRolesTrait(string $modelClass): bool
+    private function ensureUserModelHasTrait(string $modelClass): bool
     {
-        return method_exists($modelClass, 'assignRole')
-            || in_array(HasRoles::class, class_uses_recursive($modelClass), true);
+        $file = $this->findModelFile($modelClass);
+
+        if ($file === null) {
+            $this->components->error(__('arkhe::arkhe.install.trait_missing', ['model' => $modelClass]));
+
+            return false;
+        }
+
+        $content = @file_get_contents($file);
+        if (! is_string($content) || $content === '') {
+            $this->components->error(__('arkhe::arkhe.install.trait_missing', ['model' => $modelClass]));
+
+            return false;
+        }
+
+        if (str_contains($content, 'HasBackendProfile')) {
+            return true;
+        }
+
+        if (! confirm(__('arkhe::arkhe.install.patch_prompt', ['model' => $modelClass]), default: true)) {
+            $this->components->error(__('arkhe::arkhe.install.trait_missing', ['model' => $modelClass]));
+
+            return false;
+        }
+
+        $patch = $this->patchUserModelFile($file, $content);
+
+        if (! $patch['ok']) {
+            $this->components->error(__('arkhe::arkhe.install.patch_failed', ['reason' => $patch['reason']]));
+            $this->components->error(__('arkhe::arkhe.install.trait_missing', ['model' => $modelClass]));
+
+            return false;
+        }
+
+        $this->components->info(__('arkhe::arkhe.install.patch_done', ['file' => $file]));
+
+        return true;
+    }
+
+    /**
+     * Resolve the model's file path via Composer's autoloader without
+     * triggering class loading.
+     *
+     * @param  class-string  $modelClass
+     */
+    private function findModelFile(string $modelClass): ?string
+    {
+        foreach (ClassLoader::getRegisteredLoaders() as $loader) {
+            $file = $loader->findFile($modelClass);
+            if (is_string($file) && is_file($file)) {
+                return $file;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -165,32 +209,12 @@ class InstallCommand extends Command
      * refuses to touch the file if the layout is non-standard, leaves a clear
      * reason for the user to act manually.
      *
-     * @param  class-string  $modelClass
-     * @return array{ok: bool, file?: string, reason?: string}
+     * @return array{ok: bool, reason?: string}
      */
-    private function patchUserModel(string $modelClass): array
+    private function patchUserModelFile(string $file, string $content): array
     {
-        try {
-            $reflection = new \ReflectionClass($modelClass);
-        } catch (\ReflectionException) {
-            return ['ok' => false, 'reason' => "Reflection failed on {$modelClass}"];
-        }
-
-        $file = $reflection->getFileName();
-        if (! is_string($file) || ! is_file($file)) {
-            return ['ok' => false, 'reason' => 'User model file not found on disk'];
-        }
         if (! is_writable($file)) {
             return ['ok' => false, 'reason' => "Not writable: {$file}"];
-        }
-
-        $content = (string) file_get_contents($file);
-        if ($content === '') {
-            return ['ok' => false, 'reason' => "Empty or unreadable: {$file}"];
-        }
-
-        if (str_contains($content, 'HasBackendProfile')) {
-            return ['ok' => true, 'file' => $file];
         }
 
         // Refuse to auto-patch if HasRoles is present anywhere — would conflict
@@ -227,7 +251,7 @@ class InstallCommand extends Command
             return ['ok' => false, 'reason' => "Failed to write {$file}"];
         }
 
-        return ['ok' => true, 'file' => $file];
+        return ['ok' => true];
     }
 
     private function installSidebar(): void

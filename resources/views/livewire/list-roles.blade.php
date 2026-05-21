@@ -100,7 +100,7 @@
 
             <flux:field>
                 <flux:label>{{ __('arkhe::arkhe.roles.fields.permissions') }}</flux:label>
-                <flux:select wire:model="roleForm.permissions" multiple>
+                <flux:select wire:model="roleForm.permissions" multiple size="12" class="!h-auto py-2">
                     @foreach($availablePerms as $perm)
                         <flux:select.option value="{{ $perm }}">{{ $perm }}</flux:select.option>
                     @endforeach

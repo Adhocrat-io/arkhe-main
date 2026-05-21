@@ -13,6 +13,7 @@ Bootstrap a Laravel backend with **users, roles and permissions** management, se
 | Livewire | `^4.0` |
 | Flux UI | `^2.1` (Free edition) |
 | Spatie laravel-permission | `^7.0` |
+| ralphjsmit/laravel-seo | `^1.8` |
 
 ## Installation
 
@@ -26,13 +27,14 @@ The interactive installer walks through every step in order:
 1. Publish `config/arkhe.php`.
 2. Publish the migration that adds profile columns (`first_name`, `last_name`, `avatar_path`, `phone`, `date_of_birth`, `civility`, `bio`) to the `users` table.
 3. If `spatie/laravel-permission` is not migrated yet, publish its config and migrations automatically — no need to run its setup separately.
-4. Optionally publish the views.
-5. Run `php artisan migrate`.
-6. Seed the four default roles: `root`, `administrateur`, `user`, `guest`.
-7. Patch your `<flux:sidebar.nav>` with `@include('arkhe::partials.sidebar-items')` (idempotent — skipped if already done).
-8. Patch your Tailwind v4 `resources/css/app.css` with the `@source` directive needed to scan the package's Blade views (idempotent). For Tailwind v3 setups, the installer prints the equivalent `content` glob to add to `tailwind.config.js`.
-9. Offer to add the `HasBackendProfile` trait to your `App\Models\User` automatically (skipped if the model already uses `HasRoles`, which would conflict).
-10. Create a first **root** user via interactive prompts.
+4. If `ralphjsmit/laravel-seo` is not migrated yet, publish its migration + config (see [SEO](#seo)).
+5. Optionally publish the views.
+6. Run `php artisan migrate`.
+7. Seed the four default roles: `root`, `administrateur`, `user`, `guest`.
+8. Patch your `<flux:sidebar.nav>` with `@include('arkhe::partials.sidebar-items')` (idempotent — skipped if already done).
+9. Patch your Tailwind v4 `resources/css/app.css` with the `@source` directive needed to scan the package's Blade views (idempotent). For Tailwind v3 setups, the installer prints the equivalent `content` glob to add to `tailwind.config.js`.
+10. Offer to add the `HasBackendProfile` trait to your `App\Models\User` automatically (skipped if the model already uses `HasRoles`, which would conflict).
+11. Create a first **root** user via interactive prompts.
 
 Every step is **idempotent** — re-running `arkhe:main:install` after an upgrade is safe and is the recommended way to pick up new install-time integrations (see [Upgrading](#upgrading)).
 
@@ -305,16 +307,67 @@ Locale by default: `fr` (with `en` fallback). Override per-app via:
 php artisan vendor:publish --tag=arkhe-translations
 ```
 
+## SEO
+
+`adhocrat-io/arkhe-main` ships [`ralphjsmit/laravel-seo`](https://github.com/ralphjsmit/laravel-seo) as a first-class dependency since 3.1.0. The `arkhe:main:install` command publishes the SEO package's migration and config, and the package's `seo()` helper is rendered in the Arkhe layout's `<head>`.
+
+### Site-wide defaults — `/administration/seo`
+
+A root-only Livewire page at `/administration/seo` (named `arkhe.site-seo.edit`) edits the site SEO defaults stored in the `arkhe_site_seo` table:
+
+- Site name (used in OpenGraph tags)
+- Title suffix (appended to every page `<title>`, e.g. `| Acme`)
+- Default description
+- Default OG image
+- Author
+- Robots
+- Twitter / X handle
+- Favicon
+
+These values are merged into the `SEOData` rendered on every page via a `SEOManager::SEODataTransformer` registered by `Arkhe\Main\ArkheMainServiceProvider::bootSeo()`. They serve as fallbacks: anything provided per-page or per-model (see below) wins.
+
+### Per-model SEO — `HasArkheSeo` trait
+
+Drop the trait on any Eloquent model to get per-record SEO storage:
+
+```php
+use Arkhe\Main\Concerns\HasArkheSeo;
+
+class Post extends Model
+{
+    use HasArkheSeo;
+}
+```
+
+This creates a polymorphic `seo` row on every new `Post`, exposes a `$post->seo` relation, and lets you render:
+
+```blade
+{!! seo($post) !!}
+```
+
+You can also override SEO dynamically by implementing `getDynamicSEOData()` on your model (see the [upstream package docs](https://github.com/ralphjsmit/laravel-seo) for the full API).
+
+The merge order (highest priority first):
+
+1. `getDynamicSEOData()` overrides on the resolved model
+2. The polymorphic `seo` row (`$model->seo`)
+3. Arkhe site defaults from `/administration/seo`
+4. `config('seo.php')` (the upstream package's static defaults)
+
+### Disabling the integration
+
+Set `arkhe.features.seo` to `false` in your `config/arkhe.php` to skip the SEOData transformer registration. The `seo()` helper still works (the upstream package is always loaded), it just won't pick up Arkhe's site defaults.
+
 ## Phase 2 (preview)
 
-The package exposes two boolean feature flags wired through `Arkhe\Main\Support\Features`:
+The package exposes a feature flag wired through `Arkhe\Main\Support\Features`:
 
 ```php
 Features::hasCookieConsent(); // false until phase 2
-Features::hasSeo();           // false until phase 2
+Features::hasSeo();           // true since 3.1.0
 ```
 
-Toggle them via `config/arkhe.php` once their respective sub-packages land.
+Toggle them via `config/arkhe.php`. SEO is on by default; cookie consent flips on when the sub-package lands.
 
 ## Upgrading
 

@@ -2,15 +2,35 @@
 
 All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] — 3.1.0
 
 ### Added
+- `ralphjsmit/laravel-seo` (`^1.8`) is now a first-class dependency. The
+  package's `seo()` helper is rendered in the Arkhe layout's `<head>` so
+  every backend page emits sensible meta tags out of the box. See the new
+  [SEO section](README.md#seo) in the README.
+- `Arkhe\Main\Concerns\HasArkheSeo` trait — composes `HasSEO` behind an
+  Arkhe-namespaced alias so consumers add per-record SEO with a single
+  `use` statement.
+- Site-wide SEO admin UI at `/administration/seo`
+  (Livewire alias `arkhe.site-seo`, route `arkhe.site-seo.edit`). Edits
+  `arkhe_site_seo` (a singleton table holding `site_name`, `title_suffix`,
+  `description`, `image`, `author`, `robots`, `twitter_username`,
+  `favicon`). A `SEOManager::SEODataTransformer` registered in the
+  service provider merges these defaults into every `SEOData` rendered
+  through the layout. Root-only; gated by the new `manage-site-seo`,
+  `view-site-seo`, `update-site-seo` permissions.
+- `arkhe:main:install` now offers to publish `ralphjsmit/laravel-seo`'s
+  migration + config when the `seo` table is missing.
 - `arkhe:main:install` now offers to patch the consumer's Tailwind v4
   `resources/css/app.css` with the `@source` directive needed to scan the
   package's Blade views. Idempotent. Falls back to a printed snippet for
   Tailwind v3 setups (`tailwind.config.js`).
 
 ### Changed
+- `Features::hasSeo()` now defaults to `true`. SEO became a first-class
+  feature in 3.1.0; the flag remains as an escape hatch for consumers
+  that want to disable the integration without removing the dependency.
 - `arkhe:main:install` now patches the `HasBackendProfile` trait into the
   consumer's `App\Models\User` **before** prompting for the root user's
   credentials, and no longer requires a second run to finish creating the

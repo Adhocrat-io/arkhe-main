@@ -17,64 +17,61 @@
         />
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <table class="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-            <thead class="bg-zinc-50 dark:bg-zinc-900">
-                <tr>
-                    <th class="px-4 py-3 text-left font-semibold">{{ __('arkhe::arkhe.roles.columns.name') }}</th>
-                    <th class="px-4 py-3 text-left font-semibold">{{ __('arkhe::arkhe.roles.columns.guard') }}</th>
-                    <th class="px-4 py-3 text-left font-semibold">{{ __('arkhe::arkhe.roles.columns.permissions') }}</th>
-                    <th class="px-4 py-3 text-right font-semibold">{{ __('arkhe::arkhe.roles.columns.actions') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-                @forelse($roles as $role)
-                    @php($canonical = $canonicalResolver($role->name))
-                    <tr wire:key="role-{{ $role->id }}">
-                        <td class="px-4 py-3">
-                            <button type="button" wire:click="openEdit({{ $role->id }})" class="font-medium hover:underline">
-                                {{ $role->name }}
-                            </button>
-                            @if($canonical)
-                                <flux:badge size="sm" class="ml-2">{{ __('arkhe::arkhe.roles.canonical') }}</flux:badge>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3 text-zinc-500">{{ $role->guard_name }}</td>
-                        <td class="px-4 py-3">
+    <flux:table :paginate="$roles">
+        <flux:table.columns>
+            <flux:table.column>{{ __('arkhe::arkhe.roles.columns.name') }}</flux:table.column>
+            <flux:table.column>{{ __('arkhe::arkhe.roles.columns.guard') }}</flux:table.column>
+            <flux:table.column>{{ __('arkhe::arkhe.roles.columns.permissions') }}</flux:table.column>
+            <flux:table.column align="end">{{ __('arkhe::arkhe.roles.columns.actions') }}</flux:table.column>
+        </flux:table.columns>
+
+        <flux:table.rows>
+            @forelse($roles as $role)
+                @php($canonical = $canonicalResolver($role->name))
+                <flux:table.row :key="'role-'.$role->id">
+                    <flux:table.cell variant="strong">
+                        <button type="button" wire:click="openEdit({{ $role->id }})" class="hover:underline">
+                            {{ $role->name }}
+                        </button>
+                        @if($canonical)
+                            <flux:badge size="sm" class="ml-2">{{ __('arkhe::arkhe.roles.canonical') }}</flux:badge>
+                        @endif
+                    </flux:table.cell>
+                    <flux:table.cell>{{ $role->guard_name }}</flux:table.cell>
+                    <flux:table.cell>
+                        <div class="flex flex-wrap gap-1">
                             @forelse($role->permissions as $permission)
                                 <flux:badge size="sm">{{ $permission->name }}</flux:badge>
                             @empty
-                                <span class="text-xs text-zinc-500">—</span>
+                                <span>—</span>
                             @endforelse
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <flux:dropdown>
-                                <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
-                                <flux:menu>
-                                    <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $role->id }})">
-                                        {{ __('arkhe::arkhe.actions.edit') }}
+                        </div>
+                    </flux:table.cell>
+                    <flux:table.cell align="end">
+                        <flux:dropdown>
+                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
+                            <flux:menu>
+                                <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $role->id }})">
+                                    {{ __('arkhe::arkhe.actions.edit') }}
+                                </flux:menu.item>
+                                @unless($canonical)
+                                    <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $role->id }})">
+                                        {{ __('arkhe::arkhe.actions.delete') }}
                                     </flux:menu.item>
-                                    @unless($canonical)
-                                        <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $role->id }})">
-                                            {{ __('arkhe::arkhe.actions.delete') }}
-                                        </flux:menu.item>
-                                    @endunless
-                                </flux:menu>
-                            </flux:dropdown>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="px-4 py-10 text-center text-zinc-500">
-                            {{ __('arkhe::arkhe.roles.empty') }}
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div>{{ $roles->links() }}</div>
+                                @endunless
+                            </flux:menu>
+                        </flux:dropdown>
+                    </flux:table.cell>
+                </flux:table.row>
+            @empty
+                <flux:table.row>
+                    <flux:table.cell colspan="4" align="center" class="!py-10">
+                        {{ __('arkhe::arkhe.roles.empty') }}
+                    </flux:table.cell>
+                </flux:table.row>
+            @endforelse
+        </flux:table.rows>
+    </flux:table>
 
     <flux:modal wire:model="showFormModal" name="role-form" variant="flyout" position="right" class="w-full max-w-xl">
         <form wire:submit="save" class="space-y-4">

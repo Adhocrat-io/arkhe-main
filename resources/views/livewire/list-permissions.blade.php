@@ -17,50 +17,45 @@
         />
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <table class="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-            <thead class="bg-zinc-50 dark:bg-zinc-900">
-                <tr>
-                    <th class="px-4 py-3 text-left font-semibold">{{ __('arkhe::arkhe.permissions.columns.name') }}</th>
-                    <th class="px-4 py-3 text-left font-semibold">{{ __('arkhe::arkhe.permissions.columns.guard') }}</th>
-                    <th class="px-4 py-3 text-right font-semibold">{{ __('arkhe::arkhe.permissions.columns.actions') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-                @forelse($permissions as $permission)
-                    <tr wire:key="permission-{{ $permission->id }}">
-                        <td class="px-4 py-3">
-                            <button type="button" wire:click="openEdit({{ $permission->id }})" class="font-medium hover:underline">
-                                {{ $permission->name }}
-                            </button>
-                        </td>
-                        <td class="px-4 py-3 text-zinc-500">{{ $permission->guard_name }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <flux:dropdown>
-                                <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
-                                <flux:menu>
-                                    <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $permission->id }})">
-                                        {{ __('arkhe::arkhe.actions.edit') }}
-                                    </flux:menu.item>
-                                    <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $permission->id }})">
-                                        {{ __('arkhe::arkhe.actions.delete') }}
-                                    </flux:menu.item>
-                                </flux:menu>
-                            </flux:dropdown>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="3" class="px-4 py-10 text-center text-zinc-500">
-                            {{ __('arkhe::arkhe.permissions.empty') }}
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <flux:table :paginate="$permissions">
+        <flux:table.columns>
+            <flux:table.column>{{ __('arkhe::arkhe.permissions.columns.name') }}</flux:table.column>
+            <flux:table.column>{{ __('arkhe::arkhe.permissions.columns.guard') }}</flux:table.column>
+            <flux:table.column align="end">{{ __('arkhe::arkhe.permissions.columns.actions') }}</flux:table.column>
+        </flux:table.columns>
 
-    <div>{{ $permissions->links() }}</div>
+        <flux:table.rows>
+            @forelse($permissions as $permission)
+                <flux:table.row :key="'permission-'.$permission->id">
+                    <flux:table.cell variant="strong">
+                        <button type="button" wire:click="openEdit({{ $permission->id }})" class="hover:underline">
+                            {{ $permission->name }}
+                        </button>
+                    </flux:table.cell>
+                    <flux:table.cell>{{ $permission->guard_name }}</flux:table.cell>
+                    <flux:table.cell align="end">
+                        <flux:dropdown>
+                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
+                            <flux:menu>
+                                <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $permission->id }})">
+                                    {{ __('arkhe::arkhe.actions.edit') }}
+                                </flux:menu.item>
+                                <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $permission->id }})">
+                                    {{ __('arkhe::arkhe.actions.delete') }}
+                                </flux:menu.item>
+                            </flux:menu>
+                        </flux:dropdown>
+                    </flux:table.cell>
+                </flux:table.row>
+            @empty
+                <flux:table.row>
+                    <flux:table.cell colspan="3" align="center" class="!py-10">
+                        {{ __('arkhe::arkhe.permissions.empty') }}
+                    </flux:table.cell>
+                </flux:table.row>
+            @endforelse
+        </flux:table.rows>
+    </flux:table>
 
     <flux:modal wire:model="showFormModal" name="permission-form" variant="flyout" position="right" class="w-full max-w-lg">
         <form wire:submit="save" class="space-y-4">

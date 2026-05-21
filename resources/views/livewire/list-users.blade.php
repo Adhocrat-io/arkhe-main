@@ -28,94 +28,83 @@
         </flux:button>
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <table class="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-            <thead class="bg-zinc-50 dark:bg-zinc-900">
-                <tr>
-                    <th class="px-4 py-3 text-left font-semibold">
-                        <button type="button" wire:click="sortBy('last_name')" class="inline-flex items-center gap-1">
-                            {{ __('arkhe::arkhe.users.columns.name') }}
-                            @if($sortField === 'last_name')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'chevron-up' : 'chevron-down' }}" variant="micro" />
-                            @endif
-                        </button>
-                    </th>
-                    <th class="px-4 py-3 text-left font-semibold">
-                        <button type="button" wire:click="sortBy('email')" class="inline-flex items-center gap-1">
-                            {{ __('arkhe::arkhe.users.columns.email') }}
-                            @if($sortField === 'email')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'chevron-up' : 'chevron-down' }}" variant="micro" />
-                            @endif
-                        </button>
-                    </th>
-                    <th class="px-4 py-3 text-left font-semibold">{{ __('arkhe::arkhe.users.columns.roles') }}</th>
-                    <th class="px-4 py-3 text-left font-semibold">
-                        <button type="button" wire:click="sortBy('created_at')" class="inline-flex items-center gap-1">
-                            {{ __('arkhe::arkhe.users.columns.created_at') }}
-                            @if($sortField === 'created_at')
-                                <flux:icon name="{{ $sortDirection === 'asc' ? 'chevron-up' : 'chevron-down' }}" variant="micro" />
-                            @endif
-                        </button>
-                    </th>
-                    <th class="px-4 py-3 text-right font-semibold">{{ __('arkhe::arkhe.users.columns.actions') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-                @forelse($users as $user)
-                    <tr wire:key="user-{{ $user->getKey() }}">
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <flux:avatar
-                                    :src="$user->avatar_url ?? null"
-                                    :initials="$user->initials ?? null"
-                                    size="sm"
-                                />
-                                <button
-                                    type="button"
-                                    wire:click="openEdit({{ $user->getKey() }})"
-                                    class="font-medium text-left hover:underline focus:underline focus:outline-none"
-                                >
-                                    {{ $user->full_name ?: $user->email }}
-                                </button>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3">{{ $user->email }}</td>
-                        <td class="px-4 py-3">
+    <flux:table :paginate="$users">
+        <flux:table.columns>
+            <flux:table.column
+                sortable
+                :sorted="$sortField === 'last_name'"
+                :direction="$sortDirection"
+                wire:click="sortBy('last_name')"
+            >{{ __('arkhe::arkhe.users.columns.name') }}</flux:table.column>
+            <flux:table.column
+                sortable
+                :sorted="$sortField === 'email'"
+                :direction="$sortDirection"
+                wire:click="sortBy('email')"
+            >{{ __('arkhe::arkhe.users.columns.email') }}</flux:table.column>
+            <flux:table.column>{{ __('arkhe::arkhe.users.columns.roles') }}</flux:table.column>
+            <flux:table.column
+                sortable
+                :sorted="$sortField === 'created_at'"
+                :direction="$sortDirection"
+                wire:click="sortBy('created_at')"
+            >{{ __('arkhe::arkhe.users.columns.created_at') }}</flux:table.column>
+            <flux:table.column align="end">{{ __('arkhe::arkhe.users.columns.actions') }}</flux:table.column>
+        </flux:table.columns>
+
+        <flux:table.rows>
+            @forelse($users as $user)
+                <flux:table.row :key="'user-'.$user->getKey()">
+                    <flux:table.cell variant="strong">
+                        <div class="flex items-center gap-3">
+                            <flux:avatar
+                                :src="$user->avatar_url ?? null"
+                                :initials="$user->initials ?? null"
+                                size="sm"
+                            />
+                            <button
+                                type="button"
+                                wire:click="openEdit({{ $user->getKey() }})"
+                                class="text-left hover:underline focus:underline focus:outline-none"
+                            >
+                                {{ $user->full_name ?: $user->email }}
+                            </button>
+                        </div>
+                    </flux:table.cell>
+                    <flux:table.cell>{{ $user->email }}</flux:table.cell>
+                    <flux:table.cell>
+                        <div class="flex flex-wrap gap-1">
                             @foreach($user->getRoleNames() ?? [] as $role)
                                 <flux:badge size="sm">{{ $role }}</flux:badge>
                             @endforeach
-                        </td>
-                        <td class="px-4 py-3 text-zinc-500">{{ $user->created_at?->format('Y-m-d H:i') }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <flux:dropdown>
-                                <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
-                                <flux:menu>
-                                    <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $user->getKey() }})">
-                                        {{ __('arkhe::arkhe.actions.edit') }}
+                        </div>
+                    </flux:table.cell>
+                    <flux:table.cell>{{ $user->created_at?->format('Y-m-d H:i') }}</flux:table.cell>
+                    <flux:table.cell align="end">
+                        <flux:dropdown>
+                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
+                            <flux:menu>
+                                <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $user->getKey() }})">
+                                    {{ __('arkhe::arkhe.actions.edit') }}
+                                </flux:menu.item>
+                                @if(\Arkhe\Main\Support\RoleHierarchy::canManage(auth()->user(), $user))
+                                    <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $user->getKey() }})">
+                                        {{ __('arkhe::arkhe.actions.delete') }}
                                     </flux:menu.item>
-                                    @if(\Arkhe\Main\Support\RoleHierarchy::canManage(auth()->user(), $user))
-                                        <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $user->getKey() }})">
-                                            {{ __('arkhe::arkhe.actions.delete') }}
-                                        </flux:menu.item>
-                                    @endif
-                                </flux:menu>
-                            </flux:dropdown>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-10 text-center text-zinc-500">
-                            {{ __('arkhe::arkhe.users.empty') }}
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div>
-        {{ $users->links() }}
-    </div>
+                                @endif
+                            </flux:menu>
+                        </flux:dropdown>
+                    </flux:table.cell>
+                </flux:table.row>
+            @empty
+                <flux:table.row>
+                    <flux:table.cell colspan="5" align="center" class="!py-10">
+                        {{ __('arkhe::arkhe.users.empty') }}
+                    </flux:table.cell>
+                </flux:table.row>
+            @endforelse
+        </flux:table.rows>
+    </flux:table>
 
     {{-- Create / Edit modal (right-anchored flyout, full viewport height) --}}
     <flux:modal wire:model="showFormModal" name="user-form" variant="flyout" position="right" class="w-full max-w-2xl">

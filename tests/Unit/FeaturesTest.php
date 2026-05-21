@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Support\Features;
+use Arkhe\Main\Support\Features;
 
 it('returns false by default for cookie consent', function (): void {
     expect(Features::hasCookieConsent())->toBeFalse();

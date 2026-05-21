@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Commands\InstallCommand;
+use Arkhe\Main\Commands\InstallCommand;
 
 beforeEach(function (): void {
     $this->tempDir = sys_get_temp_dir().'/arkhe-sidebar-'.uniqid('', true);

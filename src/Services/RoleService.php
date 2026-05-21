@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Services;
+namespace Arkhe\Main\Services;
 
-use Adhocrat\Arkhe\Contracts\RoleRepositoryInterface;
-use Adhocrat\Arkhe\Events\RoleCreated;
-use Adhocrat\Arkhe\Events\RoleDeleted;
-use Adhocrat\Arkhe\Events\RoleUpdated;
+use Arkhe\Main\Contracts\RoleRepositoryInterface;
+use Arkhe\Main\Events\RoleCreated;
+use Arkhe\Main\Events\RoleDeleted;
+use Arkhe\Main\Events\RoleUpdated;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Events\Dispatcher as EventsDispatcher;

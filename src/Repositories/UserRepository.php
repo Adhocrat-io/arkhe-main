@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Repositories;
+namespace Arkhe\Main\Repositories;
 
-use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
+use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;

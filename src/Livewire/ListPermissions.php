@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Livewire;
+namespace Arkhe\Main\Livewire;
 
-use Adhocrat\Arkhe\Contracts\PermissionRepositoryInterface;
-use Adhocrat\Arkhe\Livewire\Forms\PermissionForm;
-use Adhocrat\Arkhe\Services\PermissionService;
+use Arkhe\Main\Contracts\PermissionRepositoryInterface;
+use Arkhe\Main\Livewire\Forms\PermissionForm;
+use Arkhe\Main\Services\PermissionService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -29,11 +29,14 @@ class ListPermissions extends Component
 
     public function mount(): void
     {
+        $this->authorize('view-permission');
         $this->perPage = (int) config('arkhe.per_page', 15);
     }
 
     public function openCreate(): void
     {
+        $this->authorize('create-permission');
+
         $this->resetErrorBag();
         $this->permissionForm->reset();
         $this->selectedPermission = null;
@@ -42,6 +45,8 @@ class ListPermissions extends Component
 
     public function openEdit(int $id, PermissionRepositoryInterface $repo): void
     {
+        $this->authorize('update-permission');
+
         $permission = $repo->find($id);
         if ($permission === null) {
             return;
@@ -55,17 +60,23 @@ class ListPermissions extends Component
 
     public function save(PermissionRepositoryInterface $repo, PermissionService $service): void
     {
+        $this->authorize($this->selectedPermission === null ? 'create-permission' : 'update-permission');
+
         $this->permissionForm->id = $this->selectedPermission;
 
         $this->permissionForm->validate();
         $payload = $this->permissionForm->toArray();
 
+        $payload = $this->beforeSave($payload);
+
         if ($this->selectedPermission === null) {
-            $service->create($payload);
+            $permission = $service->create($payload);
+            $this->afterCreate($permission, $payload);
         } else {
-            $permission = $repo->find($this->selectedPermission);
-            if ($permission !== null) {
-                $service->update($permission, $payload);
+            $existing = $repo->find($this->selectedPermission);
+            if ($existing !== null) {
+                $permission = $service->update($existing, $payload);
+                $this->afterUpdate($permission, $payload);
             }
         }
 
@@ -77,24 +88,60 @@ class ListPermissions extends Component
 
     public function confirmDelete(int $id): void
     {
+        $this->authorize('delete-permission');
+
         $this->selectedPermission = $id;
         $this->showDeleteModal    = true;
     }
 
     public function delete(PermissionRepositoryInterface $repo, PermissionService $service): void
     {
+        $this->authorize('delete-permission');
+
         if ($this->selectedPermission === null) {
             return;
         }
 
         $permission = $repo->find($this->selectedPermission);
         if ($permission !== null) {
+            $this->beforeDelete($permission);
             $service->delete($permission);
         }
 
         $this->showDeleteModal    = false;
         $this->selectedPermission = null;
         $this->resetPage();
+    }
+
+    // ─── Extensibility hooks ─────────────────────────────────────────────
+    // Override in a subclass declared via
+    // `config('arkhe.components.list-permissions')` to add custom behaviour.
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    protected function beforeSave(array $payload): array
+    {
+        return $payload;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    protected function afterCreate(\Spatie\Permission\Models\Permission $permission, array $payload): void
+    {
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    protected function afterUpdate(\Spatie\Permission\Models\Permission $permission, array $payload): void
+    {
+    }
+
+    protected function beforeDelete(\Spatie\Permission\Models\Permission $permission): void
+    {
     }
 
     public function updatedSearch(): void
@@ -111,6 +158,6 @@ class ListPermissions extends Component
 
         return view('arkhe::livewire.list-permissions', [
             'permissions' => $permissions,
-        ])->layout((string) config('arkhe.layout', 'arkhe::layouts.app'));
+        ])->layout((string) config('arkhe.admin.layout', config('arkhe.layout', 'arkhe::layouts.app')));
     }
 }

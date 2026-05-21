@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\Tests\Stubs\User;
 use Spatie\Permission\Models\Role;
 
 it('runs end-to-end without prompts, seeding roles and creating the root user', function (): void {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Commands;
+namespace Arkhe\Main\Commands;
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -71,7 +71,7 @@ class InstallCommand extends Command
             $this->createRootUser($container, $config, $hasher);
         }
 
-        $prefix = (string) $config->get('arkhe.route_prefix', 'administration');
+        $prefix = (string) $config->get('arkhe.admin.prefix', $config->get('arkhe.route_prefix', 'administration'));
         $this->components->info('Backend disponible sur '.url($prefix.'/users'));
 
         $this->components->info(__('arkhe::arkhe.install.done'));
@@ -199,7 +199,7 @@ class InstallCommand extends Command
             return ['ok' => false, 'reason' => 'Model already uses Spatie\\Permission\\Traits\\HasRoles — remove it manually then add `use HasBackendProfile;`.'];
         }
 
-        $importLine = 'use Adhocrat\\Arkhe\\Concerns\\HasBackendProfile;';
+        $importLine = 'use Arkhe\\Main\\Concerns\\HasBackendProfile;';
 
         // 1) Insert the import after the last top-level `use X;` (or after the namespace declaration).
         if (preg_match_all('/^use\s+[^;]+;[\t ]*$/m', $content, $matches, PREG_OFFSET_CAPTURE) === false || $matches[0] === []) {

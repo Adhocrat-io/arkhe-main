@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Events\UserCreated;
-use Adhocrat\Arkhe\Events\UserDeleted;
-use Adhocrat\Arkhe\Events\UserUpdated;
-use Adhocrat\Arkhe\Services\UserService;
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Events\UserCreated;
+use Arkhe\Main\Events\UserDeleted;
+use Arkhe\Main\Events\UserUpdated;
+use Arkhe\Main\Services\UserService;
+use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;

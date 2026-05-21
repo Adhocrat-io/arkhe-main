@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Events;
+namespace Arkhe\Main\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Spatie\Permission\Models\Permission;

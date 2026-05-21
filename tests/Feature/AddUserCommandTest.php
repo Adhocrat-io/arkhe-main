@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Tests\Stubs\User;
 
 beforeEach(fn () => $this->app->make(ArkheRolesSeeder::class)->run());
 

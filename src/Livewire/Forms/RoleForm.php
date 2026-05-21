@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Livewire\Forms;
+namespace Arkhe\Main\Livewire\Forms;
 
 use Illuminate\Validation\Rule;
 use Livewire\Form;

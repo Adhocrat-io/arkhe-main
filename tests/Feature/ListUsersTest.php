@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Livewire\ListUsers;
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
@@ -84,7 +84,7 @@ it('redirects anonymous visitors to login', function (): void {
 it('creates a user via the UserService', function (): void {
     actingAs(makeUser([], 'root'));
 
-    app(\Adhocrat\Arkhe\Services\UserService::class)->create([
+    app(\Arkhe\Main\Services\UserService::class)->create([
         'first_name' => 'Alice',
         'last_name'  => 'Doe',
         'email'      => 'alice@example.test',
@@ -101,7 +101,7 @@ it('edits an existing user via the UserService', function (): void {
     actingAs(makeUser([], 'root'));
     $alice = makeUser(['first_name' => 'Alice', 'email' => 'alice@example.test'], 'user');
 
-    app(\Adhocrat\Arkhe\Services\UserService::class)->update($alice, [
+    app(\Arkhe\Main\Services\UserService::class)->update($alice, [
         'first_name' => 'Alicia',
     ]);
 

@@ -68,7 +68,7 @@ The full configuration lives in `config/arkhe.php` after publishing.
 Add the `HasBackendProfile` trait to your `User` model.
 
 ```php
-use Adhocrat\Arkhe\Concerns\HasBackendProfile;
+use Arkhe\Main\Concerns\HasBackendProfile;
 
 class User extends Authenticatable
 {
@@ -150,7 +150,7 @@ php artisan vendor:publish --tag=arkhe-views
 
 ## Role hierarchy & authorization
 
-The `Adhocrat\Arkhe\Support\RoleHierarchy` helper encodes a configurable role hierarchy. A user can only assign roles whose rank is less than or equal to their own. The default order, highest first, is:
+The `Arkhe\Main\Support\RoleHierarchy` helper encodes a configurable role hierarchy. A user can only assign roles whose rank is less than or equal to their own. The default order, highest first, is:
 
 ```
 root > administrateur > user > guest
@@ -190,7 +190,7 @@ Then create the matching row in the `roles` table by re-running the bundled seed
 ```bash
 php artisan arkhe:main:install   # answer No to publish + migrate, Yes is automatic on the seed step
 # or, equivalently in a one-liner:
-php artisan tinker --execute="app(\Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder::class)->run();"
+php artisan tinker --execute="app(\Arkhe\Main\Database\Seeders\ArkheRolesSeeder::class)->run();"
 ```
 
 Pros: declarative, version-controlled, visible to every dev reading the config. Cons: requires editing the published file in each host app.
@@ -202,7 +202,7 @@ Use this when the role is contributed by a **package, module or feature flag** â
 From your package's service provider:
 
 ```php
-use Adhocrat\Arkhe\Support\RoleHierarchy;
+use Arkhe\Main\Support\RoleHierarchy;
 
 public function boot(): void
 {
@@ -289,9 +289,9 @@ No Eloquent query happens outside `src/Repositories/`. No mutation happens outsi
 
 | Event | Dispatched by | Payload |
 | --- | --- | --- |
-| `Adhocrat\Arkhe\Events\UserCreated` | `UserService::create()` | The fresh `Model` |
-| `Adhocrat\Arkhe\Events\UserUpdated` | `UserService::update()` | The fresh `Model` |
-| `Adhocrat\Arkhe\Events\UserDeleted` | `UserService::delete()` | The deleted `Model` |
+| `Arkhe\Main\Events\UserCreated` | `UserService::create()` | The fresh `Model` |
+| `Arkhe\Main\Events\UserUpdated` | `UserService::update()` | The fresh `Model` |
+| `Arkhe\Main\Events\UserDeleted` | `UserService::delete()` | The deleted `Model` |
 
 ## Translations
 
@@ -303,7 +303,7 @@ php artisan vendor:publish --tag=arkhe-translations
 
 ## Phase 2 (preview)
 
-The package exposes two boolean feature flags wired through `Adhocrat\Arkhe\Support\Features`:
+The package exposes two boolean feature flags wired through `Arkhe\Main\Support\Features`:
 
 ```php
 Features::hasCookieConsent(); // false until phase 2

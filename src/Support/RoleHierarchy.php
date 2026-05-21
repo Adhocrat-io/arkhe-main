@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Support;
+namespace Arkhe\Main\Support;
 
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;

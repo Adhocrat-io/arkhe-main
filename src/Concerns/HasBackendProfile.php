@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Concerns;
+namespace Arkhe\Main\Concerns;
 
-use Adhocrat\Arkhe\Support\RoleHierarchy;
+use Arkhe\Main\Support\RoleHierarchy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;

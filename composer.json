@@ -35,12 +35,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Adhocrat\\Arkhe\\": "src/"
+            "Arkhe\\Main\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Adhocrat\\Arkhe\\Tests\\": "tests/"
+            "Arkhe\\Main\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -51,7 +51,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Adhocrat\\Arkhe\\ArkheServiceProvider"
+                "Arkhe\\Main\\ArkheMainServiceProvider"
             ]
         }
     },

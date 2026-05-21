@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Livewire;
+namespace Arkhe\Main\Livewire;
 
-use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
-use Adhocrat\Arkhe\Livewire\Forms\UserForm;
-use Adhocrat\Arkhe\Services\UserService;
-use Adhocrat\Arkhe\Support\RoleHierarchy;
+use Arkhe\Main\Contracts\UserRepositoryInterface;
+use Arkhe\Main\Livewire\Forms\UserForm;
+use Arkhe\Main\Services\UserService;
+use Arkhe\Main\Support\RoleHierarchy;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -41,11 +41,14 @@ class ListUsers extends Component
 
     public function mount(): void
     {
+        $this->authorize('view-user');
         $this->perPage = (int) config('arkhe.per_page', 15);
     }
 
     public function openCreate(): void
     {
+        $this->authorize('create-user');
+
         $this->resetErrorBag();
         $this->userForm->reset();
         $this->selectedUser  = null;
@@ -54,6 +57,8 @@ class ListUsers extends Component
 
     public function openEdit(int $id, UserRepositoryInterface $repository): void
     {
+        $this->authorize('update-user');
+
         $user = $repository->find($id);
         if ($user === null) {
             return;
@@ -67,18 +72,24 @@ class ListUsers extends Component
 
     public function save(UserRepositoryInterface $repository, UserService $service): void
     {
+        $this->authorize($this->selectedUser === null ? 'create-user' : 'update-user');
+
         $this->userForm->id = $this->selectedUser;
 
         $data = $this->userForm->validate();
         // validate() returns rule keys; pass the full form payload (incl. avatar).
         $payload = array_merge($data, $this->userForm->toArray());
 
+        $payload = $this->beforeSave($payload);
+
         if ($this->selectedUser === null) {
-            $service->create($payload);
+            $user = $service->create($payload);
+            $this->afterCreate($user, $payload);
         } else {
-            $user = $repository->find($this->selectedUser);
-            if ($user !== null) {
-                $service->update($user, $payload);
+            $existing = $repository->find($this->selectedUser);
+            if ($existing !== null) {
+                $user = $service->update($existing, $payload);
+                $this->afterUpdate($user, $payload);
             }
         }
 
@@ -90,6 +101,8 @@ class ListUsers extends Component
 
     public function confirmDelete(int $id, UserRepositoryInterface $repository): void
     {
+        $this->authorize('delete-user');
+
         $target = $repository->find($id);
 
         if ($target === null || ! RoleHierarchy::canManage(Auth::user(), $target)) {
@@ -102,6 +115,8 @@ class ListUsers extends Component
 
     public function delete(UserRepositoryInterface $repository, UserService $service): void
     {
+        $this->authorize('delete-user');
+
         if ($this->selectedUser === null) {
             return;
         }
@@ -118,11 +133,50 @@ class ListUsers extends Component
             abort(403);
         }
 
+        $this->beforeDelete($user);
+
         $service->delete($user);
 
         $this->showDeleteModal = false;
         $this->selectedUser    = null;
         $this->resetPage();
+    }
+
+    // ─── Extensibility hooks ─────────────────────────────────────────────
+    // Empty by default; override in a subclass declared via
+    // `config('arkhe.components.list-users')` to plug host-app behaviour
+    // (newsletter sync, audit log, custom field handling) without forking
+    // the component. Hooks receive the saved/about-to-delete user model and
+    // the merged form payload (validated rules + form properties).
+
+    /**
+     * Called right after validation and just before the service call. Return
+     * the payload to forward to `UserService::create|update`.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    protected function beforeSave(array $payload): array
+    {
+        return $payload;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    protected function afterCreate(\Illuminate\Database\Eloquent\Model $user, array $payload): void
+    {
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    protected function afterUpdate(\Illuminate\Database\Eloquent\Model $user, array $payload): void
+    {
+    }
+
+    protected function beforeDelete(\Illuminate\Database\Eloquent\Model $user): void
+    {
     }
 
     public function sortBy(string $field): void
@@ -181,6 +235,6 @@ class ListUsers extends Component
             'assignableRoles'  => $availableRoles->filter(fn (string $name): bool => in_array($name, $assignable, true))->values(),
             'availablePerms'   => Permission::query()->orderBy('name')->pluck('name'),
             'currentAvatarUrl' => $currentAvatarUrl,
-        ])->layout((string) config('arkhe.layout', 'arkhe::layouts.app'));
+        ])->layout((string) config('arkhe.admin.layout', config('arkhe.layout', 'arkhe::layouts.app')));
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Contracts;
+namespace Arkhe\Main\Contracts;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;

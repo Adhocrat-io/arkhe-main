@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Livewire\Dashboard;
-use Adhocrat\Arkhe\Livewire\ListPermissions;
-use Adhocrat\Arkhe\Livewire\ListRoles;
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Livewire\Dashboard;
+use Arkhe\Main\Livewire\ListPermissions;
+use Arkhe\Main\Livewire\ListRoles;
+use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;

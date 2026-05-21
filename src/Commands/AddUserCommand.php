@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Commands;
+namespace Arkhe\Main\Commands;
 
-use Adhocrat\Arkhe\Services\UserService;
+use Arkhe\Main\Services\UserService;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Model;

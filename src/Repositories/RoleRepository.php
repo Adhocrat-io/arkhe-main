@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Repositories;
+namespace Arkhe\Main\Repositories;
 
-use Adhocrat\Arkhe\Contracts\RoleRepositoryInterface;
+use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\Permission\Models\Role;

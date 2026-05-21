@@ -2,14 +2,30 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Livewire\Forms\UserForm;
-use Adhocrat\Arkhe\Livewire\ListUsers;
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Livewire\Forms\UserForm;
+use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
-beforeEach(fn () => $this->app->make(ArkheRolesSeeder::class)->run());
+beforeEach(function (): void {
+    $this->app->make(ArkheRolesSeeder::class)->run();
+
+    // ListUsers::mount() now calls $this->authorize('view-user'),
+    // so instantiating the component requires an authenticated user
+    // with that permission. A root user satisfies it via the seeder.
+    /** @var User $admin */
+    $admin = User::query()->forceCreate([
+        'first_name' => 'Form',
+        'last_name'  => 'Fixture',
+        'email'      => 'form-fixture@x.test',
+        'password'   => Hash::make('secret123'),
+    ]);
+    $admin->assignRole('root');
+
+    Livewire::actingAs($admin);
+});
 
 function instantiateUserForm(): UserForm
 {

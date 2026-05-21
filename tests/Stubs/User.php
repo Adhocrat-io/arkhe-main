@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Tests\Stubs;
+namespace Arkhe\Main\Tests\Stubs;
 
-use Adhocrat\Arkhe\Concerns\HasBackendProfile;
+use Arkhe\Main\Concerns\HasBackendProfile;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable

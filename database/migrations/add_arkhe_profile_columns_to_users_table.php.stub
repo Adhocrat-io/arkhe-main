@@ -8,31 +8,125 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Profile columns added by Arkhe, in the desired ON-DISK order. Each entry
+     * is a tuple [column, definition]. The migration adds only columns that
+     * are missing — anything the consumer app already created (typical when
+     * upgrading from a hand-rolled users module) is left untouched.
+     */
+    private const COLUMNS = [
+        'first_name'    => 'firstNameColumn',
+        'last_name'     => 'lastNameColumn',
+        'avatar_path'   => 'avatarPathColumn',
+        'phone'         => 'phoneColumn',
+        'date_of_birth' => 'dateOfBirthColumn',
+        'civility'      => 'civilityColumn',
+        'bio'           => 'bioColumn',
+    ];
+
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table): void {
-            $table->string('first_name')->nullable()->after('id');
-            $table->string('last_name')->nullable()->after('first_name');
-            $table->string('avatar_path')->nullable()->after('last_name');
-            $table->string('phone')->nullable()->after('avatar_path');
-            $table->date('date_of_birth')->nullable()->after('phone');
-            $table->string('civility', 32)->nullable()->after('date_of_birth');
-            $table->text('bio')->nullable()->after('civility');
+        $existing = $this->existingColumns();
+        $missing  = array_keys(array_diff_key(self::COLUMNS, array_flip($existing)));
+
+        if ($missing === []) {
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) use ($missing): void {
+            $previous = null;
+
+            foreach (array_keys(self::COLUMNS) as $name) {
+                if (! in_array($name, $missing, true)) {
+                    $previous = $name; // already on disk — use it as anchor for the next missing column
+                    continue;
+                }
+
+                $this->{self::COLUMNS[$name]}($table, $previous);
+                $previous = $name;
+            }
         });
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table): void {
-            $table->dropColumn([
-                'bio',
-                'civility',
-                'date_of_birth',
-                'phone',
-                'avatar_path',
-                'last_name',
-                'first_name',
-            ]);
+        $existing = $this->existingColumns();
+        $drop     = array_values(array_intersect(array_keys(self::COLUMNS), $existing));
+
+        if ($drop === []) {
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) use ($drop): void {
+            // Reverse order so dependent columns (none here, but cheap to keep
+            // tidy) drop before their anchors.
+            $table->dropColumn(array_reverse($drop));
         });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function existingColumns(): array
+    {
+        if (! Schema::hasTable('users')) {
+            return [];
+        }
+
+        return Schema::getColumnListing('users');
+    }
+
+    private function firstNameColumn(Blueprint $table, ?string $after): void
+    {
+        $column = $table->string('first_name')->nullable();
+        $after === null ? $column->after('id') : $column->after($after);
+    }
+
+    private function lastNameColumn(Blueprint $table, ?string $after): void
+    {
+        $column = $table->string('last_name')->nullable();
+        if ($after !== null) {
+            $column->after($after);
+        }
+    }
+
+    private function avatarPathColumn(Blueprint $table, ?string $after): void
+    {
+        $column = $table->string('avatar_path')->nullable();
+        if ($after !== null) {
+            $column->after($after);
+        }
+    }
+
+    private function phoneColumn(Blueprint $table, ?string $after): void
+    {
+        $column = $table->string('phone')->nullable();
+        if ($after !== null) {
+            $column->after($after);
+        }
+    }
+
+    private function dateOfBirthColumn(Blueprint $table, ?string $after): void
+    {
+        $column = $table->date('date_of_birth')->nullable();
+        if ($after !== null) {
+            $column->after($after);
+        }
+    }
+
+    private function civilityColumn(Blueprint $table, ?string $after): void
+    {
+        $column = $table->string('civility', 32)->nullable();
+        if ($after !== null) {
+            $column->after($after);
+        }
+    }
+
+    private function bioColumn(Blueprint $table, ?string $after): void
+    {
+        $column = $table->text('bio')->nullable();
+        if ($after !== null) {
+            $column->after($after);
+        }
     }
 };

@@ -6,13 +6,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Route prefix
+    | Admin area
     |--------------------------------------------------------------------------
     |
-    | Path under which the Arkhe backend is mounted. Overridable via .env.
+    | Settings grouped under `admin.*` describe the backend mount-point. The
+    | nested shape mirrors the V2 (Arkhe\Main) layout so existing host-app
+    | config files keep working without modification.
+    |
+    | - `admin.prefix`  route segment for backend pages (env: ARKHE_ADMIN_PREFIX).
+    | - `admin.layout`  Blade layout wrapping every Livewire page.
+    | - `admin.roles`   role keys (from `roles` below) granted access by the
+    |                   `arkhe.backend` middleware in addition to the
+    |                   permission check. Empty array = permission-only.
     |
     */
-    'route_prefix' => env('ARKHE_ROUTE_PREFIX', 'administration'),
+    'admin' => [
+        'prefix' => env('ARKHE_ADMIN_PREFIX', env('ARKHE_ROUTE_PREFIX', 'administration')),
+        'layout' => env('ARKHE_ADMIN_LAYOUT', 'layouts::app'),
+        'roles'  => ['root', 'administrator'],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -65,22 +77,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Layout
-    |--------------------------------------------------------------------------
-    |
-    | The Blade layout wrapping Arkhe's Livewire pages (users, roles,
-    | permissions, dashboard). Defaults to `layouts::app`, which Livewire 4
-    | registers out of the box as a namespace mapping to
-    | `resources/views/layouts/` — the Livewire starter kit's sidebar lives
-    | there. Override if your layout lives elsewhere. Set to
-    | `arkhe::layouts.app` to fall back to the package's own minimal
-    | header-only layout (no sidebar, useful for headless installs).
-    |
-    */
-    'layout' => 'layouts::app',
-
-    /*
-    |--------------------------------------------------------------------------
     | Avatar storage
     |--------------------------------------------------------------------------
     */
@@ -127,7 +123,7 @@ return [
     |
     | Alternatively, register roles at runtime from a service provider:
     |
-    |   use Adhocrat\Arkhe\Support\RoleHierarchy;
+    |   use Arkhe\Main\Support\RoleHierarchy;
     |
     |   RoleHierarchy::register('manager', after: 'administrateur');
     |
@@ -137,6 +133,125 @@ return [
         'administrator' => 'administrateur',
         'user' => 'user',
         'guest' => 'guest',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Permissions
+    |--------------------------------------------------------------------------
+    |
+    | The flat list of permissions seeded by `arkhe:main:install`. Roles are
+    | the *container*; permissions are what the app actually checks. Add
+    | application-specific permissions here (or in a separate seeder) and they
+    | will be created alongside Arkhe's own.
+    |
+    | The convention is `manage-<resource>` for the broad shortcut, and
+    | `<verb>-<resource>` (view/create/update/delete) for the fine-grained
+    | actions. Blade & controllers can use either:
+    |
+    |   @can('manage-users')   ...   @endcan
+    |   @can('update-user')    ...   @endcan
+    |
+    */
+    'permissions' => [
+        'access-backend',
+
+        'manage-users',
+        'view-user',
+        'create-user',
+        'update-user',
+        'delete-user',
+
+        'manage-roles',
+        'view-role',
+        'create-role',
+        'update-role',
+        'delete-role',
+
+        'manage-permissions',
+        'view-permission',
+        'create-permission',
+        'update-permission',
+        'delete-permission',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Role → permissions mapping (used by the seeder)
+    |--------------------------------------------------------------------------
+    |
+    | Indexed by the *key* of `roles` above (root/administrator/user/guest),
+    | NOT the localised value — so renaming `administrator => 'admin'` does
+    | not break the grant map. Use the literal `'*'` to grant every
+    | permission registered in `permissions` (typical for root).
+    |
+    */
+    'role_permissions' => [
+        'root' => ['*'],
+
+        'administrator' => [
+            'access-backend',
+            'manage-users',
+            'view-user',
+            'create-user',
+            'update-user',
+            'delete-user',
+        ],
+
+        'user'  => [],
+        'guest' => [],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Backend access permission
+    |--------------------------------------------------------------------------
+    |
+    | The permission checked by the `arkhe.backend` middleware. Any user with
+    | this permission (regardless of their role) reaches the backend; users
+    | without it get a 403.
+    |
+    */
+    'backend_permission' => 'access-backend',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Root-area permission
+    |--------------------------------------------------------------------------
+    |
+    | Permission checked by the `arkhe.root` middleware — the gate for the
+    | sensitive zone (roles & permissions management). Historically tied to
+    | the `root` role; now an explicit permission so any custom role you
+    | grant it to can reach it.
+    |
+    */
+    'root_permission' => 'manage-roles',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Livewire components
+    |--------------------------------------------------------------------------
+    |
+    | Class map for the four Livewire pages Arkhe registers under the
+    | `arkhe.<alias>` namespace. Override any entry with your own subclass to
+    | add fields, buttons or actions while keeping Arkhe's wiring (routes,
+    | views, services). Typical override:
+    |
+    |   'components' => [
+    |       'list-users' => App\Livewire\Admin\Users\RevelListUsers::class,
+    |   ],
+    |
+    | Your subclass extends the Arkhe one, adds new public methods (`wire:click`
+    | targets) and/or overrides the lifecycle hooks (`beforeSave`,
+    | `afterCreate`, `afterUpdate`, `beforeDelete`). Routes auto-resolve to
+    | the configured class — no need to redeclare them.
+    |
+    */
+    'components' => [
+        'list-users'       => \Arkhe\Main\Livewire\ListUsers::class,
+        'list-roles'       => \Arkhe\Main\Livewire\ListRoles::class,
+        'list-permissions' => \Arkhe\Main\Livewire\ListPermissions::class,
+        'dashboard'        => \Arkhe\Main\Livewire\Dashboard::class,
     ],
 
     /*

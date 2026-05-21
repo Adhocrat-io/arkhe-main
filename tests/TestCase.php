@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Tests;
+namespace Arkhe\Main\Tests;
 
-use Adhocrat\Arkhe\ArkheServiceProvider;
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\ArkheMainServiceProvider;
+use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
@@ -30,7 +30,7 @@ abstract class TestCase extends Orchestra
         return [
             LivewireServiceProvider::class,
             PermissionServiceProvider::class,
-            ArkheServiceProvider::class,
+            ArkheMainServiceProvider::class,
         ];
     }
 

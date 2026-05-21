@@ -2,29 +2,29 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe;
+namespace Arkhe\Main;
 
-use Adhocrat\Arkhe\Commands\AddUserCommand;
-use Adhocrat\Arkhe\Commands\InstallCommand;
-use Adhocrat\Arkhe\Contracts\PermissionRepositoryInterface;
-use Adhocrat\Arkhe\Contracts\RoleRepositoryInterface;
-use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
-use Adhocrat\Arkhe\Http\Middleware\EnsureUserHasBackendAccess;
-use Adhocrat\Arkhe\Http\Middleware\EnsureUserIsRoot;
-use Adhocrat\Arkhe\Livewire\Dashboard;
-use Adhocrat\Arkhe\Livewire\ListPermissions;
-use Adhocrat\Arkhe\Livewire\ListRoles;
-use Adhocrat\Arkhe\Livewire\ListUsers;
-use Adhocrat\Arkhe\Repositories\PermissionRepository;
-use Adhocrat\Arkhe\Repositories\RoleRepository;
-use Adhocrat\Arkhe\Repositories\UserRepository;
-use Adhocrat\Arkhe\Support\Features;
+use Arkhe\Main\Commands\AddUserCommand;
+use Arkhe\Main\Commands\InstallCommand;
+use Arkhe\Main\Contracts\PermissionRepositoryInterface;
+use Arkhe\Main\Contracts\RoleRepositoryInterface;
+use Arkhe\Main\Contracts\UserRepositoryInterface;
+use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
+use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
+use Arkhe\Main\Livewire\Dashboard;
+use Arkhe\Main\Livewire\ListPermissions;
+use Arkhe\Main\Livewire\ListRoles;
+use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Repositories\PermissionRepository;
+use Arkhe\Main\Repositories\RoleRepository;
+use Arkhe\Main\Repositories\UserRepository;
+use Arkhe\Main\Support\Features;
 use Illuminate\Routing\Router;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class ArkheServiceProvider extends PackageServiceProvider
+class ArkheMainServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
@@ -46,6 +46,20 @@ class ArkheServiceProvider extends PackageServiceProvider
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
     }
 
+    /**
+     * Default mapping for Livewire components. Each entry can be swapped via
+     * `config('arkhe.components.<alias>')` to point at a host-app subclass —
+     * see notes/2026-05-20-extensibility-and-revel-upgrade.md for the pattern.
+     *
+     * @var array<string, class-string>
+     */
+    public const COMPONENT_DEFAULTS = [
+        'list-users'       => ListUsers::class,
+        'list-roles'       => ListRoles::class,
+        'list-permissions' => ListPermissions::class,
+        'dashboard'        => Dashboard::class,
+    ];
+
     public function packageBooted(): void
     {
         /** @var Router $router */
@@ -53,10 +67,10 @@ class ArkheServiceProvider extends PackageServiceProvider
         $router->aliasMiddleware('arkhe.backend', EnsureUserHasBackendAccess::class);
         $router->aliasMiddleware('arkhe.root',    EnsureUserIsRoot::class);
 
-        Livewire::component('arkhe.list-users',       ListUsers::class);
-        Livewire::component('arkhe.list-roles',       ListRoles::class);
-        Livewire::component('arkhe.list-permissions', ListPermissions::class);
-        Livewire::component('arkhe.dashboard',        Dashboard::class);
+        foreach (self::COMPONENT_DEFAULTS as $alias => $default) {
+            $class = (string) config("arkhe.components.{$alias}", $default);
+            Livewire::component("arkhe.{$alias}", $class);
+        }
 
         $this->overrideFortifyHome();
 

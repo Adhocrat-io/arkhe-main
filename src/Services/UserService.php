@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Services;
+namespace Arkhe\Main\Services;
 
-use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
-use Adhocrat\Arkhe\Events\UserCreated;
-use Adhocrat\Arkhe\Events\UserDeleted;
-use Adhocrat\Arkhe\Events\UserUpdated;
-use Adhocrat\Arkhe\Support\RoleHierarchy;
+use Arkhe\Main\Contracts\UserRepositoryInterface;
+use Arkhe\Main\Events\UserCreated;
+use Arkhe\Main\Events\UserDeleted;
+use Arkhe\Main\Events\UserUpdated;
+use Arkhe\Main\Support\RoleHierarchy;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;

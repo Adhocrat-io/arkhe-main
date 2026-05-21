@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Contracts\UserRepositoryInterface;
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\Contracts\UserRepositoryInterface;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function (): void {

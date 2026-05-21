@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Contracts\PermissionRepositoryInterface;
-use Adhocrat\Arkhe\Contracts\RoleRepositoryInterface;
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Contracts\PermissionRepositoryInterface;
+use Arkhe\Main\Contracts\RoleRepositoryInterface;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -45,6 +45,9 @@ it('eager-loads permissions on the role', function (): void {
 });
 
 it('exposes all permissions ordered alphabetically', function (): void {
+    // Wipe the seeder's permissions so this test asserts on a known fixture.
+    Permission::query()->delete();
+
     Permission::query()->create(['name' => 'zeta',  'guard_name' => 'web']);
     Permission::query()->create(['name' => 'alpha', 'guard_name' => 'web']);
 
@@ -54,6 +57,8 @@ it('exposes all permissions ordered alphabetically', function (): void {
 });
 
 it('paginates permissions and filters by search', function (): void {
+    Permission::query()->delete();
+
     Permission::query()->create(['name' => 'edit-foo', 'guard_name' => 'web']);
     Permission::query()->create(['name' => 'edit-bar', 'guard_name' => 'web']);
     Permission::query()->create(['name' => 'view-x',   'guard_name' => 'web']);

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Support\RoleHierarchy;
-use Adhocrat\Arkhe\Tests\Stubs\User;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Support\RoleHierarchy;
+use Arkhe\Main\Tests\Stubs\User;
 
 beforeEach(function (): void {
     RoleHierarchy::reset();

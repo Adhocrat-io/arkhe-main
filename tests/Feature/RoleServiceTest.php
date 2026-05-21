@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Events\RoleCreated;
-use Adhocrat\Arkhe\Events\RoleDeleted;
-use Adhocrat\Arkhe\Events\RoleUpdated;
-use Adhocrat\Arkhe\Services\RoleService;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Events\RoleCreated;
+use Arkhe\Main\Events\RoleDeleted;
+use Arkhe\Main\Events\RoleUpdated;
+use Arkhe\Main\Services\RoleService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
 use Spatie\Permission\Models\Permission;

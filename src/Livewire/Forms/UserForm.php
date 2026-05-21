@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Livewire\Forms;
+namespace Arkhe\Main\Livewire\Forms;
 
-use Adhocrat\Arkhe\Support\RoleHierarchy;
+use Arkhe\Main\Support\RoleHierarchy;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;

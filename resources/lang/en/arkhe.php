@@ -119,7 +119,7 @@ return [
         'root_last_name' => 'Last name',
         'done' => 'Installation complete.',
         'permission_missing' => 'spatie/laravel-permission does not appear to be installed/migrated. Install it then re-run this command.',
-        'trait_missing' => 'The :model model does not use the Adhocrat\\Arkhe\\Concerns\\HasBackendProfile trait (which provides HasRoles). Add it to your User model, then re-run: php artisan arkhe:main:install — answer No to the steps already done.',
+        'trait_missing' => 'The :model model does not use the Arkhe\\Main\\Concerns\\HasBackendProfile trait (which provides HasRoles). Add it to your User model, then re-run: php artisan arkhe:main:install — answer No to the steps already done.',
         'patch_prompt' => 'Add the HasBackendProfile trait to :model automatically?',
         'patch_done' => 'HasBackendProfile trait added to :file.',
         'patch_restart' => 'Re-run the command to finish creating the root user: php artisan arkhe:main:install — answer No to the steps already done.',

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Repositories;
+namespace Arkhe\Main\Repositories;
 
-use Adhocrat\Arkhe\Contracts\PermissionRepositoryInterface;
+use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Permission;

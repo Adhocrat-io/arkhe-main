@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Adhocrat\Arkhe\Database\Seeders\ArkheRolesSeeder;
-use Adhocrat\Arkhe\Events\PermissionCreated;
-use Adhocrat\Arkhe\Events\PermissionDeleted;
-use Adhocrat\Arkhe\Events\PermissionUpdated;
-use Adhocrat\Arkhe\Services\PermissionService;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Events\PermissionCreated;
+use Arkhe\Main\Events\PermissionDeleted;
+use Arkhe\Main\Events\PermissionUpdated;
+use Arkhe\Main\Services\PermissionService;
 use Illuminate\Support\Facades\Event;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;

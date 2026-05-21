@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Adhocrat\Arkhe\Services;
+namespace Arkhe\Main\Services;
 
-use Adhocrat\Arkhe\Contracts\PermissionRepositoryInterface;
-use Adhocrat\Arkhe\Events\PermissionCreated;
-use Adhocrat\Arkhe\Events\PermissionDeleted;
-use Adhocrat\Arkhe\Events\PermissionUpdated;
+use Arkhe\Main\Contracts\PermissionRepositoryInterface;
+use Arkhe\Main\Events\PermissionCreated;
+use Arkhe\Main\Events\PermissionDeleted;
+use Arkhe\Main\Events\PermissionUpdated;
 use Illuminate\Contracts\Events\Dispatcher as EventsDispatcher;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;

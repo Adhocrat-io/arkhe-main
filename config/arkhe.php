@@ -181,6 +181,8 @@ return [
         'manage-sitemap',
         'view-sitemap',
         'update-sitemap',
+
+        'view-cookies',
     ],
 
     /*
@@ -262,6 +264,7 @@ return [
         'dashboard'        => \Arkhe\Main\Livewire\Dashboard::class,
         'site-seo'         => \Arkhe\Main\Livewire\SiteSeo::class,
         'sitemap'          => \Arkhe\Main\Livewire\Sitemap::class,
+        'cookies'          => \Arkhe\Main\Livewire\Cookies::class,
     ],
 
     /*
@@ -274,7 +277,7 @@ return [
     |
     */
     'features' => [
-        'cookie_consent' => false,
+        'cookie_consent' => true,
         'seo' => true,
     ],
 

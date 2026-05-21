@@ -9,6 +9,10 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
+
+    @if(\Arkhe\Main\Support\Features::hasCookieConsent())
+        @cookieconsentscripts
+    @endif
 </head>
 <body class="min-h-full bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-900 dark:text-zinc-100">
 
@@ -32,5 +36,9 @@
 </flux:main>
 
 @fluxScripts
+
+@if(\Arkhe\Main\Support\Features::hasCookieConsent())
+    @cookieconsentview
+@endif
 </body>
 </html>

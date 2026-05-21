@@ -11,12 +11,14 @@ use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
+use Arkhe\Main\Cookies\ArkheCookiesServiceProvider;
 use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
 use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
 use Arkhe\Main\Livewire\Dashboard;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Livewire\Cookies;
 use Arkhe\Main\Livewire\SiteSeo;
 use Arkhe\Main\Livewire\Sitemap;
 use Arkhe\Main\Jobs\GenerateSitemap;
@@ -58,6 +60,14 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
         $this->app->bind(SiteSeoRepositoryInterface::class, SiteSeoRepository::class);
+
+        // Pre-register Arkhe's CookiesServiceProvider so essentials (Laravel
+        // session + CSRF) get listed automatically. Consumers can publish
+        // their own via vendor:publish --tag=laravel-cookie-consent-service-provider
+        // for app-specific cookies — both providers coexist.
+        if (Features::hasCookieConsent() && class_exists(\Whitecube\LaravelCookieConsent\CookiesServiceProvider::class)) {
+            $this->app->register(ArkheCookiesServiceProvider::class);
+        }
     }
 
     /**
@@ -74,6 +84,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         'dashboard'        => Dashboard::class,
         'site-seo'         => SiteSeo::class,
         'sitemap'          => Sitemap::class,
+        'cookies'          => Cookies::class,
     ];
 
     public function packageBooted(): void

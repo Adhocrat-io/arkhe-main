@@ -31,6 +31,7 @@ abstract class TestCase extends Orchestra
             LivewireServiceProvider::class,
             PermissionServiceProvider::class,
             \RalphJSmit\Laravel\SEO\LaravelSEOServiceProvider::class,
+            \Whitecube\LaravelCookieConsent\ServiceProvider::class,
             ArkheMainServiceProvider::class,
         ];
     }

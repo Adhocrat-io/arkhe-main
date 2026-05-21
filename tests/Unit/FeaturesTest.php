@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Arkhe\Main\Support\Features;
 
-it('returns false by default for cookie consent', function (): void {
-    expect(Features::hasCookieConsent())->toBeFalse();
+it('returns true by default for cookie consent (first-class since 3.1.0)', function (): void {
+    expect(Features::hasCookieConsent())->toBeTrue();
 });
 
 it('returns true by default for seo (first-class since 3.1.0)', function (): void {

@@ -6,6 +6,7 @@ use Arkhe\Main\Livewire\Dashboard;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Livewire\Cookies;
 use Arkhe\Main\Livewire\SiteSeo;
 use Arkhe\Main\Livewire\Sitemap;
 use Illuminate\Support\Facades\Route;
@@ -39,5 +40,6 @@ Route::middleware($middleware)
             Route::get('/permissions', $component('list-permissions', ListPermissions::class))->name('permissions.index');
             Route::get('/seo',         $component('site-seo',   SiteSeo::class))->name('site-seo.edit');
             Route::get('/sitemap',     $component('sitemap',    Sitemap::class))->name('sitemap.edit');
+            Route::get('/cookies',     $component('cookies',    Cookies::class))->name('cookies.index');
         });
     });

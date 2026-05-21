@@ -17,6 +17,19 @@ return [
         'title' => 'Site',
     ],
 
+    'cookies' => [
+        'title' => 'Cookies (GDPR)',
+        'intro' => "Cookies registered via whitecube/laravel-cookie-consent. Adding or removing cookies happens in code (subclass Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe registers Laravel's essentials (session, CSRF) out of the box.",
+        'fields' => [
+            'name' => 'Name',
+            'duration' => 'Duration',
+            'description' => 'Description',
+        ],
+        'session' => 'Session',
+        'minutes' => 'min',
+        'empty_category' => 'No cookie registered in this category.',
+    ],
+
     'sitemap' => [
         'title' => 'Sitemap',
         'intro' => "The sitemap is regenerated automatically on the schedule below. Use \"Regenerate now\" to dispatch an immediate job (queued through the app's default queue).",

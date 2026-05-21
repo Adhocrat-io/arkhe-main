@@ -17,6 +17,19 @@ return [
         'title' => 'Site',
     ],
 
+    'cookies' => [
+        'title' => 'Cookies (RGPD)',
+        'intro' => "Liste des cookies enregistrés via whitecube/laravel-cookie-consent. Ajouter ou retirer des cookies se fait dans le code (sous-classer Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe enregistre par défaut les cookies essentiels Laravel (session, CSRF).",
+        'fields' => [
+            'name' => 'Nom',
+            'duration' => 'Durée',
+            'description' => 'Description',
+        ],
+        'session' => 'Session',
+        'minutes' => 'min',
+        'empty_category' => 'Aucun cookie enregistré dans cette catégorie.',
+    ],
+
     'sitemap' => [
         'title' => 'Sitemap',
         'intro' => "Le sitemap est régénéré automatiquement selon la planification ci-dessous. Utilisez « Régénérer maintenant » pour lancer un job immédiat (mis en file via la queue de l'application).",

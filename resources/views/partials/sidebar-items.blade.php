@@ -69,7 +69,7 @@
     <flux:sidebar.group
         expandable
         :heading="__('arkhe::arkhe.site.title')"
-        :expanded="request()->routeIs('arkhe.site-seo.*') || request()->routeIs('arkhe.sitemap.*')"
+        :expanded="request()->routeIs('arkhe.site-seo.*') || request()->routeIs('arkhe.sitemap.*') || request()->routeIs('arkhe.cookies.*')"
     >
         <flux:sidebar.item
             icon="globe-alt"
@@ -87,6 +87,15 @@
             wire:navigate
         >
             {{ __('arkhe::arkhe.sitemap.title') }}
+        </flux:sidebar.item>
+
+        <flux:sidebar.item
+            icon="cake"
+            :href="route('arkhe.cookies.index')"
+            :current="request()->routeIs('arkhe.cookies.*')"
+            wire:navigate
+        >
+            {{ __('arkhe::arkhe.cookies.title') }}
         </flux:sidebar.item>
     </flux:sidebar.group>
 @endif

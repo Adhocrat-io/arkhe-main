@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (Schema::hasTable('arkhe_site_seo')) {
+            return;
+        }
+
+        Schema::create('arkhe_site_seo', function (Blueprint $table): void {
+            $table->id();
+            $table->string('site_name')->nullable();
+            $table->string('title_suffix')->nullable();
+            $table->text('description')->nullable();
+            $table->string('author')->nullable();
+            $table->string('image')->nullable();
+            $table->string('robots')->nullable();
+            $table->string('twitter_username')->nullable();
+            $table->string('favicon')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('arkhe_site_seo');
+    }
+};

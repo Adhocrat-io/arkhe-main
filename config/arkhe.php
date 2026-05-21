@@ -173,6 +173,10 @@ return [
         'create-permission',
         'update-permission',
         'delete-permission',
+
+        'manage-site-seo',
+        'view-site-seo',
+        'update-site-seo',
     ],
 
     /*
@@ -252,6 +256,7 @@ return [
         'list-roles'       => \Arkhe\Main\Livewire\ListRoles::class,
         'list-permissions' => \Arkhe\Main\Livewire\ListPermissions::class,
         'dashboard'        => \Arkhe\Main\Livewire\Dashboard::class,
+        'site-seo'         => \Arkhe\Main\Livewire\SiteSeo::class,
     ],
 
     /*

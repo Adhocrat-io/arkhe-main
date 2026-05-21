@@ -6,6 +6,7 @@ use Arkhe\Main\Livewire\Dashboard;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Livewire\SiteSeo;
 use Illuminate\Support\Facades\Route;
 
 $middleware = (array) config('arkhe.middleware');
@@ -31,9 +32,10 @@ Route::middleware($middleware)
     ->group(function () use ($component): void {
         Route::get('/users', $component('list-users', ListUsers::class))->name('users.index');
 
-        // Roles + permissions management is restricted to the `root` role.
+        // Roles + permissions + site SEO are restricted to the `root` role.
         Route::middleware('arkhe.root')->group(function () use ($component): void {
             Route::get('/roles',       $component('list-roles', ListRoles::class))->name('roles.index');
             Route::get('/permissions', $component('list-permissions', ListPermissions::class))->name('permissions.index');
+            Route::get('/seo',         $component('site-seo',   SiteSeo::class))->name('site-seo.edit');
         });
     });

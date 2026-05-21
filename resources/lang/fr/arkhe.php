@@ -13,6 +13,34 @@ return [
         'title' => 'Accès',
     ],
 
+    'site' => [
+        'title' => 'Site',
+    ],
+
+    'site_seo' => [
+        'title' => 'SEO',
+        'intro' => "Réglages SEO appliqués à toutes les pages du site. Ces valeurs servent de défauts : un modèle qui définit son propre SEO (via le trait HasArkheSeo) les remplace.",
+        'saved' => 'Réglages SEO enregistrés.',
+        'fields' => [
+            'site_name' => 'Nom du site',
+            'title_suffix' => 'Suffixe de titre',
+            'description' => 'Description par défaut',
+            'author' => 'Auteur',
+            'image' => 'Image OG par défaut',
+            'robots' => 'Robots',
+            'twitter_username' => 'Compte Twitter / X',
+            'favicon' => 'Favicon',
+        ],
+        'hints' => [
+            'site_name' => 'Utilisé dans les balises OpenGraph.',
+            'title_suffix' => 'Concaténé après chaque <title> (ex. "| Acme").',
+            'description' => "Utilisé quand la page n'en définit pas une explicitement.",
+            'image' => "Chemin (ex. /images/og.png) ou URL absolue. Utilisé en fallback pour les balises OG/Twitter.",
+            'robots' => "Par défaut : max-snippet:-1, max-image-preview:large, max-video-preview:-1.",
+            'twitter_username' => "Sans le @.",
+        ],
+    ],
+
     'users' => [
         'title' => 'Utilisateurs',
         'create' => 'Créer un utilisateur',

@@ -9,6 +9,7 @@ use Arkhe\Main\Commands\InstallCommand;
 use Arkhe\Main\Commands\UpgradeFromV2Command;
 use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Contracts\RoleRepositoryInterface;
+use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
 use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
@@ -16,12 +17,17 @@ use Arkhe\Main\Livewire\Dashboard;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Livewire\SiteSeo;
 use Arkhe\Main\Repositories\PermissionRepository;
 use Arkhe\Main\Repositories\RoleRepository;
+use Arkhe\Main\Repositories\SiteSeoRepository;
 use Arkhe\Main\Repositories\UserRepository;
+use Arkhe\Main\Services\SiteSeoService;
 use Arkhe\Main\Support\Features;
 use Illuminate\Routing\Router;
 use Livewire\Livewire;
+use RalphJSmit\Laravel\SEO\SEOManager;
+use RalphJSmit\Laravel\SEO\Support\SEOData;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -36,6 +42,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
             ->hasTranslations()
             ->hasRoute('arkhe')
             ->hasMigration('add_arkhe_profile_columns_to_users_table')
+            ->hasMigration('create_arkhe_site_seo_table')
             ->hasCommand(InstallCommand::class)
             ->hasCommand(AddUserCommand::class)
             ->hasCommand(UpgradeFromV2Command::class);
@@ -46,6 +53,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
+        $this->app->bind(SiteSeoRepositoryInterface::class, SiteSeoRepository::class);
     }
 
     /**
@@ -60,6 +68,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         'list-roles'       => ListRoles::class,
         'list-permissions' => ListPermissions::class,
         'dashboard'        => Dashboard::class,
+        'site-seo'         => SiteSeo::class,
     ];
 
     public function packageBooted(): void
@@ -76,7 +85,31 @@ class ArkheMainServiceProvider extends PackageServiceProvider
 
         $this->overrideFortifyHome();
 
+        $this->bootSeo();
+
         $this->bootFeatures();
+    }
+
+    /**
+     * Register a SEOData transformer that merges Arkhe's site-wide SEO
+     * settings into the SEOData rendered by every page. Guarded so the
+     * transformer is a no-op if the table is missing (early install).
+     */
+    private function bootSeo(): void
+    {
+        if (! Features::hasSeo()) {
+            return;
+        }
+
+        if (! class_exists(SEOManager::class)) {
+            return;
+        }
+
+        $this->app->afterResolving(SEOManager::class, function (SEOManager $manager): void {
+            $manager->SEODataTransformer(function (SEOData $data): SEOData {
+                return $this->app->make(SiteSeoService::class)->applyTo($data);
+            });
+        });
     }
 
     private function overrideFortifyHome(): void

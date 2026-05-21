@@ -64,3 +64,20 @@
         </flux:sidebar.item>
     @endif
 </flux:sidebar.group>
+
+@if($isArkheRoot)
+    <flux:sidebar.group
+        expandable
+        :heading="__('arkhe::arkhe.site.title')"
+        :expanded="request()->routeIs('arkhe.site-seo.*')"
+    >
+        <flux:sidebar.item
+            icon="globe-alt"
+            :href="route('arkhe.site-seo.edit')"
+            :current="request()->routeIs('arkhe.site-seo.*')"
+            wire:navigate
+        >
+            {{ __('arkhe::arkhe.site_seo.title') }}
+        </flux:sidebar.item>
+    </flux:sidebar.group>
+@endif

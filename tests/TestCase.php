@@ -87,6 +87,31 @@ abstract class TestCase extends Orchestra
         });
 
         $this->setUpSpatiePermissionTables();
+
+        Schema::create('arkhe_site_seo', function (Blueprint $table): void {
+            $table->id();
+            $table->string('site_name')->nullable();
+            $table->string('title_suffix')->nullable();
+            $table->text('description')->nullable();
+            $table->string('author')->nullable();
+            $table->string('image')->nullable();
+            $table->string('robots')->nullable();
+            $table->string('twitter_username')->nullable();
+            $table->string('favicon')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('seo', function (Blueprint $table): void {
+            $table->id();
+            $table->morphs('model');
+            $table->longText('description')->nullable();
+            $table->string('title')->nullable();
+            $table->string('image')->nullable();
+            $table->string('author')->nullable();
+            $table->string('robots')->nullable();
+            $table->string('canonical_url')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**

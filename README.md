@@ -29,8 +29,12 @@ The interactive installer walks through every step in order:
 4. Optionally publish the views.
 5. Run `php artisan migrate`.
 6. Seed the four default roles: `root`, `administrateur`, `user`, `guest`.
-7. Offer to add the `HasBackendProfile` trait to your `App\Models\User` automatically (skipped if the model already uses `HasRoles`, which would conflict).
-8. Create a first **root** user via interactive prompts.
+7. Patch your `<flux:sidebar.nav>` with `@include('arkhe::partials.sidebar-items')` (idempotent — skipped if already done).
+8. Patch your Tailwind v4 `resources/css/app.css` with the `@source` directive needed to scan the package's Blade views (idempotent). For Tailwind v3 setups, the installer prints the equivalent `content` glob to add to `tailwind.config.js`.
+9. Offer to add the `HasBackendProfile` trait to your `App\Models\User` automatically (skipped if the model already uses `HasRoles`, which would conflict).
+10. Create a first **root** user via interactive prompts.
+
+Every step is **idempotent** — re-running `arkhe:main:install` after an upgrade is safe and is the recommended way to pick up new install-time integrations (see [Upgrading](#upgrading)).
 
 ## Creating users from the CLI
 
@@ -234,7 +238,7 @@ The four canonical Arkhe keys — `root`, `administrator`, `user`, `guest` — m
 
 ## Styling — Tailwind / Flux
 
-Tailwind only compiles classes it can **see**. Since this package's Blade files live in `vendor/adhocrat-io/arkhe-main/resources/views/`, they are not scanned by the default Laravel setup. Add the package's view path to your Tailwind source list, then rebuild your assets.
+Tailwind only compiles classes it can **see**. Since this package's Blade files live in `vendor/adhocrat-io/arkhe-main/resources/views/`, they are not scanned by the default Laravel setup. The installer takes care of this for Tailwind v4 (step 8 above); the snippets below document the same thing for reference or for manual setups.
 
 **Tailwind 4 (recommended, used by Flux 2):**
 
@@ -311,6 +315,37 @@ Features::hasSeo();           // false until phase 2
 ```
 
 Toggle them via `config/arkhe.php` once their respective sub-packages land.
+
+## Upgrading
+
+### Between minor / patch versions
+
+```bash
+composer update adhocrat-io/arkhe-main
+php artisan arkhe:main:install   # re-run, answer "no" to steps already done
+```
+
+`arkhe:main:install` is idempotent on every step (publish, migrate, seed, sidebar patch, css patch, trait patch). Re-running it after upgrading is the canonical way to pick up new install-time integrations (e.g. a new `@source` to add to `app.css`, a new sidebar entry to inject).
+
+If you'd rather skip the prompts, the manual snippets in the [Styling](#styling--tailwind--flux) and [Wiring up your User model](#wiring-up-your-user-model) sections give you the exact lines to add.
+
+### From V2 to V3
+
+V3 keeps the V2 public surface — namespace `Arkhe\Main`, service provider, config prefix — so no global search-replace is required. A dedicated Artisan command handles the config migration:
+
+```bash
+composer update adhocrat-io/arkhe-main:^3.0
+php artisan arkhe:main:upgrade-from-v2 --dry-run   # preview the changes
+php artisan arkhe:main:upgrade-from-v2             # apply
+```
+
+What it does:
+
+- Appends V3-only keys to your published `config/arkhe.php` (`dashboard_route`, `role_permissions`, `components`, `backend_permission`, `root_permission`, `features`) without touching existing V2 entries.
+- Rewrites legacy Livewire aliases inside `resources/views/` (e.g. `arkhe.main.livewire.admin.users.users-list` → `arkhe.list-users`).
+- Runs the V3 permission seeder so the new 16 default permissions and their role mappings land in your DB.
+
+See [`CHANGELOG.md`](CHANGELOG.md) for the full breaking-change list and the V2 → V3 migration playbook.
 
 ## Testing
 

@@ -4,6 +4,26 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+### Added
+- `arkhe:main:install` now offers to patch the consumer's Tailwind v4
+  `resources/css/app.css` with the `@source` directive needed to scan the
+  package's Blade views. Idempotent. Falls back to a printed snippet for
+  Tailwind v3 setups (`tailwind.config.js`).
+
+### Changed
+- `arkhe:main:install` now patches the `HasBackendProfile` trait into the
+  consumer's `App\Models\User` **before** prompting for the root user's
+  credentials, and no longer requires a second run to finish creating the
+  user. The model file is resolved via Composer's `ClassLoader` instead of
+  Reflection so the class isn't autoloaded ahead of the patch.
+- `list-users`, `list-roles` and `list-permissions` Livewire pages now use
+  the `<flux:table>` primitives. Their CSS ships with `flux.css` (already
+  imported by every consumer), so they render correctly in dark mode even
+  if the consumer's Tailwind build doesn't `@source` the vendor path.
+
+### Removed
+- The unused `arkhe.install.patch_restart` translation key.
+
 ## [3.0.0] — 2026-05-21
 
 V3 is a from-scratch rewrite that **keeps the V2 public surface** (namespace,

@@ -177,6 +177,10 @@ return [
         'manage-site-seo',
         'view-site-seo',
         'update-site-seo',
+
+        'manage-sitemap',
+        'view-sitemap',
+        'update-sitemap',
     ],
 
     /*
@@ -257,6 +261,7 @@ return [
         'list-permissions' => \Arkhe\Main\Livewire\ListPermissions::class,
         'dashboard'        => \Arkhe\Main\Livewire\Dashboard::class,
         'site-seo'         => \Arkhe\Main\Livewire\SiteSeo::class,
+        'sitemap'          => \Arkhe\Main\Livewire\Sitemap::class,
     ],
 
     /*
@@ -271,6 +276,24 @@ return [
     'features' => [
         'cookie_consent' => false,
         'seo' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sitemap
+    |--------------------------------------------------------------------------
+    |
+    | Automatic sitemap generation via spatie/laravel-sitemap. The package
+    | crawls `url` and writes to `path`. The cron expression below schedules
+    | a daily run; set `enabled` to false to skip scheduling entirely (the
+    | manual "Generate now" button on /administration/sitemap still works).
+    |
+    */
+    'sitemap' => [
+        'enabled'  => env('ARKHE_SITEMAP_ENABLED', true),
+        'url'      => env('ARKHE_SITEMAP_URL'),       // defaults to config('app.url')
+        'path'     => env('ARKHE_SITEMAP_PATH'),      // defaults to public_path('sitemap.xml')
+        'schedule' => env('ARKHE_SITEMAP_SCHEDULE', '0 3 * * *'),
     ],
 
 ];

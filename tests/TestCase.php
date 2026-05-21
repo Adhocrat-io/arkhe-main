@@ -99,6 +99,7 @@ abstract class TestCase extends Orchestra
             $table->string('robots')->nullable();
             $table->string('twitter_username')->nullable();
             $table->string('favicon')->nullable();
+            $table->timestamp('sitemap_generated_at')->nullable();
             $table->timestamps();
         });
 

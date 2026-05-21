@@ -69,7 +69,7 @@
     <flux:sidebar.group
         expandable
         :heading="__('arkhe::arkhe.site.title')"
-        :expanded="request()->routeIs('arkhe.site-seo.*')"
+        :expanded="request()->routeIs('arkhe.site-seo.*') || request()->routeIs('arkhe.sitemap.*')"
     >
         <flux:sidebar.item
             icon="globe-alt"
@@ -78,6 +78,15 @@
             wire:navigate
         >
             {{ __('arkhe::arkhe.site_seo.title') }}
+        </flux:sidebar.item>
+
+        <flux:sidebar.item
+            icon="map"
+            :href="route('arkhe.sitemap.edit')"
+            :current="request()->routeIs('arkhe.sitemap.*')"
+            wire:navigate
+        >
+            {{ __('arkhe::arkhe.sitemap.title') }}
         </flux:sidebar.item>
     </flux:sidebar.group>
 @endif

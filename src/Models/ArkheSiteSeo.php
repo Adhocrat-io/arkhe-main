@@ -19,10 +19,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $robots
  * @property string|null $twitter_username
  * @property string|null $favicon
+ * @property \Illuminate\Support\Carbon|null $sitemap_generated_at
  */
 class ArkheSiteSeo extends Model
 {
     protected $table = 'arkhe_site_seo';
 
     protected $guarded = [];
+
+    protected $casts = [
+        'sitemap_generated_at' => 'datetime',
+    ];
 }

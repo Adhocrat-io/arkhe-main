@@ -17,6 +17,21 @@ return [
         'title' => 'Site',
     ],
 
+    'sitemap' => [
+        'title' => 'Sitemap',
+        'intro' => "Le sitemap est régénéré automatiquement selon la planification ci-dessous. Utilisez « Régénérer maintenant » pour lancer un job immédiat (mis en file via la queue de l'application).",
+        'regenerate' => 'Régénérer maintenant',
+        'dispatched' => "Job de régénération envoyé sur la queue. Le sitemap sera mis à jour sous peu.",
+        'disabled' => "La génération automatique est désactivée (ARKHE_SITEMAP_ENABLED=false). Le bouton ci-dessus reste fonctionnel.",
+        'never_generated' => 'Jamais généré.',
+        'fields' => [
+            'url' => 'URL crawlée',
+            'path' => 'Fichier de sortie',
+            'schedule' => 'Planification (cron)',
+            'last_generated' => 'Dernière génération',
+        ],
+    ],
+
     'site_seo' => [
         'title' => 'SEO',
         'intro' => "Réglages SEO appliqués à toutes les pages du site. Ces valeurs servent de défauts : un modèle qui définit son propre SEO (via le trait HasArkheSeo) les remplace.",

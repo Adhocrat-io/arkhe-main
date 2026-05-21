@@ -18,12 +18,15 @@ use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
 use Arkhe\Main\Livewire\SiteSeo;
+use Arkhe\Main\Livewire\Sitemap;
+use Arkhe\Main\Jobs\GenerateSitemap;
 use Arkhe\Main\Repositories\PermissionRepository;
 use Arkhe\Main\Repositories\RoleRepository;
 use Arkhe\Main\Repositories\SiteSeoRepository;
 use Arkhe\Main\Repositories\UserRepository;
 use Arkhe\Main\Services\SiteSeoService;
 use Arkhe\Main\Support\Features;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Routing\Router;
 use Livewire\Livewire;
 use RalphJSmit\Laravel\SEO\SEOManager;
@@ -43,6 +46,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
             ->hasRoute('arkhe')
             ->hasMigration('add_arkhe_profile_columns_to_users_table')
             ->hasMigration('create_arkhe_site_seo_table')
+            ->hasMigration('add_sitemap_generated_at_to_arkhe_site_seo_table')
             ->hasCommand(InstallCommand::class)
             ->hasCommand(AddUserCommand::class)
             ->hasCommand(UpgradeFromV2Command::class);
@@ -69,6 +73,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         'list-permissions' => ListPermissions::class,
         'dashboard'        => Dashboard::class,
         'site-seo'         => SiteSeo::class,
+        'sitemap'          => Sitemap::class,
     ];
 
     public function packageBooted(): void
@@ -87,7 +92,31 @@ class ArkheMainServiceProvider extends PackageServiceProvider
 
         $this->bootSeo();
 
+        $this->bootSitemap();
+
         $this->bootFeatures();
+    }
+
+    /**
+     * Register a daily (configurable) job that regenerates the sitemap on
+     * the host app's queue. The `manage-sitemap` Livewire page on
+     * /administration/sitemap dispatches the same job on demand. Skipped
+     * when `arkhe.sitemap.enabled` is false.
+     */
+    private function bootSitemap(): void
+    {
+        if (! (bool) config('arkhe.sitemap.enabled', true)) {
+            return;
+        }
+
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $expression = (string) config('arkhe.sitemap.schedule', '0 3 * * *');
+
+            $schedule->job(new GenerateSitemap)
+                ->cron($expression)
+                ->name('arkhe-main:sitemap')
+                ->onOneServer();
+        });
     }
 
     /**

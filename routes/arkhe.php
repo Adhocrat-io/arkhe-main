@@ -7,6 +7,7 @@ use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
 use Arkhe\Main\Livewire\SiteSeo;
+use Arkhe\Main\Livewire\Sitemap;
 use Illuminate\Support\Facades\Route;
 
 $middleware = (array) config('arkhe.middleware');
@@ -37,5 +38,6 @@ Route::middleware($middleware)
             Route::get('/roles',       $component('list-roles', ListRoles::class))->name('roles.index');
             Route::get('/permissions', $component('list-permissions', ListPermissions::class))->name('permissions.index');
             Route::get('/seo',         $component('site-seo',   SiteSeo::class))->name('site-seo.edit');
+            Route::get('/sitemap',     $component('sitemap',    Sitemap::class))->name('sitemap.edit');
         });
     });

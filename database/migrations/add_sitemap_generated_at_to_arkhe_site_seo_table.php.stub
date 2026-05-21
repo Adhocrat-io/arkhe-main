@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (! Schema::hasTable('arkhe_site_seo')) {
+            return;
+        }
+
+        if (Schema::hasColumn('arkhe_site_seo', 'sitemap_generated_at')) {
+            return;
+        }
+
+        Schema::table('arkhe_site_seo', function (Blueprint $table): void {
+            $table->timestamp('sitemap_generated_at')->nullable()->after('favicon');
+        });
+    }
+
+    public function down(): void
+    {
+        if (! Schema::hasColumn('arkhe_site_seo', 'sitemap_generated_at')) {
+            return;
+        }
+
+        Schema::table('arkhe_site_seo', function (Blueprint $table): void {
+            $table->dropColumn('sitemap_generated_at');
+        });
+    }
+};

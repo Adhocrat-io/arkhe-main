@@ -67,6 +67,10 @@ class InstallCommand extends Command
             $this->installSidebar();
         }
 
+        if (confirm(__('arkhe::arkhe.install.patch_css_prompt'), default: true)) {
+            $this->installTailwindSource();
+        }
+
         if (confirm(__('arkhe::arkhe.install.create_root'), default: true)) {
             $this->createRootUser($container, $config, $hasher);
         }
@@ -394,6 +398,151 @@ class InstallCommand extends Command
         }
 
         return ['status' => 'patched', 'file' => $file];
+    }
+
+    /**
+     * Add `@source '...'` to the consumer's Tailwind v4 app.css so the build
+     * scans Arkhe's published/vendor Blade views. For Tailwind v3 setups
+     * (those use `@tailwind base` and rely on tailwind.config.js content
+     * globs), print a manual instruction instead — patching JS is too brittle.
+     */
+    private function installTailwindSource(?string $resourcesPath = null, ?string $packageViewsPath = null): void
+    {
+        $resourcesPath ??= resource_path();
+        $packageViewsPath ??= realpath(dirname(__DIR__, 2).'/resources/views') ?: null;
+
+        if ($packageViewsPath === null) {
+            $this->components->warn(__('arkhe::arkhe.install.patch_css_failed', [
+                'reason' => 'Package views directory not found on disk.',
+            ]));
+
+            return;
+        }
+
+        $css = $this->locateTailwindCssFile($resourcesPath);
+
+        if ($css === null) {
+            $this->components->warn(__('arkhe::arkhe.install.patch_css_v3_manual', [
+                'snippet' => "@source '../../vendor/adhocrat-io/arkhe-main/resources/views/**/*.blade.php';",
+            ]));
+
+            return;
+        }
+
+        $result = $this->patchTailwindCssFile($css, $packageViewsPath);
+
+        if ($result['status'] === 'patched') {
+            $this->components->info(__('arkhe::arkhe.install.patch_css_done', ['file' => $result['file']]));
+
+            return;
+        }
+
+        if ($result['status'] === 'already') {
+            $this->components->info(__('arkhe::arkhe.install.patch_css_already', ['file' => $result['file']]));
+
+            return;
+        }
+
+        $this->components->warn(__('arkhe::arkhe.install.patch_css_failed', [
+            'reason' => $result['reason'] ?? 'unknown',
+        ]));
+    }
+
+    /**
+     * Find a Tailwind v4 entrypoint under resources/css. Prefers app.css,
+     * then any other .css file containing an `@import "tailwindcss"` line.
+     */
+    private function locateTailwindCssFile(string $resourcesPath): ?string
+    {
+        $primary = $resourcesPath.'/css/app.css';
+        if (is_file($primary) && $this->fileImportsTailwind($primary)) {
+            return $primary;
+        }
+
+        $cssDir = $resourcesPath.'/css';
+        if (! is_dir($cssDir)) {
+            return null;
+        }
+
+        foreach (glob($cssDir.'/*.css') ?: [] as $candidate) {
+            if ($this->fileImportsTailwind($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function fileImportsTailwind(string $file): bool
+    {
+        $content = @file_get_contents($file);
+
+        return is_string($content)
+            && preg_match('/^\s*@import\s+["\']tailwindcss["\']/m', $content) === 1;
+    }
+
+    /**
+     * @return array{status: 'patched'|'already'|'failed', file?: string, reason?: string}
+     */
+    private function patchTailwindCssFile(string $file, string $packageViewsPath): array
+    {
+        if (! is_writable($file)) {
+            return ['status' => 'failed', 'reason' => "Not writable: {$file}"];
+        }
+
+        $content = (string) file_get_contents($file);
+        if ($content === '') {
+            return ['status' => 'failed', 'reason' => "Empty or unreadable: {$file}"];
+        }
+
+        $relative = $this->relativePath(dirname($file), $packageViewsPath).'/**/*.blade.php';
+        $sourceLine = "@source '".$relative."';";
+
+        // Idempotent: skip if the path is already sourced.
+        if (preg_match('/@source\s+["\'].*adhocrat-io\/arkhe-main\/resources\/views.*["\']/', $content) === 1
+            || str_contains($content, $sourceLine)
+        ) {
+            return ['status' => 'already', 'file' => $file];
+        }
+
+        // Prefer inserting after the last existing `@source` directive.
+        if (preg_match_all('/^@source\s+[^;]+;[\t ]*$/m', $content, $matches, PREG_OFFSET_CAPTURE) > 0) {
+            /** @var array<int, array{0: string, 1: int}> $hits */
+            $hits = $matches[0];
+            $last = end($hits);
+            $insertAt = $last[1] + strlen($last[0]);
+            $patched = substr($content, 0, $insertAt)."\n".$sourceLine.substr($content, $insertAt);
+        } elseif (preg_match('/^@import\s+["\']tailwindcss["\'][^;]*;[\t ]*$/m', $content, $importMatch, PREG_OFFSET_CAPTURE) === 1) {
+            $insertAt = $importMatch[0][1] + strlen($importMatch[0][0]);
+            $patched = substr($content, 0, $insertAt)."\n\n".$sourceLine.substr($content, $insertAt);
+        } else {
+            return ['status' => 'failed', 'reason' => "Could not find a @source or @import 'tailwindcss' anchor in {$file}"];
+        }
+
+        if (file_put_contents($file, $patched) === false) {
+            return ['status' => 'failed', 'reason' => "Failed to write {$file}"];
+        }
+
+        return ['status' => 'patched', 'file' => $file];
+    }
+
+    /**
+     * Compute a relative path from $from (a directory) to $to (any path).
+     * Both should be absolute. Returns a POSIX-style result.
+     */
+    private function relativePath(string $from, string $to): string
+    {
+        $from = explode('/', trim(str_replace('\\', '/', $from), '/'));
+        $to = explode('/', trim(str_replace('\\', '/', $to), '/'));
+
+        while ($from !== [] && $to !== [] && $from[0] === $to[0]) {
+            array_shift($from);
+            array_shift($to);
+        }
+
+        $up = $from === [] ? '.' : str_repeat('../', count($from) - 1).'..';
+
+        return $to === [] ? $up : $up.'/'.implode('/', $to);
     }
 
     /**

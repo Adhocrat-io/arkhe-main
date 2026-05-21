@@ -127,6 +127,11 @@ return [
         'patch_sidebar_done' => "Sidebar mise à jour : :file (include 'arkhe::partials.sidebar-items' ajouté).",
         'patch_sidebar_already' => "Sidebar déjà à jour : :file (include 'arkhe::partials.sidebar-items' déjà présent).",
         'patch_sidebar_failed' => "Patch automatique de la sidebar impossible : :reason\nAjoutez manuellement la ligne suivante dans votre fichier sidebar.blade.php, juste avant la fermeture de <flux:sidebar.nav> :\n    @include('arkhe::partials.sidebar-items')",
+        'patch_css_prompt' => 'Configurer Tailwind pour scanner les vues Arkhe (app.css) ?',
+        'patch_css_done' => 'app.css mis à jour : :file (directive @source ajoutée).',
+        'patch_css_already' => 'app.css déjà à jour : :file (directive @source déjà présente).',
+        'patch_css_failed' => "Patch automatique de app.css impossible : :reason",
+        'patch_css_v3_manual' => "Aucun fichier app.css avec `@import 'tailwindcss'` détecté.\nSi vous utilisez Tailwind v3, ajoutez `vendor/adhocrat-io/arkhe-main/resources/views/**/*.blade.php` à la clé `content` de tailwind.config.js.\nSi vous utilisez Tailwind v4, ajoutez la ligne suivante à votre app.css :\n    :snippet",
     ],
 
 ];

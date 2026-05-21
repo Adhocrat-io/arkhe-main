@@ -265,7 +265,7 @@ return [
     */
     'features' => [
         'cookie_consent' => false,
-        'seo' => false,
+        'seo' => true,
     ],
 
 ];

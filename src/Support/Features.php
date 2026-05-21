@@ -16,8 +16,13 @@ final class Features
         return (bool) config('arkhe.features.cookie_consent', false);
     }
 
+    /**
+     * SEO became a first-class feature in 3.1.0 — always on. The flag remains
+     * for backward compatibility with V3.0.x published configs and to let
+     * consumers programmatically detect the integration.
+     */
     public static function hasSeo(): bool
     {
-        return (bool) config('arkhe.features.seo', false);
+        return (bool) config('arkhe.features.seo', true);
     }
 }

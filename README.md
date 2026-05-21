@@ -15,6 +15,7 @@ Bootstrap a Laravel backend with **users, roles and permissions** management, se
 | Spatie laravel-permission | `^7.0` |
 | ralphjsmit/laravel-seo | `^1.8` |
 | spatie/laravel-sitemap | `^8.1` |
+| whitecube/laravel-cookie-consent | `^1.3` |
 
 ## Installation
 
@@ -398,16 +399,53 @@ $this->app->bind(\Arkhe\Main\Services\SitemapService::class, \App\Services\MySit
 
 For per-model integration, implement Spatie's `Sitemapable` contract on any Eloquent model — see the [upstream docs](https://github.com/spatie/laravel-sitemap).
 
-## Phase 2 (preview)
+## Cookies & GDPR
 
-The package exposes a feature flag wired through `Arkhe\Main\Support\Features`:
+Arkhe ships [`whitecube/laravel-cookie-consent`](https://github.com/whitecube/laravel-cookie-consent) since 3.1.0. The package's `@cookieconsentscripts` and `@cookieconsentview` blade directives are rendered in the Arkhe layout, gated by `Features::hasCookieConsent()` (defaults to `true`).
+
+### Out-of-the-box behaviour
+
+`Arkhe\Main\Cookies\ArkheCookiesServiceProvider` is registered automatically and declares Laravel's session + CSRF cookies under the **essentials** category. As soon as you install the package, the consent banner appears with a GDPR-compliant baseline — no extra setup required.
+
+### Registering app-specific cookies
+
+For cookies your app sets beyond the essentials (analytics, optional features, …), publish the upstream stub provider and register your own cookies in it:
+
+```bash
+php artisan vendor:publish --tag=laravel-cookie-consent-service-provider
+php artisan vendor:publish --tag=laravel-cookie-consent-config
+```
+
+Then add `App\Providers\CookiesServiceProvider::class` to `bootstrap/providers.php` and edit it as documented [upstream](https://github.com/whitecube/laravel-cookie-consent#registering-cookies):
 
 ```php
-Features::hasCookieConsent(); // false until phase 2
+protected function registerCookies(): void
+{
+    Cookies::analytics()->google(id: config('services.google_analytics.id'));
+    Cookies::optional()->name('darkmode')->duration(120);
+}
+```
+
+Both providers coexist — Arkhe registers essentials, your provider adds the rest.
+
+### Audit page — `/administration/cookies`
+
+A root-only read-only Livewire page at `/administration/cookies` (route `arkhe.cookies.index`) lists every category and cookie currently registered through both Arkhe and any consumer-side providers. Use it as a GDPR audit trail.
+
+### Disabling the integration
+
+Set `arkhe.features.cookie_consent` to `false` in `config/arkhe.php` to remove the banner directives from the Arkhe layout and skip registering Arkhe's essentials. The upstream package remains installed (`Cookies::hasConsentFor(...)` keeps working) — only the banner is silenced.
+
+## Phase 2 (preview)
+
+Both `Features::hasCookieConsent()` and `Features::hasSeo()` default to `true` since 3.1.0. The flags remain as escape hatches:
+
+```php
+Features::hasCookieConsent(); // true since 3.1.0
 Features::hasSeo();           // true since 3.1.0
 ```
 
-Toggle them via `config/arkhe.php`. SEO is on by default; cookie consent flips on when the sub-package lands.
+Toggle them via `config/arkhe.php`.
 
 ## Upgrading
 

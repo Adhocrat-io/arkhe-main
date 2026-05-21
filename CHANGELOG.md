@@ -5,6 +5,14 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 ## [Unreleased] — 3.1.0
 
 ### Added
+- `whitecube/laravel-cookie-consent` (`^1.3`) integration for GDPR cookie
+  consent. `Arkhe\Main\Cookies\ArkheCookiesServiceProvider` pre-registers
+  Laravel's session + CSRF cookies under "essentials", and the layout
+  renders `@cookieconsentscripts` / `@cookieconsentview` automatically
+  when `Features::hasCookieConsent()` is true (now the default).
+  Root-only read-only audit page at `/administration/cookies` (Livewire
+  alias `arkhe.cookies`, route `arkhe.cookies.index`) lists every
+  registered category/cookie. New permission `view-cookies`.
 - `spatie/laravel-sitemap` (`^8.1`) integration. `Arkhe\Main\Services\SitemapService`
   wraps `SitemapGenerator` with config-driven URL/path; a scheduled
   `Arkhe\Main\Jobs\GenerateSitemap` job runs daily at the cron expression
@@ -37,9 +45,10 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
   Tailwind v3 setups (`tailwind.config.js`).
 
 ### Changed
-- `Features::hasSeo()` now defaults to `true`. SEO became a first-class
-  feature in 3.1.0; the flag remains as an escape hatch for consumers
-  that want to disable the integration without removing the dependency.
+- `Features::hasSeo()` and `Features::hasCookieConsent()` now default to
+  `true`. Both became first-class features in 3.1.0; the flags remain as
+  escape hatches for consumers that want to disable an integration without
+  removing the dependency.
 - `arkhe:main:install` now patches the `HasBackendProfile` trait into the
   consumer's `App\Models\User` **before** prompting for the root user's
   credentials, and no longer requires a second run to finish creating the

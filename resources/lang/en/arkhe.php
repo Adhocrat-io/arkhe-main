@@ -137,6 +137,7 @@ return [
         'publish_config' => 'Publish the config file?',
         'publish_migrations' => 'Publish the migrations?',
         'publish_permission' => 'Publish spatie/laravel-permission migrations (not detected)?',
+        'publish_seo' => 'Publish ralphjsmit/laravel-seo migration and config (seo table missing)?',
         'publish_views' => 'Publish the views? (optional)',
         'run_migrate' => 'Run migrations now?',
         'create_root' => 'Create the first root user?',

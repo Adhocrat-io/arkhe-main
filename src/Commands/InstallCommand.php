@@ -43,6 +43,11 @@ class InstallCommand extends Command
             $this->call('vendor:publish', ['--provider' => 'Spatie\\Permission\\PermissionServiceProvider']);
         }
 
+        if (! Schema::hasTable('seo') && confirm(__('arkhe::arkhe.install.publish_seo'), default: true)) {
+            $this->call('vendor:publish', ['--tag' => 'laravel-seo-migrations']);
+            $this->call('vendor:publish', ['--tag' => 'laravel-seo-config']);
+        }
+
         if (confirm(__('arkhe::arkhe.install.publish_views'), default: false)) {
             $this->call('vendor:publish', ['--tag' => 'arkhe-views']);
         }

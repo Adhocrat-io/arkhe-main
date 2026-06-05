@@ -1,8 +1,8 @@
 # adhocrat-io/arkhe-main
 
-Bootstrap a Laravel backend with **users, roles and permissions** management, served by **Livewire 4** and **Flux UI Free**.
+Bootstrap a Laravel backend with **users, roles and permissions** management, served by **Livewire 4** and **Flux UI Free**. Ships first-class SEO, sitemap and cookie-consent integrations on top.
 
-> Phase 1 of the `adhocrat-io/arkhe-*` namespace.
+> First module of the `adhocrat-io/arkhe-*` namespace.
 
 ## Requirements
 
@@ -16,6 +16,22 @@ Bootstrap a Laravel backend with **users, roles and permissions** management, se
 | ralphjsmit/laravel-seo | `^1.8` |
 | spatie/laravel-sitemap | `^8.1` |
 | whitecube/laravel-cookie-consent | `^1.3` |
+
+### Recommended starting point
+
+The installer expects a Livewire 4 + Flux UI host app. The smoothest experience is on **Laravel 12 with the Livewire/Volt starter kit** (or the Flux starter), because:
+
+- the layout default `layouts::app` (the Livewire 4 convention) resolves to a view the starter kit ships;
+- the sidebar partial injection (step 8 below) targets the starter's `<flux:sidebar.nav>`;
+- the Tailwind v4 `@source` patch (step 9 below) targets the starter's `resources/css/app.css`.
+
+On a **bare Laravel app with no starter kit** the package still installs cleanly — the optional steps (sidebar + CSS) are skipped silently. You then have to point Arkhe at its own bundled layout (header-only, no sidebar):
+
+```dotenv
+ARKHE_ADMIN_LAYOUT=arkhe::layouts.app
+```
+
+See [Limitations](#limitations) for the full list of skip conditions.
 
 ## Installation
 
@@ -436,16 +452,73 @@ A root-only read-only Livewire page at `/administration/cookies` (route `arkhe.c
 
 Set `arkhe.features.cookie_consent` to `false` in `config/arkhe.php` to remove the banner directives from the Arkhe layout and skip registering Arkhe's essentials. The upstream package remains installed (`Cookies::hasConsentFor(...)` keeps working) — only the banner is silenced.
 
-## Phase 2 (preview)
+## Feature flags
 
-Both `Features::hasCookieConsent()` and `Features::hasSeo()` default to `true` since 3.1.0. The flags remain as escape hatches:
+Both SEO and cookie consent became first-class features in 3.1.0 and default to **on**. The flags remain as escape hatches for consumers that want to keep the dependencies installed but silence the integration:
 
 ```php
-Features::hasCookieConsent(); // true since 3.1.0
-Features::hasSeo();           // true since 3.1.0
+// config/arkhe.php
+'features' => [
+    'seo'            => true, // SEOData transformer, /administration/seo
+    'cookie_consent' => true, // Banner directives, /administration/cookies
+],
 ```
 
-Toggle them via `config/arkhe.php`.
+Read them programmatically via `\Arkhe\Main\Support\Features::hasSeo()` / `hasCookieConsent()`.
+
+## Extension points at a glance
+
+Six layered ways to customise Arkhe without forking it — pick the lightest one that fits:
+
+| # | Lever | Use when |
+| --- | --- | --- |
+| 1 | **Events** — `UserCreated`, `UserUpdated`, `UserDeleted` (see [Events](#events)) | You need a side-effect (newsletter sync, audit log, webhook) that does NOT need access to the Livewire component state. |
+| 2 | **Lifecycle hooks** on the Livewire pages — `beforeSave(array): array`, `afterCreate(Model, array)`, `afterUpdate(Model, array)`, `beforeDelete(Model)` | The side-effect needs UI context — form payload, flash messages, redirects. Override in a subclass (see lever 3). |
+| 3 | **Rebindable Livewire components** via `config('arkhe.components')` | You want to subclass `ListUsers` / `ListRoles` / `ListPermissions` / `Dashboard` / `SiteSeo` / `Sitemap` / `Cookies` to add `wire:click` targets or extra fields. The route map auto-resolves to your class. |
+| 4 | **`RoleHierarchy::register()`** (runtime) or `config('arkhe.roles')` (static) | You ship a new role from a package or a host module — see [Role hierarchy](#role-hierarchy--authorization). |
+| 5 | **Custom permissions** via `config('arkhe.permissions')` + `config('arkhe.role_permissions')`, re-seed with `ArkheRolesSeeder` | You add domain permissions (`manage-posts`, `publish-article`, …) that should live next to Arkhe's bundled set. |
+| 6 | **Publish the views** (`vendor:publish --tag=arkhe-views`) | The hooks / subclasses are not enough — you need a different Blade structure. Last resort; you take ownership of upgrade diffs. |
+
+Subclass override example (lever 3 + lever 2):
+
+```php
+// config/arkhe.php
+'components' => [
+    'list-users' => App\Livewire\Admin\Users\AppListUsers::class,
+],
+
+// app/Livewire/Admin/Users/AppListUsers.php
+class AppListUsers extends \Arkhe\Main\Livewire\ListUsers
+{
+    protected function afterCreate(Model $user, array $payload): void
+    {
+        app(NewsletterService::class)->subscribe($user, 'admin');
+    }
+
+    public function resetPassword(int $id): void
+    {
+        // extra wire:click target — works because the route already resolves to this class
+    }
+}
+```
+
+No route changes needed in the host app.
+
+## Limitations
+
+Things that may surprise you. None are blockers — most are deliberate trade-offs to keep the installer non-destructive.
+
+| Area | Behaviour |
+| --- | --- |
+| **Layout default** | `config('arkhe.admin.layout')` defaults to `layouts::app` — a Livewire 4 convention served by the Livewire/Volt and Flux starter kits. On a bare app, set `ARKHE_ADMIN_LAYOUT=arkhe::layouts.app` to fall back on the package's bundled header-only layout, or point it at any view of your own. |
+| **Sidebar patch** | Step 8 of `arkhe:main:install` only patches a file matching `*sidebar*.blade.php` that contains `<flux:sidebar.nav>`. No match → silently skipped (the bundled layout uses a `<flux:header>` dropdown, so a sidebar is not strictly required). If your app has multiple sidebar candidates, the installer refuses to choose and you must `@include('arkhe::partials.sidebar-items')` manually. |
+| **Tailwind v3** | Step 9 only auto-patches Tailwind v4 (`@import "tailwindcss"` in `resources/css/app.css`). Tailwind v3 setups get a printed snippet for `tailwind.config.js` — patching JS would be too brittle. |
+| **User model patch** | Step 10 refuses to inject `HasBackendProfile` if the model already imports `Spatie\Permission\Traits\HasRoles` (it would conflict — `HasBackendProfile` already wraps `HasRoles`). Remove the explicit `use HasRoles;` first, or add `use HasBackendProfile;` by hand. |
+| **`/administration/dashboard`** | Not registered by default — set `ARKHE_DASHBOARD_ROUTE=administration/dashboard` to opt in. Useful when you want Arkhe's users-by-role widget to replace the starter kit's empty `/dashboard`. |
+| **Layout chrome** | The bundled `arkhe::layouts.app` ships with a Flux header (brand + profile dropdown) but no sidebar, navigation menu, or footer. It's deliberately minimal — to keep its real chrome, override the layout config. |
+| **Fortify redirect rewrite** | When Fortify is detected and `arkhe.dashboard_route` is set, Arkhe rewrites `config('fortify.home')` at boot. Set `ARKHE_OVERRIDE_FORTIFY_REDIRECT=false` to opt out. |
+| **`spatie/laravel-permission` cache** | The seeder calls `Permission::create()` directly. After re-running it (e.g. to add new permissions), clear the permission cache — `php artisan permission:cache-reset` — or restart your queue workers. |
+| **Sitemap on `sync` queue** | The "Regenerate now" button dispatches `GenerateSitemap` onto the host app's default queue. With the `sync` driver it runs inline; with a real driver, make sure a worker is up — otherwise the page reports "queued" with no visible progress. |
 
 ## Upgrading
 

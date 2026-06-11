@@ -41,8 +41,7 @@ class UserService
         private readonly ConfigRepository $config,
         private readonly EventsDispatcher $events,
         private readonly AuthFactory $auth,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
@@ -75,6 +74,8 @@ class UserService
      */
     public function update(Model $user, array $data): Model
     {
+        $this->assertCanManage($user);
+
         $this->fill($user, $data);
 
         if (! empty($data['password'])) {
@@ -97,20 +98,36 @@ class UserService
 
     public function delete(Model $user): void
     {
-        /** @var Model|null $actor */
-        $actor = $this->auth->guard()->user();
-
-        if (! RoleHierarchy::canManage($actor, $user)) {
-            throw new AuthorizationException(
-                'You are not allowed to delete a user with a higher role than your own.'
-            );
-        }
+        $this->assertCanManage($user);
 
         $this->deleteAvatar($user->avatar_path ?? null);
 
         $user->delete();
 
         $this->events->dispatch(new UserDeleted($user));
+    }
+
+    /**
+     * Refuse the operation when the actor outranks the target.
+     * CLI / artisan / queued jobs (no auth context) are allowed through —
+     * those callers already require shell access.
+     *
+     * @throws AuthorizationException
+     */
+    private function assertCanManage(Model $target): void
+    {
+        /** @var Model|null $actor */
+        $actor = $this->auth->guard()->user();
+
+        if ($actor === null && app()->runningInConsole()) {
+            return;
+        }
+
+        if (! RoleHierarchy::canManage($actor, $target)) {
+            throw new AuthorizationException(
+                'You are not allowed to manage a user with a higher role than your own.'
+            );
+        }
     }
 
     /**
@@ -129,7 +146,7 @@ class UserService
         // if it exists, so we don't break the insert.
         if (Schema::hasColumn($user->getTable(), 'name')) {
             $first = (string) ($data['first_name'] ?? $user->first_name ?? '');
-            $last  = (string) ($data['last_name']  ?? $user->last_name  ?? '');
+            $last = (string) ($data['last_name'] ?? $user->last_name ?? '');
             $user->name = trim($first.' '.$last);
         }
     }

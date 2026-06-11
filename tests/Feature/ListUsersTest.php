@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
 use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Services\UserService;
 use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -25,9 +26,9 @@ function makeUser(array $attrs = [], ?string $role = null): User
     /** @var User $user */
     $user = User::query()->forceCreate(array_merge([
         'first_name' => 'Test',
-        'last_name'  => 'User',
-        'email'      => 'test'.uniqid().'@example.test',
-        'password'   => Hash::make('secret123'),
+        'last_name' => 'User',
+        'email' => 'test'.uniqid().'@example.test',
+        'password' => Hash::make('secret123'),
     ], $attrs));
 
     if ($role !== null) {
@@ -84,12 +85,12 @@ it('redirects anonymous visitors to login', function (): void {
 it('creates a user via the UserService', function (): void {
     actingAs(makeUser([], 'root'));
 
-    app(\Arkhe\Main\Services\UserService::class)->create([
+    app(UserService::class)->create([
         'first_name' => 'Alice',
-        'last_name'  => 'Doe',
-        'email'      => 'alice@example.test',
-        'password'   => 'password123',
-        'roles'      => ['user'],
+        'last_name' => 'Doe',
+        'email' => 'alice@example.test',
+        'password' => 'password123',
+        'roles' => ['user'],
     ]);
 
     $alice = User::query()->where('email', 'alice@example.test')->first();
@@ -101,7 +102,7 @@ it('edits an existing user via the UserService', function (): void {
     actingAs(makeUser([], 'root'));
     $alice = makeUser(['first_name' => 'Alice', 'email' => 'alice@example.test'], 'user');
 
-    app(\Arkhe\Main\Services\UserService::class)->update($alice, [
+    app(UserService::class)->update($alice, [
         'first_name' => 'Alicia',
     ]);
 
@@ -109,7 +110,7 @@ it('edits an existing user via the UserService', function (): void {
 });
 
 it('deletes a user after confirmation', function (): void {
-    $root  = makeUser([], 'root');
+    $root = makeUser([], 'root');
     $alice = makeUser([], 'user');
 
     Livewire::actingAs($root)
@@ -123,8 +124,8 @@ it('deletes a user after confirmation', function (): void {
 it('searches users by first_name, last_name and email', function (): void {
     $root = makeUser([], 'root');
     makeUser(['first_name' => 'Alice', 'email' => 'alice@example.test']);
-    makeUser(['last_name'  => 'Carpenter', 'email' => 'bob@example.test']);
-    makeUser(['email'      => 'charlie@example.test']);
+    makeUser(['last_name' => 'Carpenter', 'email' => 'bob@example.test']);
+    makeUser(['email' => 'charlie@example.test']);
 
     Livewire::actingAs($root)
         ->test(ListUsers::class)
@@ -168,4 +169,44 @@ it('respects the configured per_page', function (): void {
     Livewire::actingAs($root)
         ->test(ListUsers::class)
         ->assertSet('perPage', 5);
+});
+
+it('aborts 403 when an admin tries to openEdit a root user', function (): void {
+    $admin = makeUser([], 'administrateur');
+    $rootTarget = makeUser([], 'root');
+
+    Livewire::actingAs($admin)
+        ->test(ListUsers::class)
+        ->call('openEdit', $rootTarget->id)
+        ->assertStatus(403);
+});
+
+it('aborts 403 when an admin tries to save changes on a root user', function (): void {
+    $admin = makeUser([], 'administrateur');
+    $rootTarget = makeUser([], 'root');
+
+    // Bypass openEdit to simulate a forged request: the admin has the modal
+    // wired to $selectedUser = rootTarget->id and calls save() directly.
+    Livewire::actingAs($admin)
+        ->test(ListUsers::class)
+        ->set('selectedUser', $rootTarget->id)
+        ->set('userForm.first_name', 'Hijack')
+        ->set('userForm.last_name', 'Attempt')
+        ->set('userForm.email', $rootTarget->email)
+        ->call('save')
+        ->assertStatus(403);
+
+    expect($rootTarget->fresh()->first_name)->not->toBe('Hijack');
+    expect($rootTarget->fresh()->hasRole('root'))->toBeTrue();
+});
+
+it('lets an admin edit a user at or below their rank', function (): void {
+    $admin = makeUser([], 'administrateur');
+    $peer = makeUser([], 'user');
+
+    Livewire::actingAs($admin)
+        ->test(ListUsers::class)
+        ->call('openEdit', $peer->id)
+        ->assertSet('selectedUser', $peer->id)
+        ->assertSet('showFormModal', true);
 });

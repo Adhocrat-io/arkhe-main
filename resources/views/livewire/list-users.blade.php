@@ -62,13 +62,18 @@
                                 :initials="$user->initials ?? null"
                                 size="sm"
                             />
-                            <button
-                                type="button"
-                                wire:click="openEdit({{ $user->getKey() }})"
-                                class="text-left hover:underline focus:underline focus:outline-none"
-                            >
-                                {{ $user->full_name ?: $user->email }}
-                            </button>
+                            @php($canManage = \Arkhe\Main\Support\RoleHierarchy::canManage(auth()->user(), $user))
+                            @if($canManage)
+                                <button
+                                    type="button"
+                                    wire:click="openEdit({{ $user->getKey() }})"
+                                    class="text-left hover:underline focus:underline focus:outline-none"
+                                >
+                                    {{ $user->full_name ?: $user->email }}
+                                </button>
+                            @else
+                                <span class="text-left">{{ $user->full_name ?: $user->email }}</span>
+                            @endif
                         </div>
                     </flux:table.cell>
                     <flux:table.cell>{{ $user->email }}</flux:table.cell>
@@ -81,19 +86,19 @@
                     </flux:table.cell>
                     <flux:table.cell>{{ $user->created_at?->format('Y-m-d H:i') }}</flux:table.cell>
                     <flux:table.cell align="end">
-                        <flux:dropdown>
-                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
-                            <flux:menu>
-                                <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $user->getKey() }})">
-                                    {{ __('arkhe::arkhe.actions.edit') }}
-                                </flux:menu.item>
-                                @if(\Arkhe\Main\Support\RoleHierarchy::canManage(auth()->user(), $user))
+                        @if($canManage)
+                            <flux:dropdown>
+                                <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
+                                <flux:menu>
+                                    <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $user->getKey() }})">
+                                        {{ __('arkhe::arkhe.actions.edit') }}
+                                    </flux:menu.item>
                                     <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $user->getKey() }})">
                                         {{ __('arkhe::arkhe.actions.delete') }}
                                     </flux:menu.item>
-                                @endif
-                            </flux:menu>
-                        </flux:dropdown>
+                                </flux:menu>
+                            </flux:dropdown>
+                        @endif
                     </flux:table.cell>
                 </flux:table.row>
             @empty

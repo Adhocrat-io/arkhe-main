@@ -9,6 +9,7 @@ use Arkhe\Main\Livewire\Forms\UserForm;
 use Arkhe\Main\Services\UserService;
 use Arkhe\Main\Support\RoleHierarchy;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -51,7 +52,7 @@ class ListUsers extends Component
 
         $this->resetErrorBag();
         $this->userForm->reset();
-        $this->selectedUser  = null;
+        $this->selectedUser = null;
         $this->showFormModal = true;
     }
 
@@ -64,9 +65,13 @@ class ListUsers extends Component
             return;
         }
 
+        if (! RoleHierarchy::canManage(Auth::user(), $user)) {
+            abort(403);
+        }
+
         $this->resetErrorBag();
         $this->userForm->fillFromModel($user);
-        $this->selectedUser  = $id;
+        $this->selectedUser = $id;
         $this->showFormModal = true;
     }
 
@@ -88,6 +93,10 @@ class ListUsers extends Component
         } else {
             $existing = $repository->find($this->selectedUser);
             if ($existing !== null) {
+                if (! RoleHierarchy::canManage(Auth::user(), $existing)) {
+                    abort(403);
+                }
+
                 $user = $service->update($existing, $payload);
                 $this->afterUpdate($user, $payload);
             }
@@ -109,7 +118,7 @@ class ListUsers extends Component
             abort(403);
         }
 
-        $this->selectedUser    = $id;
+        $this->selectedUser = $id;
         $this->showDeleteModal = true;
     }
 
@@ -124,7 +133,7 @@ class ListUsers extends Component
         $user = $repository->find($this->selectedUser);
         if ($user === null) {
             $this->showDeleteModal = false;
-            $this->selectedUser    = null;
+            $this->selectedUser = null;
 
             return;
         }
@@ -138,7 +147,7 @@ class ListUsers extends Component
         $service->delete($user);
 
         $this->showDeleteModal = false;
-        $this->selectedUser    = null;
+        $this->selectedUser = null;
         $this->resetPage();
     }
 
@@ -164,27 +173,21 @@ class ListUsers extends Component
     /**
      * @param  array<string, mixed>  $payload
      */
-    protected function afterCreate(\Illuminate\Database\Eloquent\Model $user, array $payload): void
-    {
-    }
+    protected function afterCreate(Model $user, array $payload): void {}
 
     /**
      * @param  array<string, mixed>  $payload
      */
-    protected function afterUpdate(\Illuminate\Database\Eloquent\Model $user, array $payload): void
-    {
-    }
+    protected function afterUpdate(Model $user, array $payload): void {}
 
-    protected function beforeDelete(\Illuminate\Database\Eloquent\Model $user): void
-    {
-    }
+    protected function beforeDelete(Model $user): void {}
 
     public function sortBy(string $field): void
     {
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortField     = $field;
+            $this->sortField = $field;
             $this->sortDirection = 'asc';
         }
     }
@@ -201,7 +204,7 @@ class ListUsers extends Component
 
     public function resetFilters(): void
     {
-        $this->search     = '';
+        $this->search = '';
         $this->roleFilter = null;
         $this->resetPage();
     }
@@ -211,7 +214,7 @@ class ListUsers extends Component
         $users = $repository->paginate(
             filters: [
                 'search' => $this->search,
-                'role'   => (string) $this->roleFilter,
+                'role' => (string) $this->roleFilter,
             ],
             sort: $this->sortField,
             direction: $this->sortDirection,
@@ -226,14 +229,14 @@ class ListUsers extends Component
             }
         }
 
-        $assignable     = RoleHierarchy::rolesAssignableBy(Auth::user());
+        $assignable = RoleHierarchy::rolesAssignableBy(Auth::user());
         $availableRoles = Role::query()->orderBy('name')->pluck('name');
 
         return view('arkhe::livewire.list-users', [
-            'users'            => $users,
-            'availableRoles'   => $availableRoles, // unfiltered: drives the filter dropdown
-            'assignableRoles'  => $availableRoles->filter(fn (string $name): bool => in_array($name, $assignable, true))->values(),
-            'availablePerms'   => Permission::query()->orderBy('name')->pluck('name'),
+            'users' => $users,
+            'availableRoles' => $availableRoles, // unfiltered: drives the filter dropdown
+            'assignableRoles' => $availableRoles->filter(fn (string $name): bool => in_array($name, $assignable, true))->values(),
+            'availablePerms' => Permission::query()->orderBy('name')->pluck('name'),
             'currentAvatarUrl' => $currentAvatarUrl,
         ])->layout((string) config('arkhe.admin.layout', config('arkhe.layout', 'arkhe::layouts.app')));
     }

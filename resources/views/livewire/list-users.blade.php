@@ -63,15 +63,24 @@
                                 size="sm"
                             />
                             @php($canManage = \Arkhe\Main\Support\RoleHierarchy::canManage(auth()->user(), $user))
-                            <button
-                                type="button"
-                                @if($canManage) wire:click="openEdit({{ $user->getKey() }})" @endif
-                                @disabled(! $canManage)
-                                class="text-left hover:underline focus:underline focus:outline-none disabled:cursor-not-allowed disabled:text-zinc-400 disabled:no-underline dark:disabled:text-zinc-500"
-                                @if(! $canManage) title="{{ __('arkhe::arkhe.users.cannot_manage') }}" @endif
-                            >
-                                {{ $user->full_name ?: $user->email }}
-                            </button>
+                            @if($canManage)
+                                <button
+                                    type="button"
+                                    wire:click="openEdit({{ $user->getKey() }})"
+                                    class="text-left hover:underline focus:underline focus:outline-none"
+                                >
+                                    {{ $user->full_name ?: $user->email }}
+                                </button>
+                            @else
+                                <button
+                                    type="button"
+                                    disabled
+                                    title="{{ __('arkhe::arkhe.users.cannot_manage') }}"
+                                    class="cursor-not-allowed text-left text-zinc-400 dark:text-zinc-500"
+                                >
+                                    {{ $user->full_name ?: $user->email }}
+                                </button>
+                            @endif
                         </div>
                     </flux:table.cell>
                     <flux:table.cell>{{ $user->email }}</flux:table.cell>
@@ -87,21 +96,21 @@
                         <flux:dropdown>
                             <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
                             <flux:menu>
-                                <flux:menu.item
-                                    icon="pencil-square"
-                                    @if($canManage) wire:click="openEdit({{ $user->getKey() }})" @endif
-                                    :disabled="! $canManage"
-                                >
-                                    {{ __('arkhe::arkhe.actions.edit') }}
-                                </flux:menu.item>
-                                <flux:menu.item
-                                    icon="trash"
-                                    variant="danger"
-                                    @if($canManage) wire:click="confirmDelete({{ $user->getKey() }})" @endif
-                                    :disabled="! $canManage"
-                                >
-                                    {{ __('arkhe::arkhe.actions.delete') }}
-                                </flux:menu.item>
+                                @if($canManage)
+                                    <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $user->getKey() }})">
+                                        {{ __('arkhe::arkhe.actions.edit') }}
+                                    </flux:menu.item>
+                                    <flux:menu.item icon="trash" variant="danger" wire:click="confirmDelete({{ $user->getKey() }})">
+                                        {{ __('arkhe::arkhe.actions.delete') }}
+                                    </flux:menu.item>
+                                @else
+                                    <flux:menu.item icon="pencil-square" disabled>
+                                        {{ __('arkhe::arkhe.actions.edit') }}
+                                    </flux:menu.item>
+                                    <flux:menu.item icon="trash" variant="danger" disabled>
+                                        {{ __('arkhe::arkhe.actions.delete') }}
+                                    </flux:menu.item>
+                                @endif
                             </flux:menu>
                         </flux:dropdown>
                     </flux:table.cell>

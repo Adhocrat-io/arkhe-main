@@ -19,7 +19,7 @@ return [
 
     'cookies' => [
         'title' => 'Cookies (RGPD)',
-        'intro' => "Liste des cookies enregistrés via whitecube/laravel-cookie-consent. Ajouter ou retirer des cookies se fait dans le code (sous-classer Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe enregistre par défaut les cookies essentiels Laravel (session, CSRF).",
+        'intro' => 'Liste des cookies enregistrés via whitecube/laravel-cookie-consent. Ajouter ou retirer des cookies se fait dans le code (sous-classer Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe enregistre par défaut les cookies essentiels Laravel (session, CSRF).',
         'fields' => [
             'name' => 'Nom',
             'duration' => 'Durée',
@@ -34,8 +34,8 @@ return [
         'title' => 'Sitemap',
         'intro' => "Le sitemap est régénéré automatiquement selon la planification ci-dessous. Utilisez « Régénérer maintenant » pour lancer un job immédiat (mis en file via la queue de l'application).",
         'regenerate' => 'Régénérer maintenant',
-        'dispatched' => "Job de régénération envoyé sur la queue. Le sitemap sera mis à jour sous peu.",
-        'disabled' => "La génération automatique est désactivée (ARKHE_SITEMAP_ENABLED=false). Le bouton ci-dessus reste fonctionnel.",
+        'dispatched' => 'Job de régénération envoyé sur la queue. Le sitemap sera mis à jour sous peu.',
+        'disabled' => 'La génération automatique est désactivée (ARKHE_SITEMAP_ENABLED=false). Le bouton ci-dessus reste fonctionnel.',
         'never_generated' => 'Jamais généré.',
         'fields' => [
             'url' => 'URL crawlée',
@@ -47,7 +47,7 @@ return [
 
     'site_seo' => [
         'title' => 'SEO',
-        'intro' => "Réglages SEO appliqués à toutes les pages du site. Ces valeurs servent de défauts : un modèle qui définit son propre SEO (via le trait HasArkheSeo) les remplace.",
+        'intro' => 'Réglages SEO appliqués à toutes les pages du site. Ces valeurs servent de défauts : un modèle qui définit son propre SEO (via le trait HasArkheSeo) les remplace.',
         'saved' => 'Réglages SEO enregistrés.',
         'fields' => [
             'site_name' => 'Nom du site',
@@ -63,9 +63,9 @@ return [
             'site_name' => 'Utilisé dans les balises OpenGraph.',
             'title_suffix' => 'Concaténé après chaque <title> (ex. "| Acme").',
             'description' => "Utilisé quand la page n'en définit pas une explicitement.",
-            'image' => "Chemin (ex. /images/og.png) ou URL absolue. Utilisé en fallback pour les balises OG/Twitter.",
-            'robots' => "Par défaut : max-snippet:-1, max-image-preview:large, max-video-preview:-1.",
-            'twitter_username' => "Sans le @.",
+            'image' => 'Chemin (ex. /images/og.png) ou URL absolue. Utilisé en fallback pour les balises OG/Twitter.',
+            'robots' => 'Par défaut : max-snippet:-1, max-image-preview:large, max-video-preview:-1.',
+            'twitter_username' => 'Sans le @.',
         ],
     ],
 
@@ -74,6 +74,7 @@ return [
         'create' => 'Créer un utilisateur',
         'edit' => "Modifier l'utilisateur",
         'empty' => 'Aucun utilisateur pour le moment.',
+        'cannot_manage' => 'Vous ne pouvez pas modifier un utilisateur avec un rôle supérieur au vôtre.',
         'search_placeholder' => 'Rechercher par nom ou email…',
         'filter_by_role' => 'Filtrer par rôle',
         'all_roles' => 'Tous les rôles',
@@ -187,7 +188,7 @@ return [
         'patch_css_prompt' => 'Configurer Tailwind pour scanner les vues Arkhe (app.css) ?',
         'patch_css_done' => 'app.css mis à jour : :file (directive @source ajoutée).',
         'patch_css_already' => 'app.css déjà à jour : :file (directive @source déjà présente).',
-        'patch_css_failed' => "Patch automatique de app.css impossible : :reason",
+        'patch_css_failed' => 'Patch automatique de app.css impossible : :reason',
         'patch_css_v3_manual' => "Aucun fichier app.css avec `@import 'tailwindcss'` détecté.\nSi vous utilisez Tailwind v3, ajoutez `vendor/adhocrat-io/arkhe-main/resources/views/**/*.blade.php` à la clé `content` de tailwind.config.js.\nSi vous utilisez Tailwind v4, ajoutez la ligne suivante à votre app.css :\n    :snippet",
     ],
 

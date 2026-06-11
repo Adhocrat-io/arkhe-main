@@ -34,8 +34,8 @@ return [
         'title' => 'Sitemap',
         'intro' => "The sitemap is regenerated automatically on the schedule below. Use \"Regenerate now\" to dispatch an immediate job (queued through the app's default queue).",
         'regenerate' => 'Regenerate now',
-        'dispatched' => "Regeneration job dispatched. The sitemap will be updated shortly.",
-        'disabled' => "Automatic generation is disabled (ARKHE_SITEMAP_ENABLED=false). The button above still works.",
+        'dispatched' => 'Regeneration job dispatched. The sitemap will be updated shortly.',
+        'disabled' => 'Automatic generation is disabled (ARKHE_SITEMAP_ENABLED=false). The button above still works.',
         'never_generated' => 'Never generated.',
         'fields' => [
             'url' => 'Crawled URL',
@@ -47,7 +47,7 @@ return [
 
     'site_seo' => [
         'title' => 'SEO',
-        'intro' => "SEO settings applied across the site. These values act as defaults: a model that defines its own SEO (via the HasArkheSeo trait) overrides them.",
+        'intro' => 'SEO settings applied across the site. These values act as defaults: a model that defines its own SEO (via the HasArkheSeo trait) overrides them.',
         'saved' => 'SEO settings saved.',
         'fields' => [
             'site_name' => 'Site name',
@@ -62,10 +62,10 @@ return [
         'hints' => [
             'site_name' => 'Used in OpenGraph tags.',
             'title_suffix' => 'Appended after every <title> (e.g. "| Acme").',
-            'description' => "Used when a page does not provide its own.",
-            'image' => "Path (e.g. /images/og.png) or absolute URL. Used as fallback for OG/Twitter tags.",
-            'robots' => "Default: max-snippet:-1, max-image-preview:large, max-video-preview:-1.",
-            'twitter_username' => "Without the @.",
+            'description' => 'Used when a page does not provide its own.',
+            'image' => 'Path (e.g. /images/og.png) or absolute URL. Used as fallback for OG/Twitter tags.',
+            'robots' => 'Default: max-snippet:-1, max-image-preview:large, max-video-preview:-1.',
+            'twitter_username' => 'Without the @.',
         ],
     ],
 
@@ -74,6 +74,7 @@ return [
         'create' => 'Create user',
         'edit' => 'Edit user',
         'empty' => 'No users yet.',
+        'cannot_manage' => 'You cannot edit a user with a higher role than your own.',
         'search_placeholder' => 'Search by name or email…',
         'filter_by_role' => 'Filter by role',
         'all_roles' => 'All roles',

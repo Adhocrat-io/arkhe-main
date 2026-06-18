@@ -2,6 +2,36 @@
 
 All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] — 2026-06-18
+
+### Added
+- **Shared navigation registry** (`Arkhe\Main\Support\ArkheNav`, with
+  `NavSection` / `NavItem`). The backend sidebar is now driven by named
+  sections so satellite packages can branch onto the same menu — add an entry
+  to the shared `settings` ("Réglages") section, or declare their own
+  collapsible section — without patching any Blade file. Arkhè seeds two default
+  sections: `access` ("Accès": users, roles, permissions) and `settings`
+  ("Réglages": SEO, sitemap, cookies). Example:
+
+  ```php
+  use Arkhe\Main\Support\ArkheNav;
+
+  ArkheNav::section('settings')->item(
+      key: 'billing', label: fn () => __('billing::nav.title'),
+      icon: 'credit-card', route: 'billing.settings', can: 'manage-billing',
+  );
+  ```
+
+- `arkhe::arkhe.settings.title` translation ("Réglages" / "Settings") for the
+  consolidated settings section heading.
+
+### Changed
+- `arkhe::partials.sidebar-items` now renders from the registry instead of a
+  hardcoded item list. The default menu is unchanged; the `@include` host apps
+  already have keeps working as-is. Roles/permissions/settings visibility is now
+  gated by the `root_permission` (matching the route guards) rather than the
+  `root` *role*, so a custom role granted `manage-roles` sees those items too.
+
 ## [3.1.0] — 2026-06-05
 
 ### Added

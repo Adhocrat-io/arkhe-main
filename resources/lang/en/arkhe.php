@@ -17,6 +17,10 @@ return [
         'title' => 'Site',
     ],
 
+    'settings' => [
+        'title' => 'Settings',
+    ],
+
     'cookies' => [
         'title' => 'Cookies (GDPR)',
         'intro' => "Cookies registered via whitecube/laravel-cookie-consent. Adding or removing cookies happens in code (subclass Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe registers Laravel's essentials (session, CSRF) out of the box.",

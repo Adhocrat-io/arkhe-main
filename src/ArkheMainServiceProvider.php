@@ -27,6 +27,7 @@ use Arkhe\Main\Repositories\RoleRepository;
 use Arkhe\Main\Repositories\SiteSeoRepository;
 use Arkhe\Main\Repositories\UserRepository;
 use Arkhe\Main\Services\SiteSeoService;
+use Arkhe\Main\Support\ArkheNav;
 use Arkhe\Main\Support\Features;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Routing\Router;
@@ -106,6 +107,81 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         $this->bootSitemap();
 
         $this->bootFeatures();
+
+        $this->registerDefaultNavigation();
+    }
+
+    /**
+     * Seed the shared sidebar registry with Arkhè's own sections. Satellite
+     * packages (e.g. arkhe-watcher) add their items/sections via
+     * {@see ArkheNav} from their own service providers — see the registry's
+     * class docblock. Rendered by `arkhe::partials.sidebar-items`.
+     */
+    private function registerDefaultNavigation(): void
+    {
+        $rootGate = static fn (?object $user): bool => ArkheNav::passes(
+            (string) config('arkhe.root_permission', 'manage-roles'),
+            $user,
+        );
+
+        ArkheNav::section('access', heading: static fn (): string => __('arkhe::arkhe.access.title'), priority: 10)
+            ->item(
+                key: 'users',
+                label: static fn (): string => __('arkhe::arkhe.users.title'),
+                icon: 'users',
+                route: 'arkhe.users.index',
+                active: 'arkhe.users.*',
+                priority: 10,
+            )
+            ->item(
+                key: 'roles',
+                label: static fn (): string => __('arkhe::arkhe.roles.title'),
+                icon: 'key',
+                route: 'arkhe.roles.index',
+                active: 'arkhe.roles.*',
+                can: $rootGate,
+                priority: 20,
+            )
+            ->item(
+                key: 'permissions',
+                label: static fn (): string => __('arkhe::arkhe.permissions.title'),
+                icon: 'shield-check',
+                route: 'arkhe.permissions.index',
+                active: 'arkhe.permissions.*',
+                can: $rootGate,
+                priority: 30,
+            );
+
+        ArkheNav::section(
+            'settings',
+            heading: static fn (): string => __('arkhe::arkhe.settings.title'),
+            priority: 80,
+            can: $rootGate,
+        )
+            ->item(
+                key: 'site-seo',
+                label: static fn (): string => __('arkhe::arkhe.site_seo.title'),
+                icon: 'globe-alt',
+                route: 'arkhe.site-seo.edit',
+                active: 'arkhe.site-seo.*',
+                priority: 10,
+            )
+            ->item(
+                key: 'sitemap',
+                label: static fn (): string => __('arkhe::arkhe.sitemap.title'),
+                icon: 'map',
+                route: 'arkhe.sitemap.edit',
+                active: 'arkhe.sitemap.*',
+                priority: 20,
+            )
+            ->item(
+                key: 'cookies',
+                label: static fn (): string => __('arkhe::arkhe.cookies.title'),
+                icon: 'cake',
+                route: 'arkhe.cookies.index',
+                active: 'arkhe.cookies.*',
+                priority: 30,
+            );
     }
 
     /**

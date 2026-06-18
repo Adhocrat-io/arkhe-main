@@ -17,6 +17,10 @@ return [
         'title' => 'Site',
     ],
 
+    'settings' => [
+        'title' => 'Réglages',
+    ],
+
     'cookies' => [
         'title' => 'Cookies (RGPD)',
         'intro' => 'Liste des cookies enregistrés via whitecube/laravel-cookie-consent. Ajouter ou retirer des cookies se fait dans le code (sous-classer Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe enregistre par défaut les cookies essentiels Laravel (session, CSRF).',

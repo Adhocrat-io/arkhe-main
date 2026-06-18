@@ -149,7 +149,7 @@ Arkhe mounts a minimal users-by-role dashboard at the path you choose. Keep the 
 
 ### 3. Inject Arkhe entries into your sidebar
 
-Include the bundled partial inside one of your `<flux:sidebar.group>` blocks (the partial emits plain `<flux:sidebar.item>` entries, no wrapper — you decide the group and the order):
+Include the bundled partial at the top level of your `<flux:sidebar.nav>` — it emits its own Dashboard item plus the registry-driven groups ("Accès", "Réglages", and any group contributed by a satellite package), so it sits alongside your own groups rather than nested inside one:
 
 ```blade
 <flux:sidebar.nav>
@@ -158,10 +158,10 @@ Include the bundled partial inside one of your `<flux:sidebar.group>` blocks (th
         <flux:sidebar.item icon="folder" :href="route('admin.projects.index')" wire:navigate>
             Projects
         </flux:sidebar.item>
-
-        {{-- Arkhe entries (Dashboard if enabled, Users) --}}
-        @include('arkhe::partials.sidebar-items')
     </flux:sidebar.group>
+
+    {{-- Arkhe + satellite-package entries --}}
+    @include('arkhe::partials.sidebar-items')
 </flux:sidebar.nav>
 ```
 
@@ -171,6 +171,36 @@ You can also publish the partial to customise it:
 php artisan vendor:publish --tag=arkhe-views
 # then edit resources/views/vendor/arkhe/partials/sidebar-items.blade.php
 ```
+
+### 4. Branch a package onto the shared menu — `ArkheNav`
+
+The sidebar is driven by a navigation registry (`Arkhe\Main\Support\ArkheNav`). Arkhè seeds two sections — `access` ("Accès") and `settings` ("Réglages") — and any package can branch onto the same menu from its service provider's `boot()`, with **no Blade patching**. This is how `adhocrat-io/arkhe-watcher` and future packages plug in.
+
+Add an entry to the shared **Réglages** section (one line per package — the goal: every package's settings in one place):
+
+```php
+use Arkhe\Main\Support\ArkheNav;
+
+ArkheNav::section('settings')->item(
+    key:    'billing',
+    label:  fn () => __('billing::nav.title'),   // closure → resolved at render (locale-aware)
+    icon:   'credit-card',
+    route:  'billing.settings',
+    active: 'billing.settings*',                 // routeIs pattern(s) for the "current" highlight
+    can:    'manage-billing',                    // permission string, closure(?$user): bool, or null
+    priority: 50,                                // ordering within the section
+);
+```
+
+Or declare your **own collapsible group** (for a richer tool with several pages):
+
+```php
+ArkheNav::section('reports', heading: fn () => __('reports::nav.title'), priority: 90, can: 'view-reports')
+    ->item('sales',  fn () => __('reports::nav.sales'),  'chart-bar',  route: 'reports.sales')
+    ->item('export', fn () => __('reports::nav.export'), 'arrow-down-tray', route: 'reports.export');
+```
+
+A section is rendered only when its gate passes **and** it has at least one visible item; items are filtered per-user by their own `can`. Sections and items order by `priority` (lower first). Because registration is keyed and idempotent, Main and packages can register in any order.
 
 ## Role hierarchy & authorization
 
@@ -468,7 +498,7 @@ Read them programmatically via `\Arkhe\Main\Support\Features::hasSeo()` / `hasCo
 
 ## Extension points at a glance
 
-Six layered ways to customise Arkhe without forking it — pick the lightest one that fits:
+Seven layered ways to customise Arkhe without forking it — pick the lightest one that fits:
 
 | # | Lever | Use when |
 | --- | --- | --- |
@@ -477,7 +507,8 @@ Six layered ways to customise Arkhe without forking it — pick the lightest one
 | 3 | **Rebindable Livewire components** via `config('arkhe.components')` | You want to subclass `ListUsers` / `ListRoles` / `ListPermissions` / `Dashboard` / `SiteSeo` / `Sitemap` / `Cookies` to add `wire:click` targets or extra fields. The route map auto-resolves to your class. |
 | 4 | **`RoleHierarchy::register()`** (runtime) or `config('arkhe.roles')` (static) | You ship a new role from a package or a host module — see [Role hierarchy](#role-hierarchy--authorization). |
 | 5 | **Custom permissions** via `config('arkhe.permissions')` + `config('arkhe.role_permissions')`, re-seed with `ArkheRolesSeeder` | You add domain permissions (`manage-posts`, `publish-article`, …) that should live next to Arkhe's bundled set. |
-| 6 | **Publish the views** (`vendor:publish --tag=arkhe-views`) | The hooks / subclasses are not enough — you need a different Blade structure. Last resort; you take ownership of upgrade diffs. |
+| 6 | **`ArkheNav` navigation registry** — add an item to the shared `settings` section or declare your own group (see [Branch a package onto the shared menu](#4-branch-a-package-onto-the-shared-menu--arkhenav)) | A package needs to contribute sidebar entries that show up in the common backend menu, gated by permission, with no Blade patching. |
+| 7 | **Publish the views** (`vendor:publish --tag=arkhe-views`) | The hooks / subclasses are not enough — you need a different Blade structure. Last resort; you take ownership of upgrade diffs. |
 
 Subclass override example (lever 3 + lever 2):
 

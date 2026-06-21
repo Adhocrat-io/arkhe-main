@@ -202,6 +202,8 @@ ArkheNav::section('reports', heading: fn () => __('reports::nav.title'), priorit
 
 A section is rendered only when its gate passes **and** it has at least one visible item; items are filtered per-user by their own `can`. Sections and items order by `priority` (lower first). Because registration is keyed and idempotent, Main and packages can register in any order.
 
+> **A menu `can` only hides the link — it is not access control.** It governs *visibility* in the sidebar, nothing more. You must still protect the destination yourself by gating the package's routes with middleware (`arkhe.backend`, `arkhe.root`, or your own). Treat the menu gate and the route guard as two independent layers and keep them in sync. For example, `adhocrat-io/arkhe-watcher` gates its routes with `arkhe.watcher` (and `arkhe.root` for its settings page) in addition to the matching menu `can`.
+
 ## Role hierarchy & authorization
 
 The `Arkhe\Main\Support\RoleHierarchy` helper encodes a configurable role hierarchy. A user can only assign roles whose rank is less than or equal to their own. The default order, highest first, is:

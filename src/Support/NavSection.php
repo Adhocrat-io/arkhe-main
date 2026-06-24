@@ -62,7 +62,7 @@ final class NavSection
      *
      * @param  string|Closure(): string  $label
      * @param  array<string, mixed>  $routeParams
-     * @param  string|array<int, string>|null  $active
+     * @param  string|array<int, string>|Closure(): bool|null  $active
      * @param  string|Closure(?object): bool|null  $can
      */
     public function item(
@@ -71,7 +71,7 @@ final class NavSection
         string $icon,
         ?string $route = null,
         array $routeParams = [],
-        string|array|null $active = null,
+        string|array|Closure|null $active = null,
         string|Closure|null $can = null,
         int $priority = 100,
     ): self {

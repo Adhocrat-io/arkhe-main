@@ -17,7 +17,7 @@ final class NavItem
     /**
      * @param  string|Closure(): string  $label
      * @param  array<string, mixed>  $routeParams
-     * @param  string|array<int, string>|null  $active  routeIs pattern(s); defaults to $route
+     * @param  string|array<int, string>|Closure(): bool|null  $active  routeIs pattern(s) or a callback; defaults to $route
      * @param  string|Closure(?object): bool|null  $can  permission name, predicate, or null (always visible)
      */
     public function __construct(
@@ -26,7 +26,7 @@ final class NavItem
         public string $icon,
         public ?string $route = null,
         public array $routeParams = [],
-        public string|array|null $active = null,
+        public string|array|Closure|null $active = null,
         public string|Closure|null $can = null,
         public int $priority = 100,
     ) {}
@@ -47,6 +47,14 @@ final class NavItem
 
         if ($patterns === null) {
             return false;
+        }
+
+        // Closure callback — utile quand l'activation dépend d'un contexte
+        // applicatif au-delà du `routeIs` match (par ex. la page détail
+        // d'arkhe-watcher veut activer l'item de la liste qui correspond
+        // au type de l'entry affichée).
+        if ($patterns instanceof Closure) {
+            return (bool) $patterns();
         }
 
         return request()->routeIs(...(array) $patterns);

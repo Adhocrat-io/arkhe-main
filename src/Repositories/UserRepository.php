@@ -23,7 +23,14 @@ class UserRepository implements UserRepositoryInterface
         string $direction = 'desc',
         int $perPage = 15,
     ): LengthAwarePaginator {
-        $query = $this->query();
+        // Eager-load les rôles : la vue list-users itère sur
+        // `$user->getRoleNames()` (cf. resources/views/livewire/list-users.blade.php),
+        // qui lit `$user->roles`. Sans `with('roles')`, chaque user paginé
+        // déclenche une query Spatie identique sur `model_has_roles` —
+        // observé in vivo : 9 queries N+1 identiques pour 9 users affichés.
+        // Coût SQL négligeable mais surtout coût d'hydratation Eloquent
+        // multiplié par le nombre de users dans la page.
+        $query = $this->query()->with('roles');
 
         $search = trim((string) ($filters['search'] ?? ''));
         if ($search !== '') {

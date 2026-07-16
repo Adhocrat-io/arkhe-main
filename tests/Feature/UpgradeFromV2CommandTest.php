@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Filesystem\Filesystem;
 
 beforeEach(function (): void {
-    $this->files = new Filesystem();
+    $this->files = new Filesystem;
     $this->configPath = config_path('arkhe.php');
     $this->originalConfig = $this->files->exists($this->configPath)
         ? $this->files->get($this->configPath)
@@ -24,6 +24,7 @@ it('reports nothing to add when the host config already has V3 keys', function (
     $this->files->put($this->configPath, fixtureV3Config());
 
     $this->artisan('arkhe:main:upgrade-from-v2', ['--dry-run' => true])
+        ->expectsOutputToContain('already use the V3 layout')
         ->expectsOutputToContain('already aligned with V3')
         ->assertSuccessful();
 });
@@ -32,8 +33,9 @@ it('appends missing V3 keys to a V2-shaped config when confirmed', function (): 
     $this->files->put($this->configPath, fixtureV2Config());
 
     $this->artisan('arkhe:main:upgrade-from-v2')
+        ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 13 missing V3 keys to config/arkhe.php?',
+            'Append 12 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->assertSuccessful();
@@ -52,13 +54,101 @@ it('appends missing V3 keys to a V2-shaped config when confirmed', function (): 
         ->toContain("'role_labels' =>");
 });
 
-it('does not modify the file in dry-run mode', function (): void {
-    $original = fixtureV2Config();
+it('reshapes V2 roles and permissions into the V3 layout', function (): void {
+    $this->files->put($this->configPath, fixtureV2Config());
+
+    $this->artisan('arkhe:main:upgrade-from-v2')
+        ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
+        ->expectsConfirmation(
+            'Append 12 missing V3 keys to config/arkhe.php?',
+            'yes',
+        )
+        ->assertSuccessful();
+
+    $values = require $this->configPath;
+
+    expect($values['roles'])->toBe(['root' => 'root'])
+        ->and($values['permissions'])->toBe(['view-user', 'create-user', 'update-user', 'delete-user'])
+        ->and($values['role_permissions'])->toBe(['root' => ['*']])
+        ->and($values['admin']['roles'])->toBe(['root', 'administrator']);
+});
+
+it('moves the V2 roles body verbatim into role_permissions and dedupes permissions', function (): void {
+    $this->files->put($this->configPath, <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+return [
+    'admin' => [
+        'roles' => ['root'],
+    ],
+    'permissions' => [
+        'manage-users' => ['view-user'],
+        'manage-posts' => ['view-post', 'view-user'],
+    ],
+    'roles' => [
+        // wildcard: every permission
+        'root' => ['*'],
+        'editor' => ['view-post'],
+    ],
+];
+PHP);
+
+    $this->artisan('arkhe:main:upgrade-from-v2')
+        ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
+        ->expectsConfirmation(
+            'Append 12 missing V3 keys to config/arkhe.php?',
+            'yes',
+        )
+        ->assertSuccessful();
+
+    // Comments inside the V2 mapping must survive the move to role_permissions.
+    expect($this->files->get($this->configPath))->toContain('// wildcard: every permission');
+
+    $values = require $this->configPath;
+
+    expect($values['roles'])->toBe(['root' => 'root', 'editor' => 'editor'])
+        ->and($values['role_permissions'])->toBe(['root' => ['*'], 'editor' => ['view-post']])
+        ->and($values['permissions'])->toBe(['view-user', 'view-post']);
+});
+
+it('warns instead of reshaping when role_permissions already exists next to V2 roles', function (): void {
+    $original = <<<'PHP'
+<?php
+
+return [
+    'roles' => [
+        'root' => ['*'],
+    ],
+    'role_permissions' => [
+        'root' => ['*'],
+    ],
+];
+PHP;
     $this->files->put($this->configPath, $original);
 
     $this->artisan('arkhe:main:upgrade-from-v2', ['--dry-run' => true])
         ->expectsConfirmation(
-            'Append 13 missing V3 keys to config/arkhe.php?',
+            'Append 12 missing V3 keys to config/arkhe.php?',
+            'no',
+        )
+        ->expectsOutputToContain('merge them manually')
+        ->assertSuccessful();
+
+    expect($this->files->get($this->configPath))->toBe($original);
+});
+
+it('does not modify the file in dry-run mode', function (): void {
+    $original = fixtureV2Config();
+    $this->files->put($this->configPath, $original);
+
+    // Even in dry-run, a confirmed reshape removes role_permissions from the
+    // keys to append (13 → 12): the reshape itself will create it.
+    $this->artisan('arkhe:main:upgrade-from-v2', ['--dry-run' => true])
+        ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
+        ->expectsConfirmation(
+            'Append 12 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->expectsOutputToContain('dry run')

@@ -2,6 +2,22 @@
 
 All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `arkhe:main:upgrade-from-v2` now rewrites the V2 `roles` / `permissions`
+  config layout into the V3 one: `roles` becomes a key => name map,
+  `permissions` a flat deduplicated list, and the V2 role => permissions
+  mapping moves **verbatim** (enum keys and inline comments preserved) into a
+  new `role_permissions` entry. The rewrite is tokenizer-based, only touches
+  the two top-level entries, prompts before writing and honours `--dry-run`.
+
+### Changed
+- `ArkheRolesSeeder` (and therefore `arkhe:main:install`) now fails fast with
+  an actionable message when `config/arkhe.php` still uses the V2
+  roles/permissions layout, instead of crashing mid-insert with an opaque
+  `Array to string conversion` SQL error.
+
 ## [3.2.1] — 2026-06-18
 
 ### Documentation

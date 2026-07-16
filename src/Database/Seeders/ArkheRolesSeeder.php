@@ -6,6 +6,7 @@ namespace Arkhe\Main\Database\Seeders;
 
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -21,11 +22,12 @@ class ArkheRolesSeeder extends Seeder
     public function __construct(
         private readonly ConfigRepository $config,
         private readonly PermissionRegistrar $permissionRegistrar,
-    ) {
-    }
+    ) {}
 
     public function run(): void
     {
+        $this->assertV3ConfigLayout();
+
         $guard = 'web';
 
         $this->seedPermissions($guard);
@@ -35,6 +37,24 @@ class ArkheRolesSeeder extends Seeder
         $this->permissionRegistrar->forgetCachedPermissions();
     }
 
+    /**
+     * A V2-shaped config (`roles` mapping role => permissions, `permissions`
+     * grouped in named lists) would silently feed arrays where the seeder
+     * expects names and crash mid-insert with an opaque SQL error — fail
+     * loudly with the fix instead.
+     */
+    private function assertV3ConfigLayout(): void
+    {
+        $roles = (array) $this->config->get('arkhe.roles', []);
+        $permissions = (array) $this->config->get('arkhe.permissions', []);
+
+        if (array_filter($roles, 'is_array') !== [] || array_filter($permissions, 'is_array') !== []) {
+            throw new RuntimeException(
+                'config/arkhe.php still uses the V2 roles/permissions layout — run `php artisan arkhe:main:upgrade-from-v2` first.',
+            );
+        }
+    }
+
     private function seedPermissions(string $guard): void
     {
         /** @var array<int, string> $permissions */
@@ -42,7 +62,7 @@ class ArkheRolesSeeder extends Seeder
 
         foreach ($permissions as $name) {
             Permission::query()->firstOrCreate([
-                'name'       => $name,
+                'name' => $name,
                 'guard_name' => $guard,
             ]);
         }
@@ -55,7 +75,7 @@ class ArkheRolesSeeder extends Seeder
 
         foreach ($roles as $name) {
             Role::query()->firstOrCreate([
-                'name'       => $name,
+                'name' => $name,
                 'guard_name' => $guard,
             ]);
         }

@@ -83,9 +83,9 @@ it('lets the backend middleware accept a custom role granted access-backend', fu
     /** @var User $user */
     $user = User::query()->forceCreate([
         'first_name' => 'A',
-        'last_name'  => 'U',
-        'email'      => 'auditor@x.test',
-        'password'   => Hash::make('secret123'),
+        'last_name' => 'U',
+        'email' => 'auditor@x.test',
+        'password' => Hash::make('secret123'),
     ]);
     $user->assignRole('auditor');
 
@@ -105,13 +105,20 @@ it('blocks a role that does NOT have access-backend', function (): void {
     /** @var User $user */
     $user = User::query()->forceCreate([
         'first_name' => 'L',
-        'last_name'  => 'U',
-        'email'      => 'lurker@x.test',
-        'password'   => Hash::make('secret123'),
+        'last_name' => 'U',
+        'email' => 'lurker@x.test',
+        'password' => Hash::make('secret123'),
     ]);
     $user->assignRole('lurker');
 
     $this->actingAs($user)
         ->get('/__probe/backend')
         ->assertForbidden();
+});
+
+it('refuses to run on a V2-shaped config with an actionable message', function (): void {
+    config()->set('arkhe.roles', ['root' => ['*']]);
+
+    expect(fn () => $this->app->make(ArkheRolesSeeder::class)->run())
+        ->toThrow(RuntimeException::class, 'arkhe:main:upgrade-from-v2');
 });

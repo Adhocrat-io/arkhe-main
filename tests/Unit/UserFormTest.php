@@ -48,6 +48,58 @@ it('produces required + min + confirmed-equivalent password rules on create', fu
     expect($rules['password'])->toContain('min:8');
 });
 
+// A closure rule bypasses Laravel's attribute resolution: the raw name landed
+// in the message, so a French install read "Le champ de confirmation password
+// ne correspond pas". Testbench ships no framework translations, so the test
+// registers both the message and the attribute it must interpolate.
+it('resolves the attribute name through the app dictionary on a mismatch', function (): void {
+    app('translator')->addLines([
+        'validation.confirmed' => 'The :attribute confirmation does not match.',
+        'validation.attributes.password' => 'mot de passe',
+    ], app()->getLocale());
+
+    $form = instantiateUserForm();
+    $form->id = null;
+    $form->password = 'secret123';
+    $form->passwordConfirmation = 'something-else';
+
+    $failures = [];
+    foreach ($form->rules()['password'] as $rule) {
+        if ($rule instanceof Closure) {
+            $rule('password', 'secret123', function (string $message) use (&$failures): void {
+                $failures[] = $message;
+            });
+        }
+    }
+
+    expect($failures)->not->toBeEmpty()
+        ->and($failures[0])->toBe('The mot de passe confirmation does not match.');
+});
+
+// No entry in the dictionary: fall back to the humanised name rather than the
+// camelCase property.
+it('falls back to the humanised attribute when no translation exists', function (): void {
+    app('translator')->addLines([
+        'validation.confirmed' => 'The :attribute confirmation does not match.',
+    ], app()->getLocale());
+
+    $form = instantiateUserForm();
+    $form->id = null;
+    $form->password = 'secret123';
+    $form->passwordConfirmation = 'something-else';
+
+    $failures = [];
+    foreach ($form->rules()['password'] as $rule) {
+        if ($rule instanceof Closure) {
+            $rule('passwordConfirmation', 'secret123', function (string $message) use (&$failures): void {
+                $failures[] = $message;
+            });
+        }
+    }
+
+    expect($failures[0])->toBe('The password confirmation confirmation does not match.');
+});
+
 it('returns empty password rules when editing with no new value', function (): void {
     $form           = instantiateUserForm();
     $form->id       = 42;

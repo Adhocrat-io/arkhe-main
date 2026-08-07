@@ -8,6 +8,7 @@ use Arkhe\Main\Support\RoleHierarchy;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
@@ -176,9 +177,28 @@ class UserForm extends Form
 
         return function (string $attribute, mixed $value, Closure $fail) use ($confirmation): void {
             if ((string) $value !== $confirmation) {
-                $fail(trans('validation.confirmed', ['attribute' => $attribute]));
+                $fail(trans('validation.confirmed', ['attribute' => $this->translateAttribute($attribute)]));
             }
         };
+    }
+
+    /**
+     * Resolve an attribute name through the app's `validation.attributes`
+     * dictionary, the way Laravel does for its own rules.
+     *
+     * A closure rule bypasses that resolution: the raw name lands in the
+     * message, so a French install read "Le champ de confirmation password ne
+     * correspond pas". Falls back to the humanised name when the app declares
+     * no translation.
+     */
+    private function translateAttribute(string $attribute): string
+    {
+        $key = 'validation.attributes.'.$attribute;
+        $translated = trans($key);
+
+        return $translated === $key
+            ? str_replace('_', ' ', Str::snake($attribute))
+            : (string) $translated;
     }
 
     private function resolveUserTable(): string

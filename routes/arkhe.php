@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Arkhe\Main\Livewire\Dashboard;
+use Arkhe\Main\Livewire\EditRole;
+use Arkhe\Main\Livewire\EditUser;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
 use Arkhe\Main\Livewire\Cookies;
@@ -32,10 +34,14 @@ Route::middleware($middleware)
     ->name('arkhe.')
     ->group(function () use ($component): void {
         Route::get('/users', $component('list-users', ListUsers::class))->name('users.index');
+        Route::get('/users/create', $component('edit-user', EditUser::class))->name('users.create');
+        Route::get('/users/{user}/edit', $component('edit-user', EditUser::class))->name('users.edit');
 
         // Roles + permissions + site SEO are restricted to the `root` role.
         Route::middleware('arkhe.root')->group(function () use ($component): void {
-            Route::get('/roles',       $component('list-roles', ListRoles::class))->name('roles.index');
+            Route::get('/roles',            $component('list-roles', ListRoles::class))->name('roles.index');
+            Route::get('/roles/create',     $component('edit-role',  EditRole::class))->name('roles.create');
+            Route::get('/roles/{role}/edit', $component('edit-role', EditRole::class))->name('roles.edit');
 
             // Les permissions se gèrent depuis la page des rôles depuis la 3.3 :
             // la route survit en redirigeant, pour ne pas casser les

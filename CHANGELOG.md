@@ -4,6 +4,14 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+### Fixed
+- **Création d'utilisateur impossible depuis l'interface.** `passwordConfirmation`
+  ne faisait pas partie du contrat sérialisé de `UserForm` : Livewire ne la
+  restituait pas au tour suivant, si bien que la confirmation était comparée à
+  une chaîne vide et qu'une paire pourtant identique était refusée. Le défaut
+  touchait aussi l'ancien flyout ; aucun test ne le couvrait, les suites
+  existantes appelant `UserService` directement.
+
 ### Changed
 - **Refonte des pages de liste.** `list-users` et `list-roles` adoptent le
   langage visuel des back-offices maison : en-tête titre + description,
@@ -18,8 +26,27 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
   devient « Rôles & permissions » : chaque ligne donne le libellé du rôle,
   son identifiant et le nombre de permissions qu'il porte. Les filtres et le
   tri sont persistés dans l'URL sur les deux listes.
+- **Création et édition sur leur propre page.** Les flyouts laissent place à
+  quatre routes — `arkhe.users.create`, `arkhe.users.edit`,
+  `arkhe.roles.create`, `arkhe.roles.edit` — servies par les composants
+  `EditUser` et `EditRole`, surchargeables via `config('arkhe.components')`
+  comme les listes. Le formulaire y est découpé en sections (identité, photo,
+  sécurité, accès), chaque champ portant sa description.
+- **Les permissions d'un rôle se cochent par ressource.** La fiche d'un rôle
+  range les permissions en cartes (`users`, `roles`, `sitemap`…) avec un
+  « tout cocher » par groupe, plutôt qu'une liste à choix multiple de plusieurs
+  dizaines de lignes. Le regroupement est déduit de la convention de nommage
+  `<verbe>-<ressource>` ; une app peut l'imposer via
+  `config('arkhe.permission_groups')`. Un rôle canonique garde son nom et son
+  guard verrouillés, mais ses permissions restent modifiables.
 
 ### Deprecated
+- Les méthodes de formulaire des composants de liste (`openCreate`,
+  `openEdit`, `save` et les hooks `beforeSave` / `afterCreate` / `afterUpdate`
+  sur `ListUsers` et `ListRoles`). Elles ne sont plus appelées par les vues du
+  paquet — les pages dédiées les remplacent — mais restent en place pour les
+  sous-classes qui les surchargent. Retrait à la prochaine majeure : portez
+  vos surcharges sur `EditUser` / `EditRole`, qui exposent les mêmes hooks.
 - La page de liste des permissions. `/administration/permissions` redirige
   désormais vers `/administration/roles` ; le nom de route
   `arkhe.permissions.index` et le composant `Arkhe\Main\Livewire\ListPermissions`

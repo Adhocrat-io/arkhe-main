@@ -259,7 +259,9 @@ return [
     */
     'components' => [
         'list-users'       => \Arkhe\Main\Livewire\ListUsers::class,
+        'edit-user'        => \Arkhe\Main\Livewire\EditUser::class,
         'list-roles'       => \Arkhe\Main\Livewire\ListRoles::class,
+        'edit-role'        => \Arkhe\Main\Livewire\EditRole::class,
         'list-permissions' => \Arkhe\Main\Livewire\ListPermissions::class,
         'dashboard'        => \Arkhe\Main\Livewire\Dashboard::class,
         'site-seo'         => \Arkhe\Main\Livewire\SiteSeo::class,

@@ -4,7 +4,7 @@
         :description="__('arkhe::arkhe.roles.description')"
     >
         <x-slot:actions>
-            <flux:button variant="primary" icon="plus" wire:click="openCreate">
+            <flux:button variant="primary" icon="plus" :href="route('arkhe.roles.create')" wire:navigate>
                 <span class="font-semibold uppercase">{{ __('arkhe::arkhe.roles.create') }}</span>
             </flux:button>
         </x-slot:actions>
@@ -75,16 +75,16 @@
                                  par défaut tous les rôles le sont, il ne distinguerait
                                  rien. Ce que le statut implique se lit là où il compte —
                                  la suppression absente du menu, les champs verrouillés
-                                 dans le flyout, qui porte l'explication. --}}
+                                 sur la fiche, qui porte l'explication. --}}
                             <td class="px-6 py-4 text-sm 2xl:text-base">
-                                <button
-                                    type="button"
-                                    wire:click="openEdit({{ $role->id }})"
+                                <a
+                                    href="{{ route('arkhe.roles.edit', $role->id) }}"
+                                    wire:navigate
                                     title="{{ $role->name }}"
-                                    class="cursor-pointer font-medium text-gray-900 hover:underline dark:text-gray-100"
+                                    class="font-medium text-gray-900 hover:underline dark:text-gray-100"
                                 >
                                     {{ $role->name }}
-                                </button>
+                                </a>
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -106,7 +106,8 @@
                                     <flux:menu>
                                         <flux:menu.item
                                             icon="pencil-square"
-                                            wire:click="openEdit({{ $role->id }})"
+                                            :href="route('arkhe.roles.edit', $role->id)"
+                                            wire:navigate
                                             class="cursor-pointer"
                                         >
                                             {{ __('arkhe::arkhe.actions.edit') }}
@@ -144,7 +145,7 @@
                                     {{ __('arkhe::arkhe.actions.reset') }}
                                 </flux:button>
                             @else
-                                <flux:button variant="primary" icon="plus" wire:click="openCreate" type="button" size="sm">
+                                <flux:button variant="primary" icon="plus" :href="route('arkhe.roles.create')" wire:navigate size="sm">
                                     {{ __('arkhe::arkhe.roles.create') }}
                                 </flux:button>
                             @endif
@@ -161,48 +162,6 @@
         @endif
     </x-arkhe::list-table-wrapper>
 
-    <flux:modal wire:model="showFormModal" name="role-form" variant="flyout" position="right" class="w-full max-w-xl">
-        <form wire:submit="save" class="space-y-4">
-            <flux:heading size="lg">
-                {{ $selectedRole ? __('arkhe::arkhe.roles.edit') : __('arkhe::arkhe.roles.create') }}
-            </flux:heading>
-
-            @if($roleForm->is_canonical)
-                <p class="text-sm text-zinc-500">{{ __('arkhe::arkhe.roles.canonical_hint') }}</p>
-            @endif
-
-            <flux:field>
-                <flux:label>{{ __('arkhe::arkhe.roles.fields.name') }}</flux:label>
-                <flux:input wire:model="roleForm.name" :disabled="$roleForm->is_canonical" />
-                <flux:error name="roleForm.name" />
-            </flux:field>
-
-            <flux:field>
-                <flux:label>{{ __('arkhe::arkhe.roles.fields.guard') }}</flux:label>
-                <flux:input wire:model="roleForm.guard_name" :disabled="$roleForm->is_canonical" />
-                <flux:error name="roleForm.guard_name" />
-            </flux:field>
-
-            <flux:field>
-                <flux:label>{{ __('arkhe::arkhe.roles.fields.permissions') }}</flux:label>
-                <flux:select wire:model="roleForm.permissions" multiple size="12" class="!h-auto py-2">
-                    @foreach($availablePerms as $perm)
-                        <flux:select.option value="{{ $perm }}">{{ $perm }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-                <flux:error name="roleForm.permissions" />
-            </flux:field>
-
-            <div class="flex justify-end gap-2">
-                <flux:button type="button" variant="ghost" wire:click="$set('showFormModal', false)">
-                    {{ __('arkhe::arkhe.actions.cancel') }}
-                </flux:button>
-                <flux:button type="submit" variant="primary">
-                    {{ __('arkhe::arkhe.actions.save') }}
-                </flux:button>
-            </div>
-        </form>
-    </flux:modal>
 
     <x-arkhe::confirm-modal
         name="role-delete"

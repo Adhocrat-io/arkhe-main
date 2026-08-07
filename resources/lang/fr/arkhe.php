@@ -77,7 +77,23 @@ return [
         'title' => 'Utilisateurs',
         'description' => 'Gérer les comptes du back-office et les rôles qu’ils portent.',
         'create' => 'Créer un utilisateur',
+        'create_hint' => 'Le compte est actif dès sa création : le mot de passe choisi ici permet de se connecter.',
         'edit' => "Modifier l'utilisateur",
+        'edit_hint' => 'Les modifications prennent effet immédiatement.',
+        'sections' => [
+            'identity' => 'Identité',
+            'avatar' => 'Photo',
+            'security' => 'Sécurité',
+            'access' => 'Accès',
+        ],
+        'hints' => [
+            'email' => 'Sert aussi d’identifiant de connexion.',
+            'avatar' => 'Image carrée de préférence, 4 Mo maximum.',
+            'password' => 'Huit caractères au minimum.',
+            'password_edit' => 'Laissez les deux champs vides pour conserver le mot de passe actuel.',
+            'role' => 'Ce que l’utilisateur pourra faire dans le back-office.',
+            'role_tooltip' => 'Un rôle porte un jeu de permissions. Vous ne pouvez attribuer que les rôles de rang inférieur ou égal au vôtre — attribuer plus haut reviendrait à vous donner des droits que vous n’avez pas.',
+        ],
         'empty' => 'Aucun utilisateur pour le moment.',
         'empty_hint' => 'Créez votre premier utilisateur pour commencer.',
         'empty_filtered' => 'Aucun utilisateur ne correspond à ces filtres.',
@@ -127,7 +143,19 @@ return [
         'title' => 'Rôles & permissions',
         'description' => 'Permissions attachées à chaque rôle. Les rôles canoniques sont définis par la configuration : leur nom est immuable et ils ne peuvent pas être supprimés.',
         'create' => 'Créer un rôle',
+        'create_hint' => 'Un rôle regroupe les permissions accordées à ceux qui le portent.',
         'edit' => 'Modifier le rôle',
+        'edit_hint' => 'Cochez ce que ce rôle autorise. Les utilisateurs qui le portent gagnent ou perdent ces droits immédiatement.',
+        'canonical_badge' => 'Rôle système',
+        'sections' => [
+            'identity' => 'Identité',
+            'permissions' => 'Permissions',
+        ],
+        'hints' => [
+            'name' => 'Sert d’identifiant : le code et la configuration s’y réfèrent.',
+            'guard' => 'Le garde d’authentification concerné. « web » dans la quasi-totalité des cas.',
+            'permissions' => 'Rangées par ressource. La permission « manage-… » est le raccourci qui couvre toute la ressource.',
+        ],
         'empty' => 'Aucun rôle trouvé.',
         'empty_hint' => 'Créez votre premier rôle pour commencer.',
         'empty_filtered' => 'Aucun rôle ne correspond à cette recherche.',
@@ -176,6 +204,17 @@ return [
             'name' => 'Nom',
             'guard' => 'Guard',
         ],
+        // Libellés des groupes sur la fiche d'un rôle. Une clé absente retombe
+        // sur le nom de la ressource, remis en minuscules et sans tirets.
+        'groups' => [
+            'users' => 'Utilisateurs',
+            'roles' => 'Rôles',
+            'permissions' => 'Permissions',
+            'site-seos' => 'SEO',
+            'sitemaps' => 'Sitemap',
+            'cookies' => 'Cookies',
+            'other' => 'Autres',
+        ],
     ],
 
     'actions' => [
@@ -187,6 +226,9 @@ return [
         'confirm' => 'Confirmer',
         'in_progress' => 'En cours…',
         'search' => 'Recherche',
+        'back' => 'Retour',
+        'check_all' => 'Tout cocher',
+        'uncheck_all' => 'Tout décocher',
     ],
 
     'validation' => [

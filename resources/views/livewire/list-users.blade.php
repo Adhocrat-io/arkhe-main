@@ -4,7 +4,7 @@
         :description="__('arkhe::arkhe.users.description')"
     >
         <x-slot:actions>
-            <flux:button variant="primary" icon="plus" wire:click="openCreate">
+            <flux:button variant="primary" icon="plus" :href="route('arkhe.users.create')" wire:navigate>
                 <span class="font-semibold uppercase">{{ __('arkhe::arkhe.users.create') }}</span>
             </flux:button>
         </x-slot:actions>
@@ -97,14 +97,14 @@
                                     {{-- Un utilisateur qu'on ne peut pas gérer reste lisible,
                                          mais n'ouvre rien : la ligne dit pourquoi au survol. --}}
                                     @if ($canManage)
-                                        <button
-                                            type="button"
-                                            wire:click="openEdit({{ $user->getKey() }})"
+                                        <a
+                                            href="{{ route('arkhe.users.edit', $user->getKey()) }}"
+                                            wire:navigate
                                             title="{{ $user->full_name ?: $user->email }}"
-                                            class="line-clamp-2 cursor-pointer text-left font-medium text-gray-900 hover:underline dark:text-gray-100"
+                                            class="line-clamp-2 text-left font-medium text-gray-900 hover:underline dark:text-gray-100"
                                         >
                                             {{ $user->full_name ?: $user->email }}
-                                        </button>
+                                        </a>
                                     @else
                                         <span
                                             title="{{ __('arkhe::arkhe.users.cannot_manage') }}"
@@ -152,7 +152,8 @@
                                     <flux:menu>
                                         <flux:menu.item
                                             icon="pencil-square"
-                                            wire:click="openEdit({{ $user->getKey() }})"
+                                            :href="$canManage ? route('arkhe.users.edit', $user->getKey()) : null"
+                                            wire:navigate
                                             :disabled="! $canManage"
                                             class="cursor-pointer"
                                         >
@@ -186,7 +187,7 @@
                                     {{ __('arkhe::arkhe.actions.reset') }}
                                 </flux:button>
                             @else
-                                <flux:button variant="primary" icon="plus" wire:click="openCreate" type="button" size="sm">
+                                <flux:button variant="primary" icon="plus" :href="route('arkhe.users.create')" wire:navigate size="sm">
                                     {{ __('arkhe::arkhe.users.create') }}
                                 </flux:button>
                             @endif
@@ -202,121 +203,6 @@
             </div>
         @endif
     </x-arkhe::list-table-wrapper>
-
-    {{-- Create / Edit modal (right-anchored flyout, full viewport height) --}}
-    <flux:modal wire:model="showFormModal" name="user-form" variant="flyout" position="right" class="w-full max-w-2xl">
-        <form wire:submit="save" class="space-y-4" enctype="multipart/form-data">
-            <flux:heading size="lg">
-                {{ $selectedUser ? __('arkhe::arkhe.users.edit') : __('arkhe::arkhe.users.create') }}
-            </flux:heading>
-
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <flux:field>
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.first_name') }}</flux:label>
-                    <flux:input wire:model="userForm.first_name" />
-                    <flux:error name="userForm.first_name" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.last_name') }}</flux:label>
-                    <flux:input wire:model="userForm.last_name" />
-                    <flux:error name="userForm.last_name" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.email') }}</flux:label>
-                    <flux:input type="email" wire:model="userForm.email" />
-                    <flux:error name="userForm.email" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>
-                        {{ __('arkhe::arkhe.users.fields.password') }}
-                        @if($selectedUser)
-                            <span class="text-xs text-zinc-500">{{ __('arkhe::arkhe.users.fields.password_hint') }}</span>
-                        @endif
-                    </flux:label>
-                    <flux:input type="password" wire:model="userForm.password" autocomplete="new-password" viewable />
-                    <flux:error name="userForm.password" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.password_confirmation') }}</flux:label>
-                    <flux:input type="password" wire:model="userForm.passwordConfirmation" autocomplete="new-password" viewable />
-                    <flux:error name="userForm.passwordConfirmation" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.phone') }}</flux:label>
-                    <flux:input wire:model="userForm.phone" />
-                    <flux:error name="userForm.phone" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.date_of_birth') }}</flux:label>
-                    <flux:input type="date" wire:model="userForm.date_of_birth" />
-                    <flux:error name="userForm.date_of_birth" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.civility') }}</flux:label>
-                    <flux:input wire:model="userForm.civility" />
-                    <flux:error name="userForm.civility" />
-                </flux:field>
-
-                <flux:field class="md:col-span-2">
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.avatar') }}</flux:label>
-
-                    <div class="flex items-center gap-4">
-                        @if($userForm->avatar)
-                            <img src="{{ $userForm->avatar->temporaryUrl() }}" alt="" class="size-12 rounded-full object-cover" />
-                        @elseif($currentAvatarUrl)
-                            <img src="{{ $currentAvatarUrl }}" alt="" class="size-12 rounded-full object-cover" />
-                        @endif
-
-                        <input
-                            type="file"
-                            accept="image/*"
-                            wire:model="userForm.avatar"
-                            class="block w-full cursor-pointer text-sm text-zinc-600 dark:text-zinc-300
-                                   file:mr-4 file:cursor-pointer file:rounded-md file:border-0
-                                   file:bg-zinc-100 file:px-4 file:py-2 file:text-sm file:font-medium
-                                   file:text-zinc-800 hover:file:bg-zinc-200
-                                   dark:file:bg-zinc-800 dark:file:text-zinc-100 dark:hover:file:bg-zinc-700"
-                        />
-                    </div>
-
-                    <flux:error name="userForm.avatar" />
-                </flux:field>
-
-                <flux:field class="md:col-span-2">
-                    <flux:label>{{ __('arkhe::arkhe.users.fields.bio') }}</flux:label>
-                    <flux:textarea wire:model="userForm.bio" rows="3" />
-                    <flux:error name="userForm.bio" />
-                </flux:field>
-
-                <flux:field class="md:col-span-2">
-                    <flux:label>{{ __('arkhe::arkhe.roles.label') }}</flux:label>
-                    <flux:select wire:model="userForm.role" placeholder="{{ __('arkhe::arkhe.roles.placeholder') }}">
-                        <flux:select.option value="">{{ __('arkhe::arkhe.roles.none') }}</flux:select.option>
-                        @foreach($assignableRoles as $role)
-                            <flux:select.option value="{{ $role }}">{{ $role }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    <flux:error name="userForm.role" />
-                </flux:field>
-            </div>
-
-            <div class="flex justify-end gap-2">
-                <flux:button type="button" variant="ghost" wire:click="$set('showFormModal', false)">
-                    {{ __('arkhe::arkhe.actions.cancel') }}
-                </flux:button>
-                <flux:button type="submit" variant="primary">
-                    {{ __('arkhe::arkhe.actions.save') }}
-                </flux:button>
-            </div>
-        </form>
-    </flux:modal>
 
     {{-- Delete confirmation modal --}}
     <x-arkhe::confirm-modal

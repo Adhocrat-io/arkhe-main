@@ -55,6 +55,16 @@ class ListRoles extends Component
         $this->perPage = (int) config('arkhe.per_page', 15);
     }
 
+    // ─── Formulaire hérité ───────────────────────────────────────────────
+    // Depuis la 3.3, création et édition ont leur page ({@see EditRole}), qui
+    // porte aussi les permissions cochées par ressource : la liste ne montre
+    // plus de flyout. Ces méthodes et les hooks qui suivent restent en place
+    // pour les sous-classes qui les surchargent, et partiront à la prochaine
+    // majeure.
+
+    /**
+     * @deprecated depuis la 3.3 — voir `arkhe.roles.create` ({@see EditRole}).
+     */
     public function openCreate(): void
     {
         $this->authorize('create-role');
@@ -65,6 +75,9 @@ class ListRoles extends Component
         $this->showFormModal = true;
     }
 
+    /**
+     * @deprecated depuis la 3.3 — voir `arkhe.roles.edit` ({@see EditRole}).
+     */
     public function openEdit(int $id, RoleRepositoryInterface $roles, RoleService $service): void
     {
         $this->authorize('update-role');
@@ -80,6 +93,9 @@ class ListRoles extends Component
         $this->showFormModal = true;
     }
 
+    /**
+     * @deprecated depuis la 3.3 — l'enregistrement se fait sur {@see EditRole}.
+     */
     public function save(RoleRepositoryInterface $roles, RoleService $service): void
     {
         $this->authorize($this->selectedRole === null ? 'create-role' : 'update-role');

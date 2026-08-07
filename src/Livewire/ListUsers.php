@@ -62,6 +62,16 @@ class ListUsers extends Component
         $this->perPage = (int) config('arkhe.per_page', 15);
     }
 
+    // ─── Formulaire hérité ───────────────────────────────────────────────
+    // Depuis la 3.3, création et édition ont leur page ({@see EditUser}) : la
+    // liste ne porte plus de flyout. Ces méthodes et les hooks qui les suivent
+    // restent en place pour les sous-classes qui les surchargent — les retirer
+    // casserait leur `parent::` sans prévenir. Elles ne sont plus appelées par
+    // les vues du paquet et partiront à la prochaine majeure.
+
+    /**
+     * @deprecated depuis la 3.3 — voir `arkhe.users.create` ({@see EditUser}).
+     */
     public function openCreate(): void
     {
         $this->authorize('create-user');
@@ -72,6 +82,9 @@ class ListUsers extends Component
         $this->showFormModal = true;
     }
 
+    /**
+     * @deprecated depuis la 3.3 — voir `arkhe.users.edit` ({@see EditUser}).
+     */
     public function openEdit(int $id, UserRepositoryInterface $repository): void
     {
         $this->authorize('update-user');
@@ -91,6 +104,9 @@ class ListUsers extends Component
         $this->showFormModal = true;
     }
 
+    /**
+     * @deprecated depuis la 3.3 — l'enregistrement se fait sur {@see EditUser}.
+     */
     public function save(UserRepositoryInterface $repository, UserService $service): void
     {
         $this->authorize($this->selectedUser === null ? 'create-user' : 'update-user');

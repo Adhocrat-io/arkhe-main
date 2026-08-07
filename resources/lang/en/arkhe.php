@@ -77,7 +77,23 @@ return [
         'title' => 'Users',
         'description' => 'Manage backend accounts and the roles they carry.',
         'create' => 'Create user',
+        'create_hint' => 'The account is live as soon as it is created: the password set here allows signing in.',
         'edit' => 'Edit user',
+        'edit_hint' => 'Changes take effect immediately.',
+        'sections' => [
+            'identity' => 'Identity',
+            'avatar' => 'Picture',
+            'security' => 'Security',
+            'access' => 'Access',
+        ],
+        'hints' => [
+            'email' => 'Also used as the sign-in identifier.',
+            'avatar' => 'Square image preferred, 4 MB maximum.',
+            'password' => 'Eight characters minimum.',
+            'password_edit' => 'Leave both fields empty to keep the current password.',
+            'role' => 'What the user will be able to do in the backend.',
+            'role_tooltip' => 'A role carries a set of permissions. You can only assign roles ranked at or below your own — assigning higher would grant you rights you do not have.',
+        ],
         'empty' => 'No users yet.',
         'empty_hint' => 'Create your first user to get started.',
         'empty_filtered' => 'No user matches these filters.',
@@ -127,7 +143,19 @@ return [
         'title' => 'Roles & permissions',
         'description' => 'Permissions attached to each role. Canonical roles are defined by configuration: their name is immutable and they cannot be deleted.',
         'create' => 'Create role',
+        'create_hint' => 'A role groups the permissions granted to whoever carries it.',
         'edit' => 'Edit role',
+        'edit_hint' => 'Tick what this role allows. Users carrying it gain or lose these rights immediately.',
+        'canonical_badge' => 'System role',
+        'sections' => [
+            'identity' => 'Identity',
+            'permissions' => 'Permissions',
+        ],
+        'hints' => [
+            'name' => 'Used as an identifier: code and configuration refer to it.',
+            'guard' => 'The authentication guard involved. "web" in nearly every case.',
+            'permissions' => 'Grouped by resource. The "manage-…" permission is the shortcut covering the whole resource.',
+        ],
         'empty' => 'No roles found.',
         'empty_hint' => 'Create your first role to get started.',
         'empty_filtered' => 'No role matches this search.',
@@ -176,6 +204,17 @@ return [
             'name' => 'Name',
             'guard' => 'Guard',
         ],
+        // Group labels on a role's page. A missing key falls back to the
+        // resource name, lowercased and de-hyphenated.
+        'groups' => [
+            'users' => 'Users',
+            'roles' => 'Roles',
+            'permissions' => 'Permissions',
+            'site-seos' => 'SEO',
+            'sitemaps' => 'Sitemap',
+            'cookies' => 'Cookies',
+            'other' => 'Other',
+        ],
     ],
 
     'actions' => [
@@ -187,6 +226,9 @@ return [
         'confirm' => 'Confirm',
         'in_progress' => 'In progress…',
         'search' => 'Search',
+        'back' => 'Back',
+        'check_all' => 'Check all',
+        'uncheck_all' => 'Uncheck all',
     ],
 
     'validation' => [

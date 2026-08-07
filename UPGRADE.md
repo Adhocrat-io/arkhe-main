@@ -2,6 +2,60 @@
 
 This document tracks breaking and behavioural changes between major versions of `adhocrat-io/arkhe-main`.
 
+## Vers la 3.3 — création et édition sur leur propre page
+
+Les flyouts de création/édition disparaissent des listes au profit de quatre
+routes :
+
+| Route | Page |
+| --- | --- |
+| `arkhe.users.create` | `/administration/users/create` |
+| `arkhe.users.edit` | `/administration/users/{user}/edit` |
+| `arkhe.roles.create` | `/administration/roles/create` |
+| `arkhe.roles.edit` | `/administration/roles/{role}/edit` |
+
+Elles sont servies par `EditUser` et `EditRole`, surchargeables comme les
+listes :
+
+```php
+// config/arkhe.php
+'components' => [
+    'edit-user' => App\Livewire\Admin\Users\MonEditUser::class,
+],
+```
+
+**Si vous surchargez `ListUsers` ou `ListRoles`.** Les méthodes `openCreate`,
+`openEdit`, `save` et les hooks `beforeSave` / `afterCreate` / `afterUpdate`
+restent en place sur les listes, mais le paquet ne les appelle plus. Une
+surcharge qui ajoutait un comportement à l'enregistrement doit être portée sur
+`EditUser` / `EditRole`, qui exposent les mêmes hooks avec les mêmes
+signatures :
+
+```php
+class MonEditUser extends \Arkhe\Main\Livewire\EditUser
+{
+    protected function afterCreate(Model $user, array $payload): void
+    {
+        // ce que faisait votre surcharge de ListUsers
+    }
+}
+```
+
+Les anciennes méthodes partiront à la prochaine majeure.
+
+**Permissions groupées.** La fiche d'un rôle range les permissions par
+ressource, déduites de la convention `<verbe>-<ressource>`. Pour imposer votre
+propre découpage, déclarez `permission_groups` dans `config/arkhe.php` :
+
+```php
+'permission_groups' => [
+    'manage-users' => ['view-user', 'create-user', 'update-user', 'delete-user'],
+],
+```
+
+Ce que la config oublie reste affiché dans un groupe « Autres » — rien ne
+disparaît de l'écran.
+
 ## Vers la 3.3 — rôles et permissions réunis
 
 La liste des permissions n'existe plus en tant que page : les permissions se

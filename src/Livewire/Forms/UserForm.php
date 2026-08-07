@@ -98,6 +98,10 @@ class UserForm extends Form
             'last_name'     => $this->last_name,
             'email'         => $this->email,
             'password'      => $this->password,
+            // Sérialisée avec le reste : absente d'ici, Livewire ne la remet
+            // pas dans le formulaire réhydraté, et la confirmation était
+            // comparée à une chaîne vide au moment d'enregistrer.
+            'passwordConfirmation' => $this->passwordConfirmation,
             'phone'         => $this->phone,
             'date_of_birth' => $this->date_of_birth,
             'civility'      => $this->civility,
@@ -145,16 +149,21 @@ class UserForm extends Form
     }
 
     /**
-     * Closure-based replacement for Laravel's `confirmed` rule. We compare
-     * directly against $this->password_confirmation instead of relying on the
-     * validator's data dictionary — that pipeline drops the confirmation
-     * field for Form Object snapshots, which made `confirmed` fail with a
-     * matching pair.
+     * Remplace la règle `confirmed` de Laravel, qui ne voit pas la
+     * confirmation dans le dictionnaire du validateur pour un Form Object.
+     *
+     * La valeur est **capturée maintenant**, à la construction des règles, et
+     * non lue depuis `$this` au moment où la closure s'exécute : Livewire
+     * réinitialise les propriétés du formulaire pendant `validate()`, si bien
+     * qu'une lecture tardive compare le mot de passe à une chaîne vide et
+     * refuse une paire pourtant identique.
      */
     private function passwordConfirmedRule(): Closure
     {
-        return function (string $attribute, mixed $value, Closure $fail): void {
-            if ((string) $value !== (string) ($this->passwordConfirmation ?? '')) {
+        $confirmation = (string) ($this->passwordConfirmation ?? '');
+
+        return function (string $attribute, mixed $value, Closure $fail) use ($confirmation): void {
+            if ((string) $value !== $confirmation) {
                 $fail(trans('validation.confirmed', ['attribute' => $attribute]));
             }
         };

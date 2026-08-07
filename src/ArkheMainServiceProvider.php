@@ -15,6 +15,8 @@ use Arkhe\Main\Cookies\ArkheCookiesServiceProvider;
 use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
 use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
 use Arkhe\Main\Livewire\Dashboard;
+use Arkhe\Main\Livewire\EditRole;
+use Arkhe\Main\Livewire\EditUser;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
@@ -80,7 +82,9 @@ class ArkheMainServiceProvider extends PackageServiceProvider
      */
     public const COMPONENT_DEFAULTS = [
         'list-users'       => ListUsers::class,
+        'edit-user'        => EditUser::class,
         'list-roles'       => ListRoles::class,
+        'edit-role'        => EditRole::class,
         'list-permissions' => ListPermissions::class,
         'dashboard'        => Dashboard::class,
         'site-seo'         => SiteSeo::class,

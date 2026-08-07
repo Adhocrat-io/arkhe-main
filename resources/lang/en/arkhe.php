@@ -75,15 +75,29 @@ return [
 
     'users' => [
         'title' => 'Users',
+        'description' => 'Manage backend accounts and the roles they carry.',
         'create' => 'Create user',
         'edit' => 'Edit user',
         'empty' => 'No users yet.',
+        'empty_hint' => 'Create your first user to get started.',
+        'empty_filtered' => 'No user matches these filters.',
         'cannot_manage' => 'You cannot edit a user with a higher role than your own.',
-        'search_placeholder' => 'Search by name or email…',
-        'filter_by_role' => 'Filter by role',
-        'all_roles' => 'All roles',
+        'search_placeholder' => 'Name or email…',
+        'filter_by_role' => 'Role',
+        'all_roles' => 'All',
+        'no_role' => 'No role',
         'delete_title' => 'Delete user',
         'delete_confirm' => 'This cannot be undone. Are you sure you want to delete this user?',
+        'delete_intro' => 'The account of :name will be permanently deleted. This action cannot be undone.',
+        'deleted' => 'User deleted.',
+        'created' => 'User created.',
+        'updated' => 'User updated.',
+        'stats' => [
+            'total' => 'Total',
+            'verified' => 'Verified',
+            'unverified' => 'Unverified',
+            'without_role' => 'No role',
+        ],
         'columns' => [
             'name' => 'Name',
             'email' => 'Email',
@@ -157,6 +171,9 @@ return [
         'edit' => 'Edit',
         'delete' => 'Delete',
         'reset' => 'Reset',
+        'confirm' => 'Confirm',
+        'in_progress' => 'In progress…',
+        'search' => 'Search',
     ],
 
     'validation' => [

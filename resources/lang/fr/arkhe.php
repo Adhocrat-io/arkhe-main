@@ -75,15 +75,29 @@ return [
 
     'users' => [
         'title' => 'Utilisateurs',
+        'description' => 'Gérer les comptes du back-office et les rôles qu’ils portent.',
         'create' => 'Créer un utilisateur',
         'edit' => "Modifier l'utilisateur",
         'empty' => 'Aucun utilisateur pour le moment.',
+        'empty_hint' => 'Créez votre premier utilisateur pour commencer.',
+        'empty_filtered' => 'Aucun utilisateur ne correspond à ces filtres.',
         'cannot_manage' => 'Vous ne pouvez pas modifier un utilisateur avec un rôle supérieur au vôtre.',
-        'search_placeholder' => 'Rechercher par nom ou email…',
-        'filter_by_role' => 'Filtrer par rôle',
-        'all_roles' => 'Tous les rôles',
+        'search_placeholder' => 'Nom ou email…',
+        'filter_by_role' => 'Rôle',
+        'all_roles' => 'Tous',
+        'no_role' => 'Sans rôle',
         'delete_title' => "Supprimer l'utilisateur",
         'delete_confirm' => 'Cette action est définitive. Voulez-vous vraiment supprimer cet utilisateur ?',
+        'delete_intro' => 'Le compte de :name va être définitivement supprimé. Cette action est irréversible.',
+        'deleted' => 'Utilisateur supprimé.',
+        'created' => 'Utilisateur créé.',
+        'updated' => 'Utilisateur mis à jour.',
+        'stats' => [
+            'total' => 'Au total',
+            'verified' => 'Vérifiés',
+            'unverified' => 'Non vérifiés',
+            'without_role' => 'Sans rôle',
+        ],
         'columns' => [
             'name' => 'Nom',
             'email' => 'Email',
@@ -157,6 +171,9 @@ return [
         'edit' => 'Modifier',
         'delete' => 'Supprimer',
         'reset' => 'Réinitialiser',
+        'confirm' => 'Confirmer',
+        'in_progress' => 'En cours…',
+        'search' => 'Recherche',
     ],
 
     'validation' => [

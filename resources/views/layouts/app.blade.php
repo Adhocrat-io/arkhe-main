@@ -35,6 +35,13 @@
     {{ $slot }}
 </flux:main>
 
+{{-- Les pages Arkhe confirment leurs actions par un toast. Les layouts des
+     starter kits en rendent un de leur côté ; celui-ci sert aux apps qui
+     s'appuient sur le layout fourni par le paquet. --}}
+<flux:toast.group>
+    <flux:toast />
+</flux:toast.group>
+
 @fluxScripts
 
 @if(\Arkhe\Main\Support\Features::hasCookieConsent())

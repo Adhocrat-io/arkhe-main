@@ -6,6 +6,7 @@ namespace Arkhe\Main\Tests;
 
 use Arkhe\Main\ArkheMainServiceProvider;
 use Arkhe\Main\Tests\Stubs\User;
+use Flux\FluxServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
@@ -29,6 +30,10 @@ abstract class TestCase extends Orchestra
     {
         return [
             LivewireServiceProvider::class,
+            // Les pages Livewire confirment leurs actions par `Flux::toast()`,
+            // qui résout le service `flux` : sans ce provider, toute action
+            // qui notifie échoue en test alors qu'elle passe en application.
+            FluxServiceProvider::class,
             PermissionServiceProvider::class,
             \RalphJSmit\Laravel\SEO\LaravelSEOServiceProvider::class,
             \Whitecube\LaravelCookieConsent\ServiceProvider::class,

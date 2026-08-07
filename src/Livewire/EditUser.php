@@ -79,6 +79,26 @@ class EditUser extends Component
         return $this->userId === null;
     }
 
+    /**
+     * Marque la photo enregistrée pour retrait. Rien n'est supprimé avant
+     * l'enregistrement : on peut se raviser, et une photo déposée entre-temps
+     * annule le retrait d'elle-même.
+     */
+    public function markRemoveAvatar(): void
+    {
+        $this->authorize($this->isCreating() ? 'create-user' : 'update-user');
+
+        $this->userForm->removeAvatar = true;
+        $this->userForm->avatar = null;
+    }
+
+    public function cancelRemoveAvatar(): void
+    {
+        $this->authorize($this->isCreating() ? 'create-user' : 'update-user');
+
+        $this->userForm->removeAvatar = false;
+    }
+
     public function save(UserRepositoryInterface $repository, UserService $service): Redirector|RedirectResponse|null
     {
         $this->authorize($this->isCreating() ? 'create-user' : 'update-user');

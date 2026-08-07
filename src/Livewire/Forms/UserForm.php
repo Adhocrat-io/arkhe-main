@@ -36,6 +36,13 @@ class UserForm extends Form
 
     public ?TemporaryUploadedFile $avatar = null;
 
+    /**
+     * Retrait différé de la photo enregistrée : marqué à l'écran, appliqué à
+     * l'enregistrement. Sans lui, une photo posée ne pouvait que se remplacer,
+     * jamais s'enlever.
+     */
+    public bool $removeAvatar = false;
+
     public ?string $role = null;
 
     /** @var array<int, string> */
@@ -78,6 +85,7 @@ class UserForm extends Form
         $this->civility      = $user->civility ?? null;
         $this->bio           = $user->bio ?? null;
         $this->avatar        = null;
+        $this->removeAvatar  = false;
 
         $this->role = method_exists($user, 'getRoleNames')
             ? ($user->getRoleNames()->first() ?: null)
@@ -107,6 +115,11 @@ class UserForm extends Form
             'civility'      => $this->civility,
             'bio'           => $this->bio,
             'avatar'        => $this->avatar,
+            // La clé porte le nom exact de la propriété : Livewire ne restitue
+            // au tour suivant que ce que `toArray()` expose, et un alias en
+            // snake_case ferait perdre le drapeau entre deux requêtes — le
+            // retrait ne s'appliquerait jamais.
+            'removeAvatar'  => $this->removeAvatar,
             'role'          => $this->role,
             'roles'         => $this->role !== null && $this->role !== '' ? [$this->role] : [],
             'permissions'   => $this->permissions,

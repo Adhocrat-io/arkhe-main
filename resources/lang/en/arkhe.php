@@ -225,6 +225,19 @@ return [
         ],
     ],
 
+    // Image upload area (x-arkhe::image-upload).
+    'image' => [
+        'browse' => 'Click to choose an image',
+        'or_drop' => 'or drop it here.',
+        'uploading' => 'Uploading…',
+        'pending' => 'New image, saved along with the form.',
+        'current' => 'Current image.',
+        'discard' => 'Discard this image',
+        'remove' => 'Remove the image',
+        'marked_for_removal' => 'Image removed on save.',
+        'cancel_removal' => 'Cancel removal',
+    ],
+
     'actions' => [
         'save' => 'Save',
         'cancel' => 'Cancel',

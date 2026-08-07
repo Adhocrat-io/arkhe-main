@@ -94,6 +94,15 @@ Vingt tests de non-régression couvrent ces chemins
   `RoleService::create()` / `delete()`, les événements `RoleCreated` /
   `RoleDeleted` et les permissions `create-role` / `delete-role` restent en
   place pour les seeders et les commandes.
+- **Zone de dépôt pour la photo de profil.** L'`<input type="file">` brut, seul
+  endroit des fiches qui échappait au langage Flux, laisse place à
+  `x-arkhe::image-upload` : aperçu de ce qu'on vient de déposer, glisser-déposer
+  avec retour visuel, indicateur pendant le téléversement. Le composant est
+  partagé — toute page ayant une image à recevoir peut s'en servir.
+- **Une photo enregistrée peut enfin être retirée.** Jusqu'ici elle ne pouvait
+  que se remplacer. Le retrait est différé : marqué à l'écran, appliqué à
+  l'enregistrement, annulable avant. Déposer une nouvelle photo annule le
+  retrait — on ne supprime pas ce qu'on vient de remplacer.
 - **Chaque champ des formulaires porte sa description.** Au-delà de l'aide
   qu'elle apporte, c'est ce qui aligne deux champs voisins dans une grille : un
   champ décrit à côté d'un champ nu poussait son contrôle vers le bas.

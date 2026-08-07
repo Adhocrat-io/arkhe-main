@@ -82,9 +82,14 @@ class UserService
             $user->password = $this->hasher->make((string) $data['password']);
         }
 
+        // Un nouveau fichier l'emporte sur un retrait demandé : on ne supprime
+        // pas ce qu'on vient de remplacer.
         if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
             $this->deleteAvatar($user->avatar_path ?? null);
             $user->avatar_path = $this->storeAvatar($data['avatar']);
+        } elseif (! empty($data['removeAvatar'])) {
+            $this->deleteAvatar($user->avatar_path ?? null);
+            $user->avatar_path = null;
         }
 
         $user->save();

@@ -5,9 +5,12 @@ declare(strict_types=1);
 use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
 use Arkhe\Main\Livewire\EditRole;
 use Arkhe\Main\Livewire\EditUser;
+use Arkhe\Main\Services\UserService;
 use Arkhe\Main\Support\PermissionGroups;
 use Arkhe\Main\Tests\Stubs\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -120,6 +123,50 @@ it('404s on an unknown user', function (): void {
     Livewire::actingAs(makeEditPagesUser('root'))
         ->test(EditUser::class, ['user' => 99999])
         ->assertNotFound();
+});
+
+// ─── Avatar : retrait différé ────────────────────────────────────────────
+
+// Rien n'est supprimé avant l'enregistrement : on marque, on peut se raviser,
+// et le fichier ne part qu'au save.
+it('defers the avatar removal until save', function (): void {
+    Storage::fake('local');
+
+    $target = makeEditPagesUser('user');
+    app(UserService::class)->update($target, ['avatar' => UploadedFile::fake()->image('me.jpg')]);
+    $path = $target->fresh()->avatar_path;
+
+    $component = Livewire::actingAs(makeEditPagesUser('root'))
+        ->test(EditUser::class, ['user' => $target->getKey()])
+        ->call('markRemoveAvatar')
+        ->assertSet('userForm.removeAvatar', true);
+
+    // Marqué, mais le fichier est toujours là.
+    Storage::disk('local')->assertExists($path);
+    expect($target->fresh()->avatar_path)->toBe($path);
+
+    $component->call('save');
+
+    expect($target->fresh()->avatar_path)->toBeNull();
+    Storage::disk('local')->assertMissing($path);
+});
+
+it('lets the removal be cancelled before saving', function (): void {
+    Storage::fake('local');
+
+    $target = makeEditPagesUser('user');
+    app(UserService::class)->update($target, ['avatar' => UploadedFile::fake()->image('me.jpg')]);
+    $path = $target->fresh()->avatar_path;
+
+    Livewire::actingAs(makeEditPagesUser('root'))
+        ->test(EditUser::class, ['user' => $target->getKey()])
+        ->call('markRemoveAvatar')
+        ->call('cancelRemoveAvatar')
+        ->assertSet('userForm.removeAvatar', false)
+        ->call('save');
+
+    expect($target->fresh()->avatar_path)->toBe($path);
+    Storage::disk('local')->assertExists($path);
 });
 
 // ─── Fiche rôle ──────────────────────────────────────────────────────────

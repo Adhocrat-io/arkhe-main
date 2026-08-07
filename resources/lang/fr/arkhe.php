@@ -225,6 +225,19 @@ return [
         ],
     ],
 
+    // Zone de téléversement d'image (x-arkhe::image-upload).
+    'image' => [
+        'browse' => 'Cliquez pour choisir une image',
+        'or_drop' => 'ou déposez-la ici.',
+        'uploading' => 'Téléversement…',
+        'pending' => 'Nouvelle image, enregistrée avec le formulaire.',
+        'current' => 'Image actuelle.',
+        'discard' => 'Abandonner cette image',
+        'remove' => 'Retirer l’image',
+        'marked_for_removal' => 'Image retirée à l’enregistrement.',
+        'cancel_removal' => 'Annuler le retrait',
+    ],
+
     'actions' => [
         'save' => 'Enregistrer',
         'cancel' => 'Annuler',

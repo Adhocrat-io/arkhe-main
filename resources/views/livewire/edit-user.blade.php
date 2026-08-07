@@ -65,31 +65,15 @@
             :title="__('arkhe::arkhe.users.sections.avatar')"
             :description="__('arkhe::arkhe.users.hints.avatar')"
         >
-            <div class="flex items-center gap-4">
-                @if ($userForm->avatar)
-                    <img src="{{ $userForm->avatar->temporaryUrl() }}" alt="" class="size-16 rounded-full object-cover" />
-                @elseif ($currentAvatarUrl)
-                    <img src="{{ $currentAvatarUrl }}" alt="" class="size-16 rounded-full object-cover" />
-                @else
-                    <div class="flex size-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                        <flux:icon name="user" class="size-7 text-zinc-400 dark:text-zinc-500" />
-                    </div>
-                @endif
-
-                <div class="min-w-0 flex-1">
-                    <input
-                        type="file"
-                        accept="image/*"
-                        wire:model="userForm.avatar"
-                        class="block w-full cursor-pointer text-sm text-zinc-600 dark:text-zinc-300
-                               file:mr-4 file:cursor-pointer file:rounded-md file:border-0
-                               file:bg-zinc-100 file:px-4 file:py-2 file:text-sm file:font-medium
-                               file:text-zinc-800 hover:file:bg-zinc-200
-                               dark:file:bg-zinc-800 dark:file:text-zinc-100 dark:hover:file:bg-zinc-700"
-                    />
-                    <flux:error name="userForm.avatar" />
-                </div>
-            </div>
+            <x-arkhe::image-upload
+                wire-model="userForm.avatar"
+                accept="image/*"
+                :pending="$userForm->avatar"
+                :current-url="$currentAvatarUrl"
+                mark-action="markRemoveAvatar"
+                cancel-mark-action="cancelRemoveAvatar"
+                :marked-for-removal="$userForm->removeAvatar"
+            />
         </x-arkhe::form-section>
 
         <x-arkhe::form-section

@@ -23,6 +23,61 @@ class Cookies extends Component
         $this->authorize('view-cookies');
     }
 
+    /**
+     * Rend une durée en minutes lisible : « 525600 min » ne dit rien à qui
+     * vient auditer ce que le site dépose, « 1 an » se comprend d'un coup.
+     * Zéro vaut « le temps de la session », `null` une durée non déclarée.
+     */
+    private function humanDuration(?int $minutes): string
+    {
+        if ($minutes === null) {
+            return '—';
+        }
+
+        if ($minutes === 0) {
+            return __('arkhe::arkhe.cookies.session');
+        }
+
+        // Les paliers sont approximatifs à dessein : on situe l'ordre de
+        // grandeur, on ne compte pas les jours bissextiles.
+        foreach ([
+            ['unit' => 'years', 'minutes' => 525600],
+            ['unit' => 'months', 'minutes' => 43200],
+            ['unit' => 'days', 'minutes' => 1440],
+            ['unit' => 'hours', 'minutes' => 60],
+        ] as $step) {
+            if ($minutes >= $step['minutes']) {
+                $value = (int) round($minutes / $step['minutes']);
+
+                return trans_choice('arkhe::arkhe.cookies.duration.'.$step['unit'], $value, ['count' => $value]);
+            }
+        }
+
+        return trans_choice('arkhe::arkhe.cookies.duration.minutes', $minutes, ['count' => $minutes]);
+    }
+
+    /**
+     * Les descriptions du registre sont des clés de traduction
+     * (`cookieConsent::cookies.defaults.session`). Elles ne résolvent que si
+     * l'app a publié les langues du paquet — sinon `__()` rend la clé
+     * elle-même, qui s'affichait telle quelle à l'écran. On préfère ne rien
+     * dire plutôt que de montrer une clé.
+     */
+    private function resolveDescription(mixed $description): string
+    {
+        $description = (string) ($description ?? '');
+
+        if ($description === '') {
+            return '';
+        }
+
+        $translated = (string) __($description);
+
+        return $translated === $description && str_contains($description, '::')
+            ? ''
+            : $translated;
+    }
+
     public function render(CookiesRegistrar $registrar): View
     {
         $categories = collect($registrar->getCategories())->map(function ($category): array {
@@ -33,8 +88,8 @@ class Cookies extends Component
                 'cookies'     => collect($category->getCookies())->map(function ($cookie): array {
                     return [
                         'name'        => (string) ($cookie->name ?? '—'),
-                        'duration'    => isset($cookie->duration) ? (int) $cookie->duration : null,
-                        'description' => (string) ($cookie->getAttribute('description') ?? ''),
+                        'duration'    => $this->humanDuration(isset($cookie->duration) ? (int) $cookie->duration : null),
+                        'description' => $this->resolveDescription($cookie->getAttribute('description')),
                     ];
                 })->all(),
             ];

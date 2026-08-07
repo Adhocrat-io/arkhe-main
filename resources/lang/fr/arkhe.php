@@ -23,15 +23,26 @@ return [
 
     'cookies' => [
         'title' => 'Cookies (RGPD)',
-        'intro' => 'Liste des cookies enregistrés via whitecube/laravel-cookie-consent. Ajouter ou retirer des cookies se fait dans le code (sous-classer Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe enregistre par défaut les cookies essentiels Laravel (session, CSRF).',
+        'intro' => 'Ce que le site dépose sur le navigateur de ses visiteurs. Ajouter ou retirer un cookie se fait dans le code, en sous-classant CookiesServiceProvider.',
+        'read_only' => 'Lecture seule',
         'fields' => [
             'name' => 'Nom',
             'duration' => 'Durée',
             'description' => 'Description',
         ],
-        'session' => 'Session',
-        'minutes' => 'min',
-        'empty_category' => 'Aucun cookie enregistré dans cette catégorie.',
+        'session' => 'Le temps de la session',
+        // Durées rendues lisibles : « 525600 min » ne dit rien à qui vient
+        // auditer, « 1 an » se comprend d'un coup.
+        'duration' => [
+            'years' => '{1}1 an|[2,*]:count ans',
+            'months' => '{1}1 mois|[2,*]:count mois',
+            'days' => '{1}1 jour|[2,*]:count jours',
+            'hours' => '{1}1 heure|[2,*]:count heures',
+            'minutes' => '{1}1 minute|[2,*]:count minutes',
+        ],
+        'count' => '{0}aucun cookie|{1}1 cookie|[2,*]:count cookies',
+        'empty_category' => 'Aucun cookie dans cette catégorie.',
+        'empty' => 'Aucun cookie enregistré.',
     ],
 
     'sitemap' => [

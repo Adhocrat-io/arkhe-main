@@ -23,15 +23,26 @@ return [
 
     'cookies' => [
         'title' => 'Cookies (GDPR)',
-        'intro' => "Cookies registered via whitecube/laravel-cookie-consent. Adding or removing cookies happens in code (subclass Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe registers Laravel's essentials (session, CSRF) out of the box.",
+        'intro' => 'What the site places on its visitors’ browsers. Adding or removing a cookie happens in code, by subclassing CookiesServiceProvider.',
+        'read_only' => 'Read-only',
         'fields' => [
             'name' => 'Name',
             'duration' => 'Duration',
             'description' => 'Description',
         ],
-        'session' => 'Session',
-        'minutes' => 'min',
-        'empty_category' => 'No cookie registered in this category.',
+        'session' => 'For the session',
+        // Durations made readable: "525600 min" tells an auditor nothing,
+        // "1 year" reads at a glance.
+        'duration' => [
+            'years' => '{1}1 year|[2,*]:count years',
+            'months' => '{1}1 month|[2,*]:count months',
+            'days' => '{1}1 day|[2,*]:count days',
+            'hours' => '{1}1 hour|[2,*]:count hours',
+            'minutes' => '{1}1 minute|[2,*]:count minutes',
+        ],
+        'count' => '{0}no cookie|{1}1 cookie|[2,*]:count cookies',
+        'empty_category' => 'No cookie in this category.',
+        'empty' => 'No cookie registered.',
     ],
 
     'sitemap' => [

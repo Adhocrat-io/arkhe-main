@@ -94,6 +94,13 @@ Vingt tests de non-régression couvrent ces chemins
   `RoleService::create()` / `delete()`, les événements `RoleCreated` /
   `RoleDeleted` et les permissions `create-role` / `delete-role` restent en
   place pour les seeders et les commandes.
+- **La page Cookies devient lisible pour qui vient auditer.** Un tableau par
+  catégorie dans le style des listes du back-office, précédé du libellé, de sa
+  clé technique et du nombre de cookies qu'il contient. Deux défauts corrigés
+  au passage : les durées s'affichaient en minutes brutes — « 525600 min »
+  devient « 1 an » — et les descriptions, qui sont des clés de traduction que
+  le paquet cookie-consent ne publie pas, apparaissaient telles quelles à
+  l'écran ; elles sont désormais tues faute de mieux.
 - **La page Sitemap suit, sans se déguiser en formulaire.** Elle ne se règle
   pas depuis l'écran — tout vient de `config/arkhe.php` et du `.env` — mais
   elle reprend l'en-tête, les sections et les cartes du reste du back-office.

@@ -118,12 +118,11 @@ final class RoleHierarchy
     }
 
     /**
-     * Rang d'un rôle, ou -1 s'il n'en a pas.
+     * A role's rank, or -1 when it has none.
      *
-     * Attention : -1 signifie « hors hiérarchie », pas « inoffensif ». Un rôle
-     * absent de `config('arkhe.roles')` peut porter n'importe quelle
-     * permission — c'est {@see canAssign()} qui refuse de l'attribuer à la
-     * légère, pas ce rang.
+     * Careful: -1 means "outside the hierarchy", not "harmless". A role that is
+     * absent from `config('arkhe.roles')` can carry any permission — it is
+     * {@see canAssign()} that refuses to hand it out lightly, not this rank.
      */
     public static function rankOf(?string $roleName): int
     {
@@ -135,7 +134,7 @@ final class RoleHierarchy
     }
 
     /**
-     * Le rôle est-il connu de la hiérarchie déclarée en configuration ?
+     * Is the role known to the hierarchy declared in configuration?
      */
     public static function isRanked(?string $roleName): bool
     {
@@ -159,17 +158,16 @@ final class RoleHierarchy
     }
 
     /**
-     * L'acteur peut-il attribuer ce rôle ?
+     * Can the actor assign this role?
      *
-     * Deux cas. Un rôle **classé** se compare par rang : on n'attribue pas
-     * au-dessus de soi. Un rôle **hors hiérarchie** (créé par l'app, absent de
-     * `config('arkhe.roles')`) n'a pas de rang du tout — le comparer
-     * reviendrait à opposer -1 à -1, donc à l'ouvrir à quiconque n'a lui-même
-     * aucun rang. Or ce rôle peut porter n'importe quelle permission, y
-     * compris `manage-roles`.
+     * Two cases. A **ranked** role is compared by rank: you do not assign above
+     * yourself. A role **outside the hierarchy** (created by the app, absent
+     * from `config('arkhe.roles')`) has no rank at all — comparing it would pit
+     * -1 against -1, which opens it to anyone who holds no rank either. Yet
+     * such a role can carry any permission, `manage-roles` included.
      *
-     * Pour ceux-là, on exige que l'acteur détienne déjà tout ce que le rôle
-     * accorde : on ne donne pas ce qu'on n'a pas.
+     * For those, we require the actor to already hold everything the role
+     * grants: you do not give away what you do not have.
      */
     public static function canAssign(?Model $actor, ?string $roleName): bool
     {
@@ -185,10 +183,10 @@ final class RoleHierarchy
     }
 
     /**
-     * Le rôle n'accorde-t-il rien que l'acteur ne détienne déjà ?
+     * Does the role grant nothing the actor does not already hold?
      *
-     * Sert de garde pour les rôles hors hiérarchie. Un acteur qui porte
-     * lui-même le rôle passe d'office : il ne s'élève pas en le transmettant.
+     * Acts as the guard for roles outside the hierarchy. An actor who carries
+     * the role himself passes outright: he gains nothing by passing it on.
      */
     private static function grantsNothingBeyond(?Model $actor, string $roleName): bool
     {
@@ -202,7 +200,7 @@ final class RoleHierarchy
 
         $role = Role::query()->where('name', $roleName)->first();
 
-        // Rôle inexistant : la validation `exists:roles,name` s'en charge.
+        // Unknown role: the `exists:roles,name` validation rule handles it.
         if ($role === null) {
             return true;
         }
@@ -221,13 +219,12 @@ final class RoleHierarchy
     }
 
     /**
-     * L'acteur peut-il agir sur (modifier, supprimer) cet utilisateur ?
+     * Can the actor act on (edit, delete) this user?
      *
-     * Le rang décide, mais il ne dit rien des rôles hors hiérarchie : une
-     * cible qui n'en porte que de ceux-là afficherait le rang -1 et paraîtrait
-     * gérable par le premier venu, quand bien même ils lui donnent tous les
-     * droits. On exige donc, pour ces rôles-là, que l'acteur détienne déjà ce
-     * qu'ils accordent.
+     * Rank decides, but it says nothing about roles outside the hierarchy: a
+     * target carrying only those would report rank -1 and look manageable by
+     * anyone at all, even though they hand it every right. So for those roles
+     * we require the actor to already hold what they grant.
      */
     public static function canManage(?Model $actor, ?Model $target): bool
     {
@@ -253,12 +250,12 @@ final class RoleHierarchy
     }
 
     /**
-     * Rôles que l'acteur peut attribuer, pour alimenter un menu déroulant.
+     * Roles the actor can assign, meant to populate a dropdown.
      *
-     * Ne liste que les rôles classés : les rôles hors hiérarchie ne sont pas
-     * proposés d'office, même si {@see canAssign()} les accepterait au cas par
-     * cas. C'est un choix d'affichage prudent — la garde reste la référence,
-     * cette liste ne fait que la refléter sans jamais aller au-delà.
+     * Lists ranked roles only: roles outside the hierarchy are not offered up
+     * front, even where {@see canAssign()} would accept them case by case. That
+     * is a deliberately cautious display choice — the guard stays the authority,
+     * and this list only mirrors it without ever reaching beyond.
      *
      * @return array<int, string>
      */

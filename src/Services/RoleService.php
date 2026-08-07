@@ -94,13 +94,13 @@ class RoleService
     }
 
     /**
-     * Refuse de créer un rôle dont le nom ouvre une porte à lui seul.
+     * Refuses to create a role whose name opens a door on its own.
      *
-     * Le middleware d'accès au back-office accepte, en compatibilité V2, que
-     * `admin.roles` liste des noms de rôles bruts. Un nom qui y figure vaut
-     * donc l'entrée, sans détenir `access-backend` : fabriquer un rôle
-     * homonyme et se l'attribuer suffirait. On réserve ces noms, comme les
-     * noms canoniques.
+     * For V2 compatibility, the backend access middleware accepts raw role
+     * names listed in `admin.roles`. A name that appears there therefore buys
+     * entry without holding `access-backend`: creating a role of the same name
+     * and assigning it to yourself would be enough. So we reserve those names,
+     * just like the canonical ones.
      *
      * @throws AuthorizationException
      */
@@ -126,8 +126,8 @@ class RoleService
     }
 
     /**
-     * Le nom figure-t-il tel quel dans `admin.roles` ? Auquel cas le porter
-     * vaut l'accès au back-office, sans passer par une permission.
+     * Does the name appear verbatim in `admin.roles`? If so, carrying it buys
+     * backend access without going through a permission at all.
      */
     private function grantsBackendAccessByName(string $name): bool
     {
@@ -139,8 +139,8 @@ class RoleService
                 continue;
             }
 
-            // Une clé résolue par la map désigne un rôle canonique, déjà
-            // couvert par `isCanonical()`. Seules les clés brutes comptent ici.
+            // A key resolved through the map points at a canonical role, which
+            // `isCanonical()` already covers. Only raw keys matter here.
             if (array_key_exists($key, $rolesMap)) {
                 continue;
             }
@@ -168,19 +168,19 @@ class RoleService
     }
 
     /**
-     * On n'accorde que ce qu'on détient soi-même.
+     * You only grant what you hold yourself.
      *
-     * Sans cette garde, quiconque peut modifier un rôle peut s'y attribuer
-     * n'importe quelle permission — à commencer par celle qui ouvre la page
-     * des rôles — et devenir root en un enregistrement. La permission
-     * `update-role` suffisait à prendre la main sur toute l'application.
+     * Without this guard, anyone who can edit a role can grant it any
+     * permission — starting with the one that opens the roles page — and
+     * become root in a single save. The `update-role` permission alone was
+     * enough to take over the whole application.
      *
-     * La comparaison porte sur le *delta* : retirer une permission qu'on n'a
-     * pas reste permis (on ne s'élève pas en enlevant), et réenregistrer un
-     * rôle sans y toucher ne demande rien de plus.
+     * The comparison runs on the *delta*: removing a permission you do not
+     * hold stays allowed (you do not rise by taking away), and re-saving a
+     * role without touching it asks for nothing more.
      *
-     * Les appels sans acteur (console, jobs) passent : ils supposent déjà un
-     * accès au serveur, où la question ne se pose plus.
+     * Calls with no actor (console, jobs) pass through: they already imply
+     * server access, where the question no longer arises.
      *
      * @param  array<int, string>  $permissionNames
      *
@@ -199,7 +199,7 @@ class RoleService
             throw new AuthorizationException('Cannot change role permissions without an authenticated actor.');
         }
 
-        // Un acteur qui détient déjà tout n'a rien à se voir refuser.
+        // An actor who already holds everything has nothing to be denied.
         if (method_exists($actor, 'hasRole') && $actor->hasRole((string) $this->config->get('arkhe.roles.root'))) {
             return;
         }

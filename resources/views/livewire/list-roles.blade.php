@@ -1,18 +1,18 @@
 <section class="w-full">
-    {{-- Pas d'action de création : les rôles viennent de `config('arkhe.roles')`
-         et du seeder. --}}
+    {{-- No create action: roles come from `config('arkhe.roles')` and from the
+         seeder. --}}
     <x-arkhe::page-header
         :title="__('arkhe::arkhe.roles.title')"
         :description="__('arkhe::arkhe.roles.description')"
     />
 
-    {{-- Statistiques --}}
+    {{-- Statistics --}}
     <x-arkhe::stat-bar :stats="[
         ['label' => __('arkhe::arkhe.roles.stats.roles'), 'value' => $stats['roles'], 'color' => 'zinc'],
         ['label' => __('arkhe::arkhe.roles.stats.permissions'), 'value' => $stats['permissions'], 'color' => 'blue'],
     ]" />
 
-    {{-- Filtres --}}
+    {{-- Filters --}}
     <div class="mb-6">
         <div class="flex flex-col gap-4 md:flex-row md:items-end">
             <div class="flex-1">
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    {{-- Tableau --}}
+    {{-- Table --}}
     <x-arkhe::list-table-wrapper targets="search, sortBy, gotoPage, previousPage, nextPage, resetFilters">
         <div class="overflow-x-auto">
             <table class="w-full divide-y divide-gray-200 dark:divide-zinc-700">
@@ -65,10 +65,10 @@
                 <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
                     @forelse ($roles as $role)
                         <tr wire:key="role-{{ $role->id }}" class="{{ $loop->odd ? 'bg-white dark:bg-zinc-800' : 'bg-gray-50 dark:bg-zinc-900' }} transition-colors hover:bg-blue-50 dark:hover:bg-zinc-700">
-                            {{-- Pas de badge « canonique » ici : sur une installation
-                                 par défaut tous les rôles le sont, il ne distinguerait
-                                 rien. Ce que le statut implique se lit sur la fiche —
-                                 nom et guard verrouillés, avec l'explication. --}}
+                            {{-- No "canonical" badge here: on a default install every
+                                 role is one, so it would distinguish nothing. What the
+                                 status implies reads on the detail page — name and
+                                 guard locked, with the explanation. --}}
                             <td class="px-6 py-4 text-sm 2xl:text-base">
                                 <a
                                     href="{{ route('arkhe.roles.edit', $role->id) }}"
@@ -92,8 +92,8 @@
                                 {{ trans_choice('arkhe::arkhe.roles.permissions_count', $role->permissions_count, ['count' => $role->permissions_count]) }}
                             </td>
 
-                            {{-- Un bouton plutôt qu'un menu : modifier est le seul geste
-                                 possible sur un rôle, autant l'atteindre d'un clic. --}}
+                            {{-- A button rather than a menu: editing is the only move
+                                 available on a role, so make it one click away. --}}
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <flux:button
                                     variant="ghost"
@@ -115,8 +115,8 @@
                                 ? __('arkhe::arkhe.roles.empty_filtered')
                                 : __('arkhe::arkhe.roles.empty_hint')"
                         >
-                            {{-- Rien à proposer quand la table est vraiment vide : les
-                                 rôles se déclarent en config, pas depuis cet écran. --}}
+                            {{-- Nothing to offer when the table is truly empty: roles
+                                 are declared in config, not from this screen. --}}
                             @if ($this->hasActiveFilters())
                                 <flux:button variant="outline" icon="arrow-path" wire:click="resetFilters" type="button" size="sm">
                                     {{ __('arkhe::arkhe.actions.reset') }}

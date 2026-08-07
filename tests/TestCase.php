@@ -61,11 +61,11 @@ abstract class TestCase extends Orchestra
 
         $app['config']->set('arkhe.avatar_disk', 'local');
 
-        // Les pages Livewire confirment leurs actions par `Flux::toast()`, qui
-        // résout le service `flux`. Testbench ne découvre pas le provider de
-        // Flux, et l'ajouter à getPackageProviders() l'enregistrerait deux fois
-        // (ses directives Blade compilent alors des composants déséquilibrés).
-        // On se contente donc de lier le service dont la façade a besoin.
+        // Livewire pages confirm their actions through `Flux::toast()`, which
+        // resolves the `flux` service. Testbench does not discover Flux's
+        // provider, and adding it to getPackageProviders() would register it
+        // twice (its Blade directives then compile unbalanced components). So
+        // we simply bind the service the facade needs.
         $app->bind('flux', fn () => new class {
             public function __call(string $method, array $arguments): void {}
         });

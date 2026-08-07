@@ -26,9 +26,9 @@ beforeEach(function (): void {
 });
 
 /**
- * Fabrique un acteur porteur d'un rôle sur mesure : on veut des utilisateurs
- * qui détiennent *exactement* les permissions listées, pour vérifier ce qu'ils
- * peuvent accorder à partir de là.
+ * Builds an actor carrying a tailor-made role: we want users holding *exactly*
+ * the listed permissions, so we can check what they are able to grant from
+ * there.
  *
  * @param  array<int, string>  $permissions
  */
@@ -52,11 +52,11 @@ function makeActorWith(array $permissions, string $roleName = 'acteur-test'): Us
     return $user->fresh();
 }
 
-// ─── Rôles : on n'accorde que ce qu'on détient ───────────────────────────
+// ─── Roles: you only grant what you hold ─────────────────────────────────
 
-// La faille d'origine : `update-role` suffisait à s'attribuer `manage-roles`,
-// donc l'accès à la page des rôles, donc tout le reste. Un enregistrement et
-// l'acteur devenait root de fait.
+// The original flaw: `update-role` was enough to grant yourself `manage-roles`,
+// hence access to the roles page, hence everything else. One save and the actor
+// was root in all but name.
 it('refuses to grant a permission the actor does not hold', function (): void {
     $actor = makeActorWith(['update-role', 'access-backend']);
     $ownRole = Role::query()->where('name', 'acteur-test')->firstOrFail();
@@ -86,8 +86,8 @@ it('refuses the escalation through the deprecated ListRoles flow too', function 
     expect($ownRole->fresh()->hasPermissionTo('manage-roles'))->toBeFalse();
 });
 
-// La garde vit dans le service : un chemin d'écriture qui ne passe pas par
-// les composants doit être couvert de la même façon.
+// The guard lives in the service: a write path that bypasses the components
+// must be covered just the same.
 it('refuses the escalation at the service layer', function (): void {
     $actor = makeActorWith(['update-role']);
     $role = Role::query()->where('name', 'acteur-test')->firstOrFail();
@@ -112,7 +112,7 @@ it('lets an actor grant a permission it holds itself', function (): void {
     expect($target->fresh()->hasPermissionTo('view-user'))->toBeTrue();
 });
 
-// Retirer n'est pas accorder : on ne s'élève pas en enlevant des droits.
+// Revoking is not granting: you do not escalate by taking rights away.
 it('lets an actor revoke a permission it does not hold', function (): void {
     $target = Role::query()->where('name', 'user')->firstOrFail();
     $target->syncPermissions(['manage-roles', 'view-user']);
@@ -152,7 +152,7 @@ it('lets root grant anything', function (): void {
     expect($target->fresh()->hasPermissionTo('manage-users'))->toBeTrue();
 });
 
-// ─── Utilisateurs : la hiérarchie tient déjà, on la verrouille ───────────
+// ─── Users: the hierarchy already holds, we lock it down ─────────────────
 
 it('refuses to assign a role ranked above the actor', function (): void {
     $actor = makeActorWith(['create-user', 'access-backend']);
@@ -171,8 +171,8 @@ it('refuses to assign a role ranked above the actor', function (): void {
     expect(User::query()->where('email', 'pirate@example.test')->exists())->toBeFalse();
 });
 
-// Le formulaire ne propose que les rôles assignables, mais la garde ne doit
-// pas dépendre de ce que la vue affiche.
+// The form only offers assignable roles, but the guard must not depend on what
+// the view displays.
 it('refuses direct permission assignment on a user beyond the actor', function (): void {
     $actor = makeActorWith(['create-user', 'access-backend']);
 
@@ -188,19 +188,19 @@ it('refuses direct permission assignment on a user beyond the actor', function (
 
     $created = User::query()->where('email', 'direct@example.test')->first();
 
-    // Si la création aboutit, elle ne doit en aucun cas embarquer la
-    // permission que l'acteur ne détient pas.
+    // If the creation goes through, it must under no circumstances carry the
+    // permission the actor does not hold.
     if ($created !== null) {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
         expect($created->fresh()->can('manage-roles'))->toBeFalse();
     }
 });
 
-// ─── Rôles hors hiérarchie : le rang -1 n'est pas un laissez-passer ──────
+// ─── Unranked roles: rank -1 is not a free pass ──────────────────────────
 
-// Un rôle absent de `config('arkhe.roles')` a le rang -1, comme un acteur qui
-// n'a aucun rôle : `-1 <= -1` ouvrait l'attribution à n'importe qui, alors que
-// ce rôle peut porter `manage-roles`. Créer un compte devenait une escalade.
+// A role missing from `config('arkhe.roles')` ranks -1, just like an actor with
+// no role at all: `-1 <= -1` opened the assignment to anyone, even though such
+// a role may carry `manage-roles`. Creating an account became an escalation.
 it('refuses to assign an unranked role that grants more than the actor holds', function (): void {
     $powerful = Role::query()->create(['name' => 'hors-hierarchie', 'guard_name' => 'web']);
     $powerful->syncPermissions(['manage-roles']);
@@ -241,8 +241,8 @@ it('allows an unranked role when the actor already holds everything it grants', 
     expect(User::query()->where('email', 'lecteur@example.test')->exists())->toBeTrue();
 });
 
-// Même angle mort côté `canManage` : une cible qui ne porte que des rôles hors
-// hiérarchie affichait le rang -1 et paraissait gérable par le premier venu.
+// Same blind spot on the `canManage` side: a target carrying only unranked
+// roles reported rank -1 and looked manageable by anyone at all.
 it('refuses to manage a user carrying an unranked but powerful role', function (): void {
     $powerful = Role::query()->create(['name' => 'hors-hierarchie', 'guard_name' => 'web']);
     $powerful->syncPermissions(['manage-roles']);
@@ -264,12 +264,12 @@ it('refuses to manage a user carrying an unranked but powerful role', function (
         ->toBeFalse();
 });
 
-// ─── Permissions : renommer ne doit pas valoir s'accorder ────────────────
+// ─── Permissions: renaming must not amount to granting ───────────────────
 
-// La plus retorse des quatre : les tables pivots référencent l'identifiant,
-// pas le nom. Rebaptiser `view-user` en `manage-roles` transformait d'un coup
-// tous ses porteurs en administrateurs — sans toucher à un rôle ni à un
-// compte, donc sans croiser aucune des gardes précédentes.
+// The trickiest of the four: the pivot tables reference the id, not the name.
+// Renaming `view-user` into `manage-roles` turned every one of its holders into
+// an administrator at a stroke — without touching a role or an account, hence
+// without crossing any of the guards above.
 it('refuses to rename a permission into a canonical one', function (): void {
     $actor = makeActorWith(['update-permission', 'view-user', 'access-backend']);
     $target = Permission::query()->where('name', 'view-user')->firstOrFail();
@@ -294,9 +294,9 @@ it('refuses to delete a canonical permission', function (): void {
     expect(Permission::query()->where('name', 'access-backend')->exists())->toBeTrue();
 });
 
-// Même root ne doit pas pouvoir couper la branche : le code du paquet se
-// réfère à ces noms en dur, les perdre verrouillerait le back-office pour
-// tout le monde, sans retour possible depuis l'interface.
+// Not even root may saw off the branch: the package code refers to these names
+// verbatim, and losing them would lock the back-office for everyone, with no
+// way back from the interface.
 it('refuses to delete a canonical permission even as root', function (): void {
     /** @var User $root */
     $root = User::query()->forceCreate([
@@ -323,11 +323,11 @@ it('refuses to alter a permission the actor does not hold', function (): void {
         ->toThrow(AuthorizationException::class);
 });
 
-// ─── Noms de rôles réservés ──────────────────────────────────────────────
+// ─── Reserved role names ─────────────────────────────────────────────────
 
-// `admin.roles` accepte, en compatibilité V2, des noms de rôles bruts. Porter
-// un tel nom vaut l'entrée dans le back-office sans `access-backend` : le
-// fabriquer soi-même serait une porte dérobée.
+// For V2 compatibility, `admin.roles` accepts raw role names. Carrying such a
+// name buys entry to the back-office without `access-backend`: minting one
+// yourself would be a back door.
 it('refuses to create a role whose very name grants backend access', function (): void {
     config()->set('arkhe.admin.roles', ['root', 'administrator', 'legacy-admin']);
 
@@ -346,11 +346,11 @@ it('refuses to create a role named after a canonical one', function (): void {
         ->toThrow(AuthorizationException::class);
 });
 
-// ─── Non-régression : ne pas casser les apps qui montent de version ──────
+// ─── Non-regression: do not break apps that upgrade ──────────────────────
 
-// Le durcissement ne doit rien exiger de neuf en configuration. Un rôle maison
-// hors `arkhe.roles`, qui n'accorde que des permissions déjà détenues par
-// l'administrateur, reste attribuable comme avant.
+// The hardening must demand nothing new in configuration. A house role outside
+// `arkhe.roles`, granting only permissions the administrator already holds,
+// stays assignable as before.
 it('keeps house roles assignable when they grant nothing new', function (): void {
     $house = Role::query()->create(['name' => 'redacteur', 'guard_name' => 'web']);
     $house->syncPermissions(['access-backend', 'view-user']);
@@ -360,15 +360,15 @@ it('keeps house roles assignable when they grant nothing new', function (): void
     expect(RoleHierarchy::canAssign($actor, 'redacteur'))->toBeTrue();
 });
 
-// Et le repli par rôle du middleware reste en place : le retirer priverait
-// d'accès les apps V2 à la simple montée de version. On teste le middleware
-// lui-même — la page, elle, demande en plus `view-user`, ce qui relève du
-// contrôle par permission et non de ce repli.
+// And the middleware's role-based fallback stays in place: removing it would
+// cut V2 apps off from access on the mere act of upgrading. We test the
+// middleware itself — the page additionally demands `view-user`, which is
+// permission-based control rather than this fallback.
 it('still honours raw role names in admin.roles', function (): void {
     config()->set('arkhe.admin.roles', ['legacy-admin']);
 
     $legacy = Role::query()->create(['name' => 'legacy-admin', 'guard_name' => 'web']);
-    $legacy->syncPermissions([]); // aucune permission, pas même access-backend
+    $legacy->syncPermissions([]); // no permission at all, not even access-backend
 
     /** @var User $user */
     $user = User::query()->forceCreate([
@@ -393,11 +393,11 @@ it('still honours raw role names in admin.roles', function (): void {
     expect($passed)->toBeTrue();
 });
 
-// ─── Propriétés publiques : elles ne décident de rien ────────────────────
+// ─── Public properties: they decide nothing ──────────────────────────────
 
-// `$roleId` disait *quel* rôle on édite, et `save()` la relisait sans jamais
-// re-résoudre celui de la route : on ouvrait la fiche d'un rôle anodin, on
-// pivotait vers un autre, et les `authorize()` n'y voyaient rien.
+// `$roleId` said *which* role was being edited, and `save()` read it back
+// without ever re-resolving the one from the route: you opened the page of a
+// harmless role, pivoted to another, and the `authorize()` calls saw nothing.
 it('locks the edited role against client-side pivoting', function (): void {
     $reflection = new ReflectionProperty(EditRole::class, 'roleId');
 
@@ -413,9 +413,9 @@ it('locks the edited user', function (): void {
     expect($reflection->getAttributes(Locked::class))->not->toBeEmpty();
 });
 
-// Le drapeau du formulaire faisait tomber toutes les règles du nom quand il
-// valait `true` — y compris l'unicité. Deux rôles homonymes rendaient les
-// recherches de Spatie non déterministes.
+// The form flag dropped every rule on the name when it was `true` — including
+// uniqueness. Two roles sharing a name made Spatie's lookups
+// non-deterministic.
 it('does not trust the form flag to relax name validation', function (): void {
     $custom = Role::query()->create(['name' => 'role-maison', 'guard_name' => 'web']);
 
@@ -423,8 +423,8 @@ it('does not trust the form flag to relax name validation', function (): void {
 
     Livewire::actingAs($actor)
         ->test(EditRole::class, ['role' => $custom->getKey()])
-        ->set('roleForm.is_canonical', true)   // le client prétend « canonique »
-        ->set('roleForm.name', 'administrateur') // nom déjà pris
+        ->set('roleForm.is_canonical', true)   // the client claims "canonical"
+        ->set('roleForm.name', 'administrateur') // name already taken
         ->call('save')
         ->assertHasErrors('roleForm.name');
 
@@ -432,7 +432,7 @@ it('does not trust the form flag to relax name validation', function (): void {
         ->and(Role::query()->where('name', 'administrateur')->count())->toBe(1);
 });
 
-// ─── Tri : la liste blanche ne dépend pas du repository ──────────────────
+// ─── Sorting: the allow-list does not depend on the repository ───────────
 
 it('falls back to a safe sort field on both lists', function (): void {
     $actor = makeActorWith(['view-role', 'manage-roles', 'view-user', 'access-backend']);
@@ -445,14 +445,14 @@ it('falls back to a safe sort field on both lists', function (): void {
     expect(Role::query()->count())->toBeGreaterThan(0);
 });
 
-// ─── Permissions : la création ne doit pas être un contournement ─────────
+// ─── Permissions: creating one must not be a way around ──────────────────
 
 it('does not let an actor mint a permission to grant itself', function (): void {
     $actor = makeActorWith(['update-role', 'create-permission', 'access-backend']);
     $ownRole = Role::query()->where('name', 'acteur-test')->firstOrFail();
 
-    // Une permission fraîchement créée n'est détenue par personne : se
-    // l'attribuer doit être refusé comme les autres.
+    // A freshly created permission is held by nobody: granting it to yourself
+    // must be refused like any other.
     Permission::query()->firstOrCreate(['name' => 'super-pouvoir', 'guard_name' => 'web']);
 
     Livewire::actingAs($actor)

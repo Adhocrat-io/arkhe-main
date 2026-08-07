@@ -3,12 +3,12 @@
     'label' => null,
     'description' => null,
     'accept' => 'image/*',
-    // Le fichier en attente (TemporaryUploadedFile), pour l'aperçu immédiat.
+    // The pending file (TemporaryUploadedFile), for the immediate preview.
     'pending' => null,
-    // L'image déjà enregistrée, en édition.
+    // The image already stored, when editing.
     'currentUrl' => null,
-    // Actions Livewire du retrait différé. Sans elles, l'image enregistrée ne
-    // peut pas être retirée — seulement remplacée.
+    // Livewire actions for the deferred removal. Without them, the stored
+    // image cannot be removed — only replaced.
     'markAction' => null,
     'cancelMarkAction' => null,
     'markedForRemoval' => false,
@@ -16,9 +16,9 @@
 ])
 
 @php
-    // `temporaryUrl()` ne sert pas les SVG : Livewire refuse de les exposer
-    // depuis le disque temporaire, et l'aperçu casserait. On affiche alors la
-    // zone de dépôt seule, le fichier reste valide.
+    // `temporaryUrl()` does not serve SVGs: Livewire refuses to expose them
+    // from the temporary disk, and the preview would break. We then show the
+    // drop zone alone, and the file stays valid.
     $hasPendingPreview = $pending
         && method_exists($pending, 'temporaryUrl')
         && str_starts_with((string) $pending->getMimeType(), 'image/')
@@ -34,9 +34,9 @@
         <flux:description>{{ $description }}</flux:description>
     @endif
 
-    {{-- Quatre états qui s'excluent, dans cet ordre : ce qu'on vient de
-         déposer prime sur ce qui est enregistré, et le retrait ne s'affiche
-         que si rien n'attend d'être envoyé. --}}
+    {{-- Four mutually exclusive states, in this order: what was just dropped
+         wins over what is stored, and the removal only shows if nothing is
+         waiting to be uploaded. --}}
     @if ($hasPendingPreview)
         <div class="mb-3 flex items-center gap-3">
             <div class="relative">
@@ -92,9 +92,9 @@
         </div>
     @endif
 
-    {{-- Zone de dépôt. Le champ fichier est transparent et couvre toute la
-         zone : le navigateur gère le dépôt sans une ligne de script, et
-         Alpine ne sert qu'au retour visuel pendant le survol. --}}
+    {{-- Drop zone. The file input is transparent and covers the whole area:
+         the browser handles the drop without a line of script, and Alpine
+         only drives the visual feedback while hovering. --}}
     <label
         x-data="{ dragging: false }"
         x-on:dragover.prevent="dragging = true"

@@ -3,9 +3,9 @@
     'description' => null,
 ])
 
-{{-- En-tête de page : le titre et ce qu'on vient y faire à gauche, les actions
-     à droite. Les actions passent par le slot nommé `actions` pour rester
-     alignées sur le titre tant que la place le permet. --}}
+{{-- Page header: the title and what the page is for on the left, the actions
+     on the right. Actions go through the named `actions` slot so they stay
+     aligned with the title as long as there is room. --}}
 <div class="mb-5 flex w-full flex-col gap-4 md:flex-row md:items-center md:justify-between">
     <div>
         <h2 class="text-2xl font-semibold">{{ $title }}</h2>

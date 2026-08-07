@@ -37,9 +37,9 @@ class UserForm extends Form
     public ?TemporaryUploadedFile $avatar = null;
 
     /**
-     * Retrait différé de la photo enregistrée : marqué à l'écran, appliqué à
-     * l'enregistrement. Sans lui, une photo posée ne pouvait que se remplacer,
-     * jamais s'enlever.
+     * Deferred removal of the stored picture: marked on screen, applied on
+     * save. Without it, an uploaded picture could only be replaced, never
+     * removed.
      */
     public bool $removeAvatar = false;
 
@@ -106,19 +106,19 @@ class UserForm extends Form
             'last_name'     => $this->last_name,
             'email'         => $this->email,
             'password'      => $this->password,
-            // Sérialisée avec le reste : absente d'ici, Livewire ne la remet
-            // pas dans le formulaire réhydraté, et la confirmation était
-            // comparée à une chaîne vide au moment d'enregistrer.
+            // Serialized along with the rest: missing from here, Livewire
+            // does not put it back into the rehydrated form, and the
+            // confirmation was compared to an empty string on save.
             'passwordConfirmation' => $this->passwordConfirmation,
             'phone'         => $this->phone,
             'date_of_birth' => $this->date_of_birth,
             'civility'      => $this->civility,
             'bio'           => $this->bio,
             'avatar'        => $this->avatar,
-            // La clé porte le nom exact de la propriété : Livewire ne restitue
-            // au tour suivant que ce que `toArray()` expose, et un alias en
-            // snake_case ferait perdre le drapeau entre deux requêtes — le
-            // retrait ne s'appliquerait jamais.
+            // The key carries the property's exact name: Livewire only
+            // restores on the next round-trip what `toArray()` exposes, and a
+            // snake_case alias would lose the flag between two requests — the
+            // removal would never apply.
             'removeAvatar'  => $this->removeAvatar,
             'role'          => $this->role,
             'roles'         => $this->role !== null && $this->role !== '' ? [$this->role] : [],
@@ -162,14 +162,13 @@ class UserForm extends Form
     }
 
     /**
-     * Remplace la règle `confirmed` de Laravel, qui ne voit pas la
-     * confirmation dans le dictionnaire du validateur pour un Form Object.
+     * Replaces Laravel's `confirmed` rule, which does not see the
+     * confirmation in the validator's dictionary for a Form Object.
      *
-     * La valeur est **capturée maintenant**, à la construction des règles, et
-     * non lue depuis `$this` au moment où la closure s'exécute : Livewire
-     * réinitialise les propriétés du formulaire pendant `validate()`, si bien
-     * qu'une lecture tardive compare le mot de passe à une chaîne vide et
-     * refuse une paire pourtant identique.
+     * The value is **captured now**, while the rules are being built, and not
+     * read from `$this` when the closure runs: Livewire resets the form's
+     * properties during `validate()`, so a late read compares the password to
+     * an empty string and rejects a pair that actually matches.
      */
     private function passwordConfirmedRule(): Closure
     {

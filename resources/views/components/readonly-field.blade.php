@@ -1,15 +1,14 @@
 @props([
     'label',
     'description' => null,
-    // Valeur en largeur fixe : chemins, URL, expressions cron. Sur une donnée
-    // en prose, laisser à false.
+    // Fixed-width value: paths, URLs, cron expressions. Leave false for prose.
     'mono' => false,
 ])
 
-{{-- Une donnée qu'on lit sans pouvoir la changer. Elle emprunte la mise en
-     forme d'un champ — même libellé, même description — mais pas son cadre :
-     un `<input disabled>` inviterait à cliquer pour rien. Le réglage vient
-     d'ailleurs (config, .env), et l'écran le donne à lire. --}}
+{{-- A value you read without being able to change it. It borrows a field's
+     layout — same label, same description — but not its frame: an
+     `<input disabled>` would invite a click for nothing. The setting comes
+     from elsewhere (config, .env); the screen only shows it. --}}
 <div>
     <div class="text-sm font-medium text-zinc-800 dark:text-white">{{ $label }}</div>
 

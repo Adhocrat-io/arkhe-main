@@ -1,7 +1,7 @@
 {{--
     Sidebar items provided by Arkhe Main — now driven by the shared navigation
-    registry (Arkhe\Main\Support\ArkheNav). Arkhe seeds its own "Accès" and
-    "Réglages" sections; satellite packages (e.g. arkhe-watcher) branch their
+    registry (Arkhe\Main\Support\ArkheNav). Arkhe seeds its own "Access" and
+    "Settings" sections; satellite packages (e.g. arkhe-watcher) branch their
     own sections/items onto the same menu from their service providers, so a
     single @include renders everything.
 
@@ -21,8 +21,8 @@
 
 @php($arkheNavUser = auth()->user())
 
-{{-- Pas d'entrée « Tableau de bord » : la page d'accueil du back-office
-     appartient à l'app, qui la place elle-même dans son menu. --}}
+{{-- No "Dashboard" entry: the back-office home page belongs to the app, which
+     places it in its own menu. --}}
 
 @foreach(\Arkhe\Main\Support\ArkheNav::sectionsFor($arkheNavUser) as $arkheSection)
     <flux:sidebar.group

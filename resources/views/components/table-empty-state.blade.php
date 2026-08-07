@@ -5,9 +5,9 @@
     'description' => null,
 ])
 
-{{-- Ligne d'état vide : elle dit ce qui manque, et propose le geste qui suit.
-     Le slot porte l'action — « réinitialiser les filtres » quand un filtre
-     masque tout, « créer » quand la table est réellement vide. --}}
+{{-- Empty-state row: it says what is missing, and offers the next move.
+     The slot carries the action — "reset the filters" when a filter hides
+     everything, "create" when the table is genuinely empty. --}}
 <tr>
     <td colspan="{{ $colspan }}" class="px-6 py-12 text-center">
         <flux:icon name="{{ $icon }}" class="mx-auto mb-3 h-10 w-10 text-gray-400 dark:text-gray-500" />

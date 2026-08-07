@@ -2,16 +2,16 @@
     'title',
     'description' => null,
     'backRoute' => null,
-    // Une flèche seule doit annoncer le geste, pas la destination : « Retour à
-    // la liste » se comprend au lecteur d'écran, « Utilisateurs » non.
+    // A lone arrow must announce the gesture, not the destination: "Back to
+    // the list" makes sense to a screen reader, "Users" does not.
     'backLabel' => null,
 ])
 
-{{-- En-tête d'un écran de formulaire. Le retour est une flèche posée à gauche
-     du titre, sur la même ligne : on arrive ici depuis une liste, et le chemin
-     du retour se lit au même endroit que là où on est. Le slot `badges` porte
-     ce qui qualifie l'enregistrement (rôle système, compte non vérifié…), le
-     slot `actions` ce qu'on peut en faire — poussé à droite. --}}
+{{-- Header of a form screen. The way back is an arrow set to the left of the
+     title, on the same line: you arrive here from a list, so the path back
+     reads where you read where you are. The `badges` slot carries what
+     qualifies the record (system role, unverified account…), the `actions`
+     slot what can be done with it — pushed to the right. --}}
 <div class="mb-8">
     <div class="mb-2 flex flex-wrap items-center gap-3">
         @if ($backRoute)

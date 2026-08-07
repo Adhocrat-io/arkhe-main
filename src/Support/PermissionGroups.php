@@ -5,28 +5,28 @@ declare(strict_types=1);
 namespace Arkhe\Main\Support;
 
 /**
- * Range les permissions par ressource, pour que la fiche d'un rôle présente
- * des groupes lisibles plutôt qu'une liste de plusieurs dizaines de cases.
+ * Sorts permissions by resource, so that a role's form shows readable groups
+ * rather than a flat list of several dozen checkboxes.
  *
- * Deux sources, dans cet ordre :
+ * Two sources, in this order:
  *
- * 1. `config('arkhe.permission_groups')` — une map explicite
- *    `groupe => [permissions]` quand l'app veut décider elle-même du
- *    découpage et de l'ordre.
+ * 1. `config('arkhe.permission_groups')` — an explicit
+ *    `group => [permissions]` map, for when the app wants to decide the
+ *    split and the ordering itself.
  *
- * 2. À défaut, le groupement est déduit de la convention de nommage documentée
- *    dans `config/arkhe.php` : `manage-<ressource>` pour le raccourci et
- *    `<verbe>-<ressource>` pour les actions fines. `view-user`, `create-user`
- *    et `manage-users` se retrouvent donc sous « users ».
+ * 2. Otherwise, grouping is inferred from the naming convention documented in
+ *    `config/arkhe.php`: `manage-<resource>` for the shorthand and
+ *    `<verb>-<resource>` for the fine-grained actions. So `view-user`,
+ *    `create-user` and `manage-users` all land under "users".
  *
- * Ce qui n'entre dans aucune ressource (une permission d'un seul mot, par
- * exemple `access-backend`) part dans un groupe « autres », jamais perdu.
+ * Anything that fits no resource (a single-word permission such as
+ * `access-backend`) goes to an "other" group, never dropped.
  */
 final class PermissionGroups
 {
     /**
-     * Verbes reconnus en tête de permission. `manage` est traité à part : il
-     * nomme le groupe autant qu'il en fait partie.
+     * Verbs recognised at the head of a permission. `manage` gets special
+     * treatment: it names the group as much as it belongs to it.
      *
      * @var array<int, string>
      */
@@ -34,7 +34,7 @@ final class PermissionGroups
 
     /**
      * @param  iterable<int, string>  $permissionNames
-     * @return array<string, array<int, string>> groupe => permissions triées
+     * @return array<string, array<int, string>> group => sorted permissions
      */
     public static function build(iterable $permissionNames): array
     {
@@ -48,10 +48,10 @@ final class PermissionGroups
     }
 
     /**
-     * Respecte l'ordre et le découpage de la config, mais n'affiche que les
-     * permissions qui existent réellement en base — une config en avance sur
-     * le seeder ne doit pas produire des cases sans objet. Ce que la config
-     * oublie est récupéré à la fin plutôt que masqué.
+     * Honours the order and the split defined in config, but only shows the
+     * permissions that actually exist in the database — a config running ahead
+     * of the seeder must not produce checkboxes with nothing behind them.
+     * Whatever the config forgets is picked up at the end rather than hidden.
      *
      * @param  array<string, array<int, string>>  $configured
      * @param  iterable<int, string>  $permissionNames
@@ -69,8 +69,8 @@ final class PermissionGroups
                 static fn ($name): bool => is_string($name) && in_array($name, $existing, true),
             ));
 
-            // Le nom du groupe est lui-même une permission dans la convention
-            // Arkhe (`manage-users` chapeaute ses enfants) : on l'affiche avec.
+            // Under the Arkhe convention the group name is itself a permission
+            // (`manage-users` heads its children), so we show it alongside.
             if (is_string($group) && in_array($group, $existing, true)) {
                 array_unshift($names, $group);
             }
@@ -103,8 +103,8 @@ final class PermissionGroups
             $groups[self::resourceOf($name)][] = $name;
         }
 
-        // Les macros `manage-X` en tête de leur groupe, le reste par ordre
-        // alphabétique : on lit d'abord le raccourci, puis le détail.
+        // The `manage-X` macros head their group, the rest goes alphabetically:
+        // you read the shorthand first, then the details.
         foreach ($groups as $resource => $names) {
             usort($names, static function (string $a, string $b): int {
                 $aManage = str_starts_with($a, 'manage-');
@@ -116,7 +116,7 @@ final class PermissionGroups
             $groups[$resource] = $names;
         }
 
-        // Le groupe fourre-tout ferme la marche, où qu'il soit apparu.
+        // The catch-all group closes the list, wherever it first appeared.
         $other = self::otherKey();
         if (isset($groups[$other])) {
             $orphans = $groups[$other];
@@ -133,8 +133,8 @@ final class PermissionGroups
     }
 
     /**
-     * La ressource visée par une permission : le segment qui suit le verbe,
-     * au pluriel pour que `view-user` et `manage-users` se rejoignent.
+     * The resource a permission targets: the segment following the verb,
+     * pluralised so that `view-user` and `manage-users` meet up.
      */
     private static function resourceOf(string $permission): string
     {
@@ -144,7 +144,7 @@ final class PermissionGroups
             return self::otherKey();
         }
 
-        // `force-delete-user` : le verbe tient sur deux segments.
+        // `force-delete-user`: the verb spans two segments.
         if ($parts[0] === 'force' && count($parts) > 2) {
             array_shift($parts);
         }
@@ -157,10 +157,10 @@ final class PermissionGroups
     }
 
     /**
-     * Clé de regroupement d'une ressource. Le pluriel n'est là que pour
-     * rapprocher deux écritures de la même chose (`view-user` et
-     * `manage-users`) — pas pour produire un anglais correct, d'où l'absence
-     * de Str::plural. Le libellé affiché, lui, passe par {@see label()}.
+     * A resource's grouping key. The plural is only there to bring two
+     * spellings of the same thing together (`view-user` and `manage-users`) —
+     * not to produce correct English, hence no Str::plural. The displayed
+     * label goes through {@see label()} instead.
      */
     private static function pluralise(string $resource): string
     {
@@ -176,9 +176,9 @@ final class PermissionGroups
     }
 
     /**
-     * Libellé lisible d'un groupe. Une traduction dédiée l'emporte quand elle
-     * existe (`arkhe::arkhe.permissions.groups.users`), sinon on remet la clé
-     * en français courant : « site-seos » n'a rien à faire dans une interface.
+     * A group's readable label. A dedicated translation wins whenever one
+     * exists (`arkhe::arkhe.permissions.groups.users`), otherwise the key is
+     * put back into plain wording: "site-seos" has no place in a UI.
      */
     public static function label(string $group): string
     {

@@ -11,15 +11,15 @@
 ])
 
 {{--
-    Demande confirmation avant d'agir.
+    Asks for confirmation before acting.
 
-    Elle remplace `wire:confirm`, dont la boîte du navigateur ne se met pas en
-    forme, coupe les longs messages et ne dit rien de la nature du geste.
+    It replaces `wire:confirm`, whose browser dialog cannot be styled, cuts
+    long messages off and says nothing about the nature of the action.
 
-    Trois tons, parce que ces gestes n'engagent pas la même chose : « danger »
-    pour ce qui se perd, « success » pour ce qui met en ligne, neutre pour ce
-    qui prend seulement du temps. Le ton porte l'icône et le bouton, afin
-    qu'une suppression ne ressemble pas à une publication.
+    Three tones, because these actions do not commit to the same thing:
+    "danger" for what gets lost, "success" for what goes live, neutral for
+    what merely takes time. The tone drives the icon and the button, so a
+    deletion does not look like a publication.
 --}}
 @php
     $tones = match ($tone) {
@@ -56,10 +56,10 @@
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4">
-            {{-- Annuler passe par l'action du composant quand il en expose une
-                 (elle remet l'état à zéro) ; sinon on referme simplement la
-                 modale côté client. Les deux variantes sont écrites en entier :
-                 un @if au milieu d'attributs casse le parseur Blade. --}}
+            {{-- Cancel goes through the component action when it exposes one
+                 (it resets the state); otherwise we just close the modal
+                 client-side. Both variants are written out in full: an @if in
+                 the middle of attributes breaks the Blade parser. --}}
             @if ($cancelAction)
                 <flux:button variant="ghost" type="button" wire:click="{{ $cancelAction }}">
                     {{ __('arkhe::arkhe.actions.cancel') }}

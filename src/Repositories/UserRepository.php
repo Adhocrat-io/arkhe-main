@@ -13,12 +13,12 @@ use Illuminate\Database\Eloquent\Model;
 class UserRepository implements UserRepositoryInterface
 {
     /**
-     * Colonnes autorisées au tri.
+     * Columns allowed for sorting.
      *
-     * La liste vit aussi dans `ListUsers`, et c'est voulu : `$sort` est un
-     * paramètre public du contrat, que n'importe quel appelant applicatif peut
-     * alimenter depuis une requête. Il finit dans un `orderBy()`, où il n'est
-     * pas passé en binding — le filtrer ici est la dernière barrière.
+     * The list also lives in `ListUsers`, and that is deliberate: `$sort` is a
+     * public parameter of the contract, which any application caller may feed
+     * from a request. It ends up in an `orderBy()`, where it is not passed as
+     * a binding — filtering it here is the last barrier.
      *
      * @var array<int, string>
      */
@@ -37,13 +37,13 @@ class UserRepository implements UserRepositoryInterface
         string $direction = 'desc',
         int $perPage = 15,
     ): LengthAwarePaginator {
-        // Eager-load les rôles : la vue list-users itère sur
-        // `$user->getRoleNames()` (cf. resources/views/livewire/list-users.blade.php),
-        // qui lit `$user->roles`. Sans `with('roles')`, chaque user paginé
-        // déclenche une query Spatie identique sur `model_has_roles` —
-        // observé in vivo : 9 queries N+1 identiques pour 9 users affichés.
-        // Coût SQL négligeable mais surtout coût d'hydratation Eloquent
-        // multiplié par le nombre de users dans la page.
+        // Eager-load roles: the list-users view iterates over
+        // `$user->getRoleNames()` (see resources/views/livewire/list-users.blade.php),
+        // which reads `$user->roles`. Without `with('roles')`, every paginated
+        // user fires an identical Spatie query on `model_has_roles` — observed
+        // in the wild: 9 identical N+1 queries for 9 users on screen. The SQL
+        // cost is negligible; the Eloquent hydration cost, multiplied by the
+        // number of users on the page, is not.
         $query = $this->query()->with('roles');
 
         $search = trim((string) ($filters['search'] ?? ''));
@@ -68,7 +68,7 @@ class UserRepository implements UserRepositoryInterface
 
         return $query
             ->orderBy($sort, $direction)
-            // Départage les ex æquo pour que la pagination reste stable.
+            // Break ties so pagination stays stable.
             ->orderBy('id')
             ->paginate(max(1, $perPage));
     }

@@ -10,21 +10,21 @@
         </x-slot:badges>
     </x-arkhe::form-header>
 
-    {{-- Pas de compteurs en tête : chaque catégorie donne le sien à côté de
-         son titre, et leur nombre se lit en parcourant la page. --}}
+    {{-- No header counters: each category gives its own next to its title,
+         and their number reads as you scan the page. --}}
 
-    {{-- Un tableau par catégorie, sans cadre autour : la table porte déjà le
-         sien, en emboîter un second ferait beaucoup de bordures pour peu de
-         contenu. Le badge suffit à dire de quelle catégorie on parle. --}}
+    {{-- One table per category, with no frame around it: the table already
+         carries its own, and nesting a second would make a lot of borders for
+         little content. The badge is enough to say which category we mean. --}}
     <div class="space-y-8">
         @foreach ($categories as $category)
             <div>
                 <div class="mb-3 flex flex-wrap items-center gap-2">
                     <h3 class="text-lg font-medium">{{ $category['title'] }}</h3>
 
-                    {{-- La clé technique : c'est elle qu'on cite dans le code
-                         et dans une politique de confidentialité. On l'affiche
-                         quand elle apporte quelque chose au titre. --}}
+                    {{-- The technical key: it is what gets quoted in the code
+                         and in a privacy policy. We show it when it adds
+                         something to the title. --}}
                     @if (mb_strtolower($category['title']) !== mb_strtolower($category['key']))
                         <flux:badge size="sm" class="font-mono">{{ $category['key'] }}</flux:badge>
                     @endif

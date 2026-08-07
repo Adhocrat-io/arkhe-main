@@ -49,8 +49,8 @@ class ListUsers extends Component
     public bool $showDeleteModal = false;
 
     /**
-     * Colonnes triables, en liste blanche : le nom arrive de l'URL et part
-     * dans un `orderBy`.
+     * Sortable columns, allow-listed: the name comes from the URL and ends up
+     * in an `orderBy`.
      *
      * @var array<int, string>
      */
@@ -62,15 +62,15 @@ class ListUsers extends Component
         $this->perPage = (int) config('arkhe.per_page', 15);
     }
 
-    // ─── Formulaire hérité ───────────────────────────────────────────────
-    // Depuis la 3.3, création et édition ont leur page ({@see EditUser}) : la
-    // liste ne porte plus de flyout. Ces méthodes et les hooks qui les suivent
-    // restent en place pour les sous-classes qui les surchargent — les retirer
-    // casserait leur `parent::` sans prévenir. Elles ne sont plus appelées par
-    // les vues du paquet et partiront à la prochaine majeure.
+    // ─── Legacy form ─────────────────────────────────────────────────────
+    // Since 3.3, creation and edition have their own page ({@see EditUser}):
+    // the list no longer carries a flyout. These methods and the hooks that
+    // follow stay in place for the subclasses that override them — removing
+    // them would break their `parent::` without warning. The package views no
+    // longer call them, and they will go in the next major.
 
     /**
-     * @deprecated depuis la 3.3 — voir `arkhe.users.create` ({@see EditUser}).
+     * @deprecated since 3.3 — see `arkhe.users.create` ({@see EditUser}).
      */
     public function openCreate(): void
     {
@@ -83,7 +83,7 @@ class ListUsers extends Component
     }
 
     /**
-     * @deprecated depuis la 3.3 — voir `arkhe.users.edit` ({@see EditUser}).
+     * @deprecated since 3.3 — see `arkhe.users.edit` ({@see EditUser}).
      */
     public function openEdit(int $id, UserRepositoryInterface $repository): void
     {
@@ -105,7 +105,7 @@ class ListUsers extends Component
     }
 
     /**
-     * @deprecated depuis la 3.3 — l'enregistrement se fait sur {@see EditUser}.
+     * @deprecated since 3.3 — saving happens on {@see EditUser}.
      */
     public function save(UserRepositoryInterface $repository, UserService $service): void
     {
@@ -157,7 +157,7 @@ class ListUsers extends Component
     }
 
     /**
-     * Referme la confirmation sans rien supprimer.
+     * Closes the confirmation without deleting anything.
      */
     public function cancelDelete(): void
     {
@@ -228,7 +228,8 @@ class ListUsers extends Component
     protected function beforeDelete(Model $user): void {}
 
     /**
-     * Trie sur une colonne, ou inverse le sens si elle porte déjà le tri.
+     * Sorts on a column, or flips the direction if it already carries the
+     * sort.
      */
     public function sortBy(string $field): void
     {
@@ -247,8 +248,8 @@ class ListUsers extends Component
     }
 
     /**
-     * Le tri arrive de l'URL : un champ inconnu retombe sur le défaut plutôt
-     * que de partir tel quel dans la requête.
+     * The sort comes from the URL: an unknown field falls back to the default
+     * rather than going into the query as-is.
      */
     private function safeSortField(): string
     {
@@ -275,8 +276,8 @@ class ListUsers extends Component
     }
 
     /**
-     * Un filtre actif change le discours de l'état vide : « aucun résultat
-     * pour cette recherche » plutôt que « aucun utilisateur ».
+     * An active filter changes what the empty state says: "no result for this
+     * search" rather than "no user".
      */
     public function hasActiveFilters(): bool
     {
@@ -284,8 +285,8 @@ class ListUsers extends Component
     }
 
     /**
-     * Utilisateur visé par la confirmation en cours, pour le nommer dans la
-     * modale plutôt que de parler d'« cet utilisateur ».
+     * User targeted by the pending confirmation, to name them in the modal
+     * rather than say "this user".
      */
     #[Computed]
     public function pendingDeleteUser(): ?Model
@@ -298,8 +299,8 @@ class ListUsers extends Component
     }
 
     /**
-     * Compteurs d'en-tête, tous utilisateurs confondus : ils ne suivent pas
-     * les filtres, ils donnent l'état global de la base.
+     * Header counters, across all users: they do not follow the filters, they
+     * give the overall state of the database.
      *
      * @return array{total: int, verified: int, unverified: int, tracks_verification: bool, without_role: int}
      */
@@ -309,8 +310,8 @@ class ListUsers extends Component
 
         $total = $model->newQuery()->count();
 
-        // `email_verified_at` vient des starter kits Laravel, pas d'Arkhe :
-        // une app qui a retiré la colonne ne doit pas faire tomber la page.
+        // `email_verified_at` comes from the Laravel starter kits, not from
+        // Arkhe: an app that dropped the column must not bring the page down.
         $tracksVerification = Schema::hasColumn($model->getTable(), 'email_verified_at');
         $verified = $tracksVerification
             ? $model->newQuery()->whereNotNull('email_verified_at')->count()

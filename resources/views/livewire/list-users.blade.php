@@ -10,7 +10,7 @@
         </x-slot:actions>
     </x-arkhe::page-header>
 
-    {{-- Statistiques --}}
+    {{-- Statistics --}}
     <x-arkhe::stat-bar :stats="array_values(array_filter([
         ['label' => __('arkhe::arkhe.users.stats.total'), 'value' => $stats['total'], 'color' => 'zinc'],
         $stats['tracks_verification']
@@ -22,7 +22,7 @@
         ['label' => __('arkhe::arkhe.users.stats.without_role'), 'value' => $stats['without_role'], 'color' => 'red'],
     ]))" />
 
-    {{-- Filtres --}}
+    {{-- Filters --}}
     <div class="mb-6">
         <div class="flex flex-col gap-4 md:flex-row md:items-end">
             <div class="flex-1">
@@ -51,14 +51,14 @@
         </div>
     </div>
 
-    {{-- Tableau --}}
+    {{-- Table --}}
     <x-arkhe::list-table-wrapper>
         <div class="overflow-x-auto">
             <table class="w-full divide-y divide-gray-200 dark:divide-zinc-700">
                 <thead class="bg-gray-50 dark:bg-zinc-900">
                     <tr>
-                        {{-- Largeur plancher sur le nom : la table déborde plutôt que
-                             de le comprimer, et le conteneur prend le relais en scroll. --}}
+                        {{-- Floor width on the name: the table overflows rather than
+                             squeezing it, and the container takes over with a scroll. --}}
                         <x-arkhe::sortable-header field="last_name" class="min-w-64" :sort-field="$sortField" :sort-direction="$sortDirection">
                             {{ __('arkhe::arkhe.users.columns.name') }}
                         </x-arkhe::sortable-header>
@@ -94,8 +94,8 @@
                                         size="sm"
                                     />
 
-                                    {{-- Un utilisateur qu'on ne peut pas gérer reste lisible,
-                                         mais n'ouvre rien : la ligne dit pourquoi au survol. --}}
+                                    {{-- A user you cannot manage stays readable, but opens
+                                         nothing: the row says why on hover. --}}
                                     @if ($canManage)
                                         <a
                                             href="{{ route('arkhe.users.edit', $user->getKey()) }}"
@@ -121,9 +121,9 @@
                             </td>
 
                             <td class="px-6 py-4">
-                                {{-- `@foreach` + test explicite plutôt qu'un `@forelse` :
-                                     imbriqué dans le `@forelse` des lignes, ce dernier
-                                     déséquilibre la compilation Blade des composants. --}}
+                                {{-- `@foreach` + an explicit test rather than a `@forelse`:
+                                     nested inside the rows' `@forelse`, the latter
+                                     unbalances the Blade compilation of the components. --}}
                                 @php($userRoles = $user->getRoleNames() ?? [])
 
                                 <div class="flex flex-wrap gap-1">
@@ -145,10 +145,10 @@
                                 <flux:dropdown align="end" wire:key="dropdown-{{ $user->getKey() }}">
                                     <flux:button icon="ellipsis-vertical"></flux:button>
 
-                                    {{-- Supprimer n'est proposé qu'à qui peut gérer la
-                                         cible. Le `@if` reste hors du slot `flux:menu` :
-                                         imbriqué dedans, Blade seul (sans livewire/blaze)
-                                         compile un `endif` orphelin. --}}
+                                    {{-- Delete is only offered to whoever can manage the
+                                         target. The `@if` stays outside the `flux:menu`
+                                         slot: nested inside it, Blade alone (without
+                                         livewire/blaze) compiles an orphan `endif`. --}}
                                     <flux:menu>
                                         <flux:menu.item
                                             icon="pencil-square"

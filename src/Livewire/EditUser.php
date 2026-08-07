@@ -20,10 +20,10 @@ use Livewire\WithFileUploads;
 use Spatie\Permission\Models\Role;
 
 /**
- * Fiche d'un utilisateur : création quand aucun identifiant n'est passé,
- * édition sinon. Les deux partagent le même formulaire et les mêmes règles —
- * les séparer en deux composants dupliquerait la validation, l'upload d'avatar
- * et les garde-fous de hiérarchie pour un gain nul.
+ * A user's detail page: creation when no identifier is passed, edition
+ * otherwise. Both share the same form and the same rules — splitting them
+ * into two components would duplicate the validation, the avatar upload and
+ * the hierarchy guards for no gain.
  */
 class EditUser extends Component
 {
@@ -32,13 +32,12 @@ class EditUser extends Component
     public UserForm $userForm;
 
     /**
-     * L'utilisateur édité, ou null en création. Porté par la route.
+     * The user being edited, or null on creation. Carried by the route.
      *
-     * Verrouillée : elle dit *qui* on édite, et `save()` s'en sert pour
-     * choisir entre créer et mettre à jour. `save()` revérifie déjà la
-     * hiérarchie sur le modèle rechargé, mais le jour où une méthode publique
-     * lira cette propriété sans cette précaution, la faille s'ouvrirait sans
-     * bruit.
+     * Locked: it says *who* is being edited, and `save()` uses it to choose
+     * between creating and updating. `save()` already re-checks the hierarchy
+     * against the reloaded model, but the day a public method reads this
+     * property without that precaution, the hole would open silently.
      */
     #[Locked]
     public ?int $userId = null;
@@ -63,8 +62,8 @@ class EditUser extends Component
             abort(404);
         }
 
-        // Un acteur ne modifie pas un compte qui le surclasse : la liste masque
-        // déjà l'action, la route doit la refuser aussi.
+        // An actor does not edit an account that outranks them: the list
+        // already hides the action, the route must refuse it too.
         if (! RoleHierarchy::canManage(Auth::user(), $model)) {
             abort(403);
         }
@@ -80,9 +79,9 @@ class EditUser extends Component
     }
 
     /**
-     * Marque la photo enregistrée pour retrait. Rien n'est supprimé avant
-     * l'enregistrement : on peut se raviser, et une photo déposée entre-temps
-     * annule le retrait d'elle-même.
+     * Marks the stored picture for removal. Nothing is deleted before saving:
+     * you can change your mind, and a picture dropped in the meantime cancels
+     * the removal on its own.
      */
     public function markRemoveAvatar(): void
     {
@@ -106,8 +105,8 @@ class EditUser extends Component
         $this->userForm->id = $this->userId;
 
         $data = $this->userForm->validate();
-        // validate() ne rend que les clés des règles ; on repasse le formulaire
-        // complet pour embarquer l'avatar et les rôles.
+        // validate() only returns the rule keys; pass the full form back to
+        // carry the avatar and the roles along.
         $payload = array_merge($data, $this->userForm->toArray());
 
         $payload = $this->beforeSave($payload);
@@ -139,14 +138,14 @@ class EditUser extends Component
     }
 
     // ─── Extensibility hooks ─────────────────────────────────────────────
-    // Vides par défaut ; surchargez-les dans une sous-classe déclarée via
-    // `config('arkhe.components.edit-user')` pour brancher un comportement
-    // applicatif (synchro newsletter, journal d'audit, champ maison) sans
-    // forker le composant.
+    // Empty by default; override them in a subclass declared via
+    // `config('arkhe.components.edit-user')` to plug in host-app behaviour
+    // (newsletter sync, audit log, custom field) without forking the
+    // component.
 
     /**
-     * Appelé après validation, juste avant la couche service. Retourne le
-     * payload transmis à `UserService::create|update`.
+     * Called after validation, right before the service layer. Returns the
+     * payload forwarded to `UserService::create|update`.
      *
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>

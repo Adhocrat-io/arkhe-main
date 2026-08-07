@@ -145,8 +145,8 @@ it('removes the avatar when the removal flag is set', function (): void {
     Storage::disk('local')->assertMissing($path);
 });
 
-// Déposer une photo alors qu'un retrait est marqué doit garder la photo :
-// on ne supprime pas ce qu'on vient de remplacer.
+// Uploading a picture while a removal is marked must keep the picture: we do
+// not delete what we have just replaced.
 it('keeps a freshly uploaded avatar over a pending removal', function (): void {
     loginAs('root');
     $alice = makeServiceUser();

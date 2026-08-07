@@ -20,9 +20,9 @@ class RoleForm extends Form
     public array $permissions = [];
 
     /**
-     * Informatif seulement : aucune décision d'autorisation ne s'y appuie.
-     * Les règles de validation relisent la base ({@see rules()}), et
-     * `RoleService::update()` recalcule le statut de son côté.
+     * Informational only: no authorization decision relies on it. The
+     * validation rules read the database again ({@see rules()}), and
+     * `RoleService::update()` recomputes the status on its side.
      */
     public bool $is_canonical = false;
 
@@ -31,14 +31,13 @@ class RoleForm extends Form
      */
     public function rules(): array
     {
-        // Le caractère canonique est relu depuis la base, jamais depuis
-        // `$this->is_canonical` : cette propriété est publique, donc réécrite
-        // par le client. La croire revenait à laisser tomber *toutes* les
-        // règles du nom sur simple demande — plus de `required`, plus de
-        // longueur maximale, plus d'unicité, et deux rôles pouvaient porter
-        // le même nom.
+        // Canonical status is read back from the database, never from
+        // `$this->is_canonical`: that property is public, so the client
+        // rewrites it. Trusting it meant dropping *every* rule on the name on
+        // request — no more `required`, no more maximum length, no more
+        // uniqueness, and two roles could carry the same name.
         $nameRules = $this->resolveIsCanonical()
-            ? [] // un rôle canonique ne se renomme pas ; le champ est verrouillé
+            ? [] // a canonical role is not renamed; the field is locked
             : ['required', 'string', 'max:120', Rule::unique('roles', 'name')->ignore($this->id)];
 
         return [
@@ -50,7 +49,8 @@ class RoleForm extends Form
     }
 
     /**
-     * Le rôle édité est-il canonique, d'après la base et la configuration ?
+     * Is the role being edited canonical, according to the database and the
+     * configuration?
      */
     private function resolveIsCanonical(): bool
     {

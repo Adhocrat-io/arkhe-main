@@ -80,11 +80,10 @@ class PermissionService
     }
 
     /**
-     * Une permission déclarée dans `config('arkhe.permissions')` est canonique :
-     * le code du paquet s'y réfère en dur — `access-backend` garde l'entrée du
-     * back-office, `manage-roles` sa zone sensible. La renommer ou la supprimer
-     * couperait ces gardes, pour tout le monde et sans retour possible depuis
-     * l'interface.
+     * A permission declared in `config('arkhe.permissions')` is canonical: the
+     * package code references it by name — `access-backend` guards the way into
+     * the backend, `manage-roles` its sensitive area. Renaming or deleting one
+     * would cut those guards, for everybody, with no way back from the UI.
      */
     public function isCanonical(string $name): bool
     {
@@ -92,14 +91,14 @@ class PermissionService
     }
 
     /**
-     * Refuse de toucher à une permission canonique, et à une permission que
-     * l'acteur ne détient pas lui-même.
+     * Refuses to touch a canonical permission, or one the actor does not hold
+     * himself.
      *
-     * Sans cette garde, renommer suffisait à tout prendre : les tables pivots
-     * référencent l'identifiant, pas le nom. Rebaptiser `view-user` en
-     * `manage-roles` transformait d'un coup tous ses porteurs en
-     * administrateurs, sans jamais toucher à un rôle ni à un compte — donc
-     * sans croiser les gardes de RoleService ni de UserService.
+     * Without this guard, renaming alone was enough to take everything: the
+     * pivot tables reference the id, not the name. Renaming `view-user` to
+     * `manage-roles` turned every one of its holders into an administrator at
+     * a stroke, without ever touching a role or an account — and therefore
+     * without meeting the guards in RoleService or UserService.
      *
      * @throws AuthorizationException
      */
@@ -114,7 +113,7 @@ class PermissionService
         $actor = $this->actor();
 
         if ($actor === null) {
-            return; // console : l'appelant a déjà l'accès au serveur.
+            return; // console: the caller already has server access.
         }
 
         if ($this->isRoot($actor)) {
@@ -129,12 +128,12 @@ class PermissionService
     }
 
     /**
-     * Refuse d'écrire un nom que l'acteur ne détient pas.
+     * Refuses to write a name the actor does not hold.
      *
-     * C'est l'autre moitié du verrou : sans elle, on renommerait une
-     * permission anodine *vers* un nom puissant. Le nom canonique est refusé
-     * à tous — deux lignes portant `manage-roles` rendraient les
-     * vérifications de Spatie non déterministes.
+     * This is the other half of the lock: without it, you would rename a
+     * harmless permission *towards* a powerful name. The canonical name is
+     * denied to everyone — two rows carrying `manage-roles` would make
+     * Spatie's checks non-deterministic.
      *
      * @throws AuthorizationException
      */
@@ -156,8 +155,8 @@ class PermissionService
             return;
         }
 
-        // Un nom qui existe déjà et que l'acteur ne détient pas serait une
-        // prise de contrôle par collision.
+        // A name that already exists and that the actor does not hold would be
+        // a takeover by collision.
         $exists = Permission::query()->where('name', $name)->exists();
 
         if ($exists && (! method_exists($actor, 'can') || ! $actor->can($name))) {
@@ -168,7 +167,7 @@ class PermissionService
     }
 
     /**
-     * L'acteur courant, ou null hors contexte HTTP (console, jobs).
+     * The current actor, or null outside an HTTP context (console, jobs).
      */
     private function actor(): ?Model
     {

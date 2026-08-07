@@ -42,8 +42,8 @@ class ListRoles extends Component
     public bool $showDeleteModal = false;
 
     /**
-     * Colonnes triables, en liste blanche : le nom arrive de l'URL et part
-     * dans un `orderBy`.
+     * Sortable columns, allow-listed: the name comes from the URL and ends up
+     * in an `orderBy`.
      *
      * @var array<int, string>
      */
@@ -55,17 +55,16 @@ class ListRoles extends Component
         $this->perPage = (int) config('arkhe.per_page', 15);
     }
 
-    // ─── Formulaire hérité ───────────────────────────────────────────────
-    // Depuis la 3.3, création et édition ont leur page ({@see EditRole}), qui
-    // porte aussi les permissions cochées par ressource : la liste ne montre
-    // plus de flyout. Ces méthodes et les hooks qui suivent restent en place
-    // pour les sous-classes qui les surchargent, et partiront à la prochaine
-    // majeure.
+    // ─── Legacy form ─────────────────────────────────────────────────────
+    // Since 3.3, creation and edition have their own page ({@see EditRole}),
+    // which also carries the permissions ticked per resource: the list no
+    // longer shows a flyout. These methods and the hooks below stay in place
+    // for the subclasses that override them, and will go in the next major.
 
     /**
-     * @deprecated depuis la 3.3 — la création de rôle a quitté l'interface :
-     *             les rôles viennent de `config('arkhe.roles')` et du seeder.
-     *             Pour en créer un par programme, passez par `RoleService`.
+     * @deprecated since 3.3 — role creation left the interface: roles come
+     *             from `config('arkhe.roles')` and the seeder. To create one
+     *             programmatically, go through `RoleService`.
      */
     public function openCreate(): void
     {
@@ -78,7 +77,7 @@ class ListRoles extends Component
     }
 
     /**
-     * @deprecated depuis la 3.3 — voir `arkhe.roles.edit` ({@see EditRole}).
+     * @deprecated since 3.3 — see `arkhe.roles.edit` ({@see EditRole}).
      */
     public function openEdit(int $id, RoleRepositoryInterface $roles, RoleService $service): void
     {
@@ -96,7 +95,7 @@ class ListRoles extends Component
     }
 
     /**
-     * @deprecated depuis la 3.3 — l'enregistrement se fait sur {@see EditRole}.
+     * @deprecated since 3.3 — saving happens on {@see EditRole}.
      */
     public function save(RoleRepositoryInterface $roles, RoleService $service): void
     {
@@ -158,8 +157,8 @@ class ListRoles extends Component
                 $service->delete($role);
                 Flux::toast(variant: 'success', text: __('arkhe::arkhe.roles.deleted'));
             } catch (AuthorizationException) {
-                // Rôle canonique : le service refuse, on le dit plutôt que de
-                // refermer la modale comme si la suppression avait eu lieu.
+                // Canonical role: the service refuses, so say it rather than
+                // closing the modal as if the deletion had happened.
                 Flux::toast(variant: 'danger', text: __('arkhe::arkhe.roles.delete_canonical_refused'));
             }
         }
@@ -170,7 +169,7 @@ class ListRoles extends Component
     }
 
     /**
-     * Referme la confirmation sans rien supprimer.
+     * Closes the confirmation without deleting anything.
      */
     public function cancelDelete(): void
     {
@@ -215,7 +214,8 @@ class ListRoles extends Component
     }
 
     /**
-     * Trie sur une colonne, ou inverse le sens si elle porte déjà le tri.
+     * Sorts on a column, or flips the direction if it already carries the
+     * sort.
      */
     public function sortBy(string $field): void
     {
@@ -234,10 +234,10 @@ class ListRoles extends Component
     }
 
     /**
-     * Le tri arrive de l'URL : un champ inconnu retombe sur le défaut plutôt
-     * que de partir tel quel dans la requête. Le repository refiltre de son
-     * côté — mais il est rebindable par l'app hôte, et la garde ne doit pas
-     * reposer sur une implémentation qu'on ne maîtrise pas.
+     * The sort comes from the URL: an unknown field falls back to the default
+     * rather than going into the query as-is. The repository filters again on
+     * its side — but the host app can rebind it, and the guard must not rest
+     * on an implementation we do not control.
      */
     private function safeSortField(): string
     {
@@ -253,8 +253,8 @@ class ListRoles extends Component
     }
 
     /**
-     * Un filtre actif change le discours de l'état vide : « aucun résultat
-     * pour cette recherche » plutôt que « aucun rôle ».
+     * An active filter changes what the empty state says: "no result for this
+     * search" rather than "no role".
      */
     public function hasActiveFilters(): bool
     {
@@ -262,7 +262,7 @@ class ListRoles extends Component
     }
 
     /**
-     * Rôle visé par la confirmation en cours, pour le nommer dans la modale.
+     * Role targeted by the pending confirmation, to name it in the modal.
      */
     #[Computed]
     public function pendingDeleteRole(): ?Role
@@ -275,8 +275,8 @@ class ListRoles extends Component
     }
 
     /**
-     * Compteurs d'en-tête : ils ne suivent pas les filtres, ils donnent
-     * l'état global du RBAC.
+     * Header counters: they do not follow the filters, they give the overall
+     * state of the RBAC.
      *
      * @return array{roles: int, permissions: int}
      */
@@ -284,8 +284,8 @@ class ListRoles extends Component
     {
         return [
             'roles' => Role::query()->count(),
-            // Le seul des deux qui ne se lise pas dans la table : les lignes
-            // ne donnent qu'un nombre de permissions par rôle, jamais le total.
+            // The only one of the two that cannot be read off the table: the
+            // rows only give a permission count per role, never the total.
             'permissions' => Permission::query()->count(),
         ];
     }
@@ -302,11 +302,11 @@ class ListRoles extends Component
             direction: $this->sortDirection,
         );
 
-        // `availablePerms` et `canonicalResolver` ne sont plus consommés par la
-        // vue du paquet depuis que le formulaire et la suppression l'ont
-        // quittée. On continue de les passer : une app qui a publié cette vue
-        // les attend encore, et leur absence serait un `Undefined variable`
-        // chez elle. Ils partiront avec les méthodes dépréciées.
+        // `availablePerms` and `canonicalResolver` are no longer consumed by
+        // the package view since the form and the deletion left it. We keep
+        // passing them: an app that published this view still expects them,
+        // and their absence would be an `Undefined variable` on its side.
+        // They will go along with the deprecated methods.
         return view('arkhe::livewire.list-roles', [
             'roles'              => $paginator,
             'availablePerms'     => $permissions->all()->pluck('name'),

@@ -62,10 +62,10 @@ it('searches roles by name', function (): void {
         ->assertDontSee('root', false);
 })->skip('view rendering also outputs the actor `root` role badge elsewhere; covered by repository search test');
 
-// Les trois tests qui suivent exercent des méthodes dépréciées en 3.3 : aucune
-// n'est plus atteignable depuis l'interface, mais UPGRADE.md promet aux apps
-// qu'elles restent appelables jusqu'à la prochaine majeure. Ils vérifient donc
-// que la promesse tient, pas un parcours utilisateur.
+// The next three tests exercise methods deprecated in 3.3: none is reachable
+// from the interface any more, but UPGRADE.md promises apps they stay callable
+// until the next major. So they check that the promise holds, not a user
+// journey.
 it('creates a new role through the ListRoles flow', function (): void {
     $root = makeRbacUser('root');
 
@@ -123,8 +123,8 @@ it('blocks administrateur from /administration/permissions', function (): void {
         ->assertForbidden();
 });
 
-// Les permissions se gèrent depuis la page des rôles : l'ancienne URL survit
-// en redirigeant, pour ne pas casser les liens des apps consommatrices.
+// Permissions are managed from the roles page: the old URL survives as a
+// redirect, so links in consuming apps do not break.
 it('redirects the legacy permissions page to the roles page', function (): void {
     $root = makeRbacUser('root');
 
@@ -138,15 +138,15 @@ it('keeps the arkhe.permissions.index route name resolvable', function (): void 
         ->toBe('/administration/permissions');
 });
 
-// Son pendant : celle-là disparaît. Les rôles viennent de `config('arkhe.roles')`
-// et du seeder, l'interface n'en fabrique plus.
+// Its counterpart: this one goes away. Roles come from `config('arkhe.roles')`
+// and the seeder, the interface no longer mints any.
 it('no longer registers a role creation route', function (): void {
     expect(Route::has('arkhe.roles.create'))->toBeFalse();
 });
 
 it('offers neither creation nor deletion on the roles list', function (): void {
-    // Un rôle non canonique : sans lui, l'absence du bouton « Supprimer » ne
-    // prouverait rien, tous les rôles seedés étant protégés de toute façon.
+    // A non-canonical role: without it, the absence of the "Delete" button
+    // would prove nothing, every seeded role being protected anyway.
     Role::query()->create(['name' => 'editor', 'guard_name' => 'web']);
 
     Livewire::actingAs(makeRbacUser('root'))

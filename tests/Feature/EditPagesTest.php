@@ -36,7 +36,7 @@ function makeEditPagesUser(?string $role = null, array $attrs = []): User
     return $user;
 }
 
-// ─── Fiche utilisateur ───────────────────────────────────────────────────
+// ─── User page ───────────────────────────────────────────────────────────
 
 it('creates a user from the dedicated page', function (): void {
     Livewire::actingAs(makeEditPagesUser('root'))
@@ -57,10 +57,10 @@ it('creates a user from the dedicated page', function (): void {
         ->and($created->getRoleNames()->all())->toBe(['user']);
 });
 
-// La confirmation ne fait partie d'aucune règle qui la conserve : si elle
-// sort du contrat sérialisé du formulaire, Livewire ne la restitue pas au
-// prochain aller-retour et toute création échoue sur une paire pourtant
-// identique. Ce test garde la propriété dans le snapshot.
+// No rule keeps the confirmation around: if it falls out of the form's
+// serialized contract, Livewire does not hand it back on the next round-trip
+// and every creation fails on a pair that actually matched. This test keeps the
+// property in the snapshot.
 it('keeps the password confirmation across a Livewire round-trip', function (): void {
     $component = Livewire::actingAs(makeEditPagesUser('root'))
         ->test(EditUser::class)
@@ -108,8 +108,8 @@ it('updates a user from the dedicated page', function (): void {
     expect($target->refresh()->first_name)->toBe('Après');
 });
 
-// Le garde-fou de hiérarchie ne vit pas que dans la liste : arriver sur la
-// fiche par son URL ne doit pas contourner le rang.
+// The hierarchy guard does not live in the list alone: reaching the page by its
+// URL must not sidestep the rank.
 it('refuses to open the page of a user who outranks the actor', function (): void {
     $root = makeEditPagesUser('root');
     $admin = makeEditPagesUser('administrateur');
@@ -125,10 +125,10 @@ it('404s on an unknown user', function (): void {
         ->assertNotFound();
 });
 
-// ─── Avatar : retrait différé ────────────────────────────────────────────
+// ─── Avatar: deferred removal ────────────────────────────────────────────
 
-// Rien n'est supprimé avant l'enregistrement : on marque, on peut se raviser,
-// et le fichier ne part qu'au save.
+// Nothing is deleted before saving: you mark it, you may change your mind, and
+// the file only goes away on save.
 it('defers the avatar removal until save', function (): void {
     Storage::fake('local');
 
@@ -141,7 +141,7 @@ it('defers the avatar removal until save', function (): void {
         ->call('markRemoveAvatar')
         ->assertSet('userForm.removeAvatar', true);
 
-    // Marqué, mais le fichier est toujours là.
+    // Marked, but the file is still there.
     Storage::disk('local')->assertExists($path);
     expect($target->fresh()->avatar_path)->toBe($path);
 
@@ -169,7 +169,7 @@ it('lets the removal be cancelled before saving', function (): void {
     Storage::disk('local')->assertExists($path);
 });
 
-// ─── Fiche rôle ──────────────────────────────────────────────────────────
+// ─── Role page ───────────────────────────────────────────────────────────
 
 it('attaches permissions to a role from the dedicated page', function (): void {
     $role = Role::query()->where('name', 'user')->firstOrFail();
@@ -185,8 +185,8 @@ it('attaches permissions to a role from the dedicated page', function (): void {
         ->toBe(['update-user', 'view-user']);
 });
 
-// Un rôle canonique garde son nom, mais reste ouvert côté permissions :
-// c'est précisément ce que la page sert à régler.
+// A canonical role keeps its name but stays open on the permissions side: that
+// is precisely what the page is there to settle.
 it('keeps a canonical role editable on its permissions', function (): void {
     $role = Role::query()->where('name', 'guest')->firstOrFail();
 
@@ -219,8 +219,8 @@ it('toggles a whole permission group at once', function (): void {
         ->toContain('create-user');
 });
 
-// Un rôle vient du code, pas de l'écran : la fiche édite un rôle existant et
-// n'a rien à offrir sans identifiant.
+// A role comes from the code, not from the screen: the page edits an existing
+// role and has nothing to offer without an id.
 it('404s when the role page is mounted without an id', function (): void {
     Livewire::actingAs(makeEditPagesUser('root'))
         ->test(EditRole::class)
@@ -233,14 +233,14 @@ it('404s on an unknown role', function (): void {
         ->assertNotFound();
 });
 
-// ─── Groupement des permissions ──────────────────────────────────────────
+// ─── Permission grouping ─────────────────────────────────────────────────
 
 it('groups permissions by resource, macros first', function (): void {
     $groups = PermissionGroups::build(['view-user', 'manage-users', 'create-user', 'access-backend']);
 
     expect($groups)->toHaveKey('users')
         ->and($groups['users'])->toBe(['manage-users', 'create-user', 'view-user'])
-        // Ce qui ne nomme aucune ressource n'est pas perdu pour autant.
+        // Whatever names no resource is not lost for all that.
         ->and($groups)->toHaveKey('other')
         ->and($groups['other'])->toBe(['access-backend']);
 });
@@ -253,8 +253,8 @@ it('honours an explicit permission_groups config', function (): void {
     $groups = PermissionGroups::build(['view-user', 'create-user', 'manage-users', 'view-role']);
 
     expect($groups['manage-users'])->toBe(['manage-users', 'view-user', 'create-user'])
-        // La config ne mentionne pas view-role : il reste visible en « autres »
-        // plutôt que de disparaître de l'écran.
+        // The config does not mention view-role: it stays visible under "other"
+        // rather than vanishing from the screen.
         ->and($groups['other'])->toBe(['view-role']);
 });
 

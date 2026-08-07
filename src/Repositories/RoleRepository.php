@@ -12,9 +12,9 @@ use Spatie\Permission\Models\Role;
 class RoleRepository implements RoleRepositoryInterface
 {
     /**
-     * Colonnes autorisées au tri : le nom arrive de l'URL et part dans un
-     * `orderBy`. `permissions_count` est trié sur l'agrégat, pas sur une
-     * colonne de la table.
+     * Columns allowed for sorting: the name comes from the URL and ends up in
+     * an `orderBy`. `permissions_count` sorts on the aggregate, not on a
+     * column of the table.
      *
      * @var array<int, string>
      */
@@ -26,9 +26,9 @@ class RoleRepository implements RoleRepositoryInterface
         string $sort = 'name',
         string $direction = 'asc',
     ): LengthAwarePaginator {
-        // La liste n'affiche plus que le *nombre* de permissions : on compte
-        // côté SQL au lieu d'hydrater la collection complète pour chaque rôle
-        // (root en porte autant qu'il en existe).
+        // The list only shows the permission *count* now: count it in SQL
+        // rather than hydrating the full collection for every role (root
+        // carries as many as exist).
         $query = Role::query()->withCount('permissions');
 
         $search = trim((string) ($filters['search'] ?? ''));
@@ -41,7 +41,7 @@ class RoleRepository implements RoleRepositoryInterface
 
         return $query
             ->orderBy($sort, $direction)
-            // Départage les ex æquo pour que la pagination reste stable.
+            // Break ties so pagination stays stable.
             ->orderBy('id')
             ->paginate(max(1, $perPage));
     }

@@ -16,16 +16,16 @@
     <form wire:submit="save" class="my-6 w-full space-y-6">
         <x-arkhe::form-section :title="__('arkhe::arkhe.roles.sections.identity')">
             <x-arkhe::form-grid>
-                {{-- Sur un rôle canonique, ces deux champs sont figés : la variante
-                     « filled » les aplatit en gris, ce qui se voit avant même
-                     d'essayer de cliquer dedans. --}}
+                {{-- On a canonical role, these two fields are frozen: the "filled"
+                     variant flattens them to grey, which shows before you even
+                     try to click into them. --}}
                 @php($lockedVariant = $isCanonical ? 'filled' : 'outline')
 
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.roles.fields.name') }}</flux:label>
                     <flux:description>{{ __('arkhe::arkhe.roles.hints.name') }}</flux:description>
-                    {{-- `autofocus` seulement si le champ accepte la saisie :
-                         `autofocus="false"` reste un attribut présent en HTML. --}}
+                    {{-- `autofocus` only if the field accepts input:
+                         `autofocus="false"` is still a present HTML attribute. --}}
                     <flux:input
                         wire:model="roleForm.name"
                         :variant="$lockedVariant"
@@ -64,8 +64,8 @@
                         @php($allChecked = count(array_diff($groupPermissions, $roleForm->permissions)) === 0)
 
                         <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-                            {{-- Cocher une ressource entière d'un geste : attribuer
-                                 « tout users » ne devrait pas demander cinq clics. --}}
+                            {{-- Check a whole resource in one move: granting "all of
+                                 users" should not take five clicks. --}}
                             <div class="mb-3 flex items-center justify-between gap-2">
                                 <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                     {{ \Arkhe\Main\Support\PermissionGroups::label((string) $group) }}
@@ -81,9 +81,9 @@
                                 </flux:button>
                             </div>
 
-                            {{-- Les permissions restent ouvertes même sur un rôle
-                                 canonique : seul son nom est figé, son contenu est
-                                 précisément ce que cette page sert à régler. --}}
+                            {{-- Permissions stay open even on a canonical role: only
+                                 its name is frozen, its contents are precisely what
+                                 this page is here to tune. --}}
                             <div class="space-y-2">
                                 @foreach ($groupPermissions as $permission)
                                     <flux:checkbox

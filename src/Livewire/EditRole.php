@@ -18,28 +18,28 @@ use Livewire\Features\SupportRedirects\Redirector;
 use Spatie\Permission\Models\Role;
 
 /**
- * Fiche d'un rôle : c'est ici que se règlent ses permissions, cochées par
- * ressource — la liste, elle, n'en donne que le nombre.
+ * A role's detail page: this is where its permissions get set, ticked per
+ * resource — the list only gives their count.
  *
- * Un rôle ne se crée pas depuis le back-office : les rôles viennent de
- * `config('arkhe.roles')` et du seeder, parce que le code s'y réfère
- * (middlewares, `isArkheRoot()`, hiérarchie). En fabriquer un depuis l'écran
- * produirait une coquille que rien ne consulte. Modifier ses permissions, en
- * revanche, a un effet immédiat.
+ * Roles are not created from the back-office: they come from
+ * `config('arkhe.roles')` and the seeder, because the code refers to them
+ * (middlewares, `isArkheRoot()`, hierarchy). Building one from the screen
+ * would produce an empty shell nothing ever looks up. Changing its
+ * permissions, on the other hand, takes effect immediately.
  *
- * Un rôle canonique garde son nom et son guard verrouillés : le middleware et
- * les recherches de config s'appuient dessus. Ses permissions restent
- * modifiables, c'est tout l'objet de l'écran.
+ * A canonical role keeps its name and guard locked: the middleware and the
+ * config lookups rely on them. Its permissions stay editable — that is the
+ * whole point of this screen.
  */
 class EditRole extends Component
 {
     public RoleForm $roleForm;
 
-    // Verrouillées : ces deux-là disent *quel* rôle on édite et *s'il* est
-    // figé. Sans `#[Locked]`, le client les réécrit avant d'appeler `save()`
-    // — on ouvre la fiche d'un rôle anodin, on pivote vers un autre, et les
-    // `authorize()` n'y voient rien puisqu'ils ne portent que sur la
-    // permission, jamais sur la cible.
+    // Locked: these two say *which* role is being edited and *whether* it is
+    // frozen. Without `#[Locked]`, the client rewrites them before calling
+    // `save()` — you open a harmless role's page, pivot to another one, and
+    // the `authorize()` calls see nothing since they only cover the
+    // permission, never the target.
     #[Locked]
     public ?int $roleId = null;
 
@@ -47,9 +47,9 @@ class EditRole extends Component
     public bool $isCanonical = false;
 
     /**
-     * La signature garde `?int $role = null` pour ne pas casser un montage
-     * programmatique, mais un montage sans identifiant n'a plus de sens :
-     * il n'y a rien à créer ici.
+     * The signature keeps `?int $role = null` so a programmatic mount does
+     * not break, but mounting without an identifier no longer makes sense:
+     * there is nothing to create here.
      */
     public function mount(?int $role = null, ?RoleRepositoryInterface $roles = null, ?RoleService $service = null): void
     {
@@ -73,10 +73,10 @@ class EditRole extends Component
     }
 
     /**
-     * @deprecated depuis la 3.3 — un rôle ne se crée plus depuis le
-     *             back-office, cette méthode retourne toujours `false`. Elle
-     *             reste pour les vues publiées qui l'appellent encore ;
-     *             retrait à la prochaine majeure.
+     * @deprecated since 3.3 — roles are no longer created from the
+     *             back-office, so this method always returns `false`. It
+     *             stays for published views that still call it; removal in
+     *             the next major.
      */
     public function isCreating(): bool
     {
@@ -106,17 +106,16 @@ class EditRole extends Component
     }
 
     /**
-     * Coche (ou décoche) toutes les permissions d'une ressource d'un geste :
-     * attribuer « tout users » à un rôle ne devrait pas demander cinq clics.
+     * Ticks (or unticks) every permission of a resource in one gesture:
+     * granting "all of users" to a role should not take five clicks.
      *
      * @param  array<int, string>  $permissions
      */
     public function toggleGroup(array $permissions, bool $checked): void
     {
-        // Méthode publique, donc appelable directement avec n'importe quel
-        // tableau : elle doit porter sa propre garde. L'écriture reste filtrée
-        // par `assertCanGrant()`, mais rien ne justifie de laisser muter le
-        // formulaire à qui n'a pas le droit d'enregistrer.
+        // Public method, so callable directly with any array: it has to carry
+        // its own guard. Writes stay filtered by `assertCanGrant()`, but
+        // nothing justifies letting someone who cannot save mutate the form.
         $this->authorize('update-role');
 
         $current = array_flip($this->roleForm->permissions);
@@ -133,7 +132,7 @@ class EditRole extends Component
     }
 
     // ─── Extensibility hooks ─────────────────────────────────────────────
-    // Surchargez-les dans une sous-classe déclarée via
+    // Override these in a subclass declared via
     // `config('arkhe.components.edit-role')`.
 
     /**
@@ -146,10 +145,10 @@ class EditRole extends Component
     }
 
     /**
-     * @deprecated depuis la 3.3 — un rôle ne se crée plus depuis le
-     *             back-office, ce hook n'est plus appelé. Conservé pour ne pas
-     *             casser le `parent::` d'une sous-classe ; retrait à la
-     *             prochaine majeure.
+     * @deprecated since 3.3 — roles are no longer created from the
+     *             back-office, so this hook is never called. Kept so a
+     *             subclass's `parent::` does not break; removal in the next
+     *             major.
      *
      * @param  array<string, mixed>  $payload
      */

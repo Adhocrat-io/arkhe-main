@@ -24,9 +24,9 @@ class Cookies extends Component
     }
 
     /**
-     * Rend une durée en minutes lisible : « 525600 min » ne dit rien à qui
-     * vient auditer ce que le site dépose, « 1 an » se comprend d'un coup.
-     * Zéro vaut « le temps de la session », `null` une durée non déclarée.
+     * Renders a duration in minutes readably: "525600 min" says nothing to
+     * someone auditing what the site drops, "1 year" is understood at once.
+     * Zero means "for the session", `null` an undeclared duration.
      */
     private function humanDuration(?int $minutes): string
     {
@@ -38,8 +38,8 @@ class Cookies extends Component
             return __('arkhe::arkhe.cookies.session');
         }
 
-        // Les paliers sont approximatifs à dessein : on situe l'ordre de
-        // grandeur, on ne compte pas les jours bissextiles.
+        // The steps are approximate on purpose: we give the order of
+        // magnitude, we do not count leap days.
         foreach ([
             ['unit' => 'years', 'minutes' => 525600],
             ['unit' => 'months', 'minutes' => 43200],
@@ -57,11 +57,11 @@ class Cookies extends Component
     }
 
     /**
-     * Les descriptions du registre sont des clés de traduction
-     * (`cookieConsent::cookies.defaults.session`). Elles ne résolvent que si
-     * l'app a publié les langues du paquet — sinon `__()` rend la clé
-     * elle-même, qui s'affichait telle quelle à l'écran. On préfère ne rien
-     * dire plutôt que de montrer une clé.
+     * The registrar's descriptions are translation keys
+     * (`cookieConsent::cookies.defaults.session`). They only resolve if the
+     * app published the package's languages — otherwise `__()` returns the
+     * key itself, which showed up on screen as-is. We would rather say
+     * nothing than display a key.
      */
     private function resolveDescription(mixed $description): string
     {

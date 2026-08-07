@@ -1,6 +1,6 @@
 <section class="mx-auto w-full max-w-5xl">
-    {{-- Pas de flèche de retour ici : c'est une page de réglages, on n'y
-         arrive pas depuis une liste. --}}
+    {{-- No back arrow here: this is a settings page, you do not reach it from
+         a list. --}}
     <x-arkhe::form-header
         :title="__('arkhe::arkhe.site_seo.title')"
         :description="__('arkhe::arkhe.site_seo.intro')"

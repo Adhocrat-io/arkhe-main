@@ -1,12 +1,12 @@
 @props([
-    // [['label' => 'Publiés', 'value' => 3, 'color' => 'green'], …]
-    // Couleurs admises : zinc (neutre), green, amber, red, blue.
+    // [['label' => 'Published', 'value' => 3, 'color' => 'green'], …]
+    // Allowed colors: zinc (neutral), green, amber, red, blue.
     'stats' => [],
 ])
 
 @php
-    // Aplat teinté et bordure assortie : la couleur du statut porte, sans
-    // l'encombrement des cartes.
+    // Tinted fill and matching border: the status color carries, without
+    // the clutter of cards.
     $badgeColors = [
         'zinc' => 'bg-gray-100/50 border-gray-200 dark:bg-zinc-800 dark:border-zinc-700',
         'green' => 'bg-green-100/50 border-green-200 dark:bg-green-900/20 dark:border-green-800',
@@ -32,13 +32,13 @@
     ];
 @endphp
 
-{{-- Compteurs de tête : une ligne de badges teintés, plutôt que des cartes
-     pleines qui pèsent trop pour quelques nombres. --}}
+{{-- Header counters: a row of tinted badges, rather than full cards that
+     weigh too much for a handful of numbers. --}}
 <div class="mb-6 flex flex-wrap items-center gap-2 text-sm">
     @foreach ($stats as $stat)
         @php $color = $stat['color'] ?? 'zinc'; @endphp
 
-        {{-- La valeur passe devant le libellé : c'est elle qu'on vient lire. --}}
+        {{-- The value comes before the label: it is what people read for. --}}
         <div class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 {{ $badgeColors[$color] ?? $badgeColors['zinc'] }}">
             <span class="font-semibold tabular-nums {{ $valueColors[$color] ?? $valueColors['zinc'] }}">
                 {{ number_format((float) $stat['value'], 0, ',', ' ') }}

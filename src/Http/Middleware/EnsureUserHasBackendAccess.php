@@ -62,16 +62,16 @@ class EnsureUserHasBackendAccess
                 continue;
             }
 
-            // Clé absente de `arkhe.roles` : on la garde telle quelle, c'est
-            // le chemin de compatibilité V2 où `admin.roles` liste des noms de
-            // rôles bruts. Le retirer priverait ces apps d'accès au back-office
-            // à la simple montée de version, sans qu'elles aient rien demandé.
+            // Key missing from `arkhe.roles`: keep it as-is. This is the V2
+            // compatibility path, where `admin.roles` lists raw role names.
+            // Dropping it would lock those apps out of the backend on a mere
+            // version bump, without them asking for anything.
             //
-            // Le risque théorique — créer un rôle homonyme d'une clé orpheline
-            // pour entrer sans `access-backend` — suppose de pouvoir créer un
-            // rôle, ce que l'interface ne permet plus et ce que
-            // `RoleService::create()` refuse à qui ne détient pas déjà les
-            // permissions en jeu.
+            // The theoretical risk — creating a role named after an orphan key
+            // to get in without `access-backend` — requires being able to
+            // create a role, which the interface no longer allows and which
+            // `RoleService::create()` refuses to anyone not already holding
+            // the permissions at stake.
             $resolved[] = $key;
         }
 

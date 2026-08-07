@@ -52,15 +52,15 @@ it('renders the cookies admin viewer for a root user', function (): void {
     Livewire::actingAs($root)
         ->test(Cookies::class)
         ->assertStatus(200)
-        // Un cookie réellement listé : c'est ce que l'écran doit montrer à qui
-        // vient auditer ce que le site dépose. Le cookie de session porte le
-        // nom configuré par l'app, qui varie ; `XSRF-TOKEN`, lui, est fixe.
+        // An actually listed cookie: this is what the screen must show to
+        // whoever comes to audit what the site drops. The session cookie takes
+        // the name the app configures, which varies; `XSRF-TOKEN` is fixed.
         ->assertSee('XSRF-TOKEN');
 });
 
-// Les durées du registre sont en minutes : « 525600 min » ne dit rien à qui
-// vient auditer, on les rend lisibles. L'assertion porte sur la valeur brute
-// qui doit disparaître, pas sur le libellé — celui-ci dépend de la langue.
+// The registrar's durations are in minutes: "525600 min" tells an auditor
+// nothing, so we make them readable. The assertion targets the raw value that
+// must disappear, not the label — that one depends on the language.
 it('renders cookie durations in plain language', function (): void {
     $root = makeCookieUser('root');
 
@@ -70,8 +70,8 @@ it('renders cookie durations in plain language', function (): void {
         ->assertDontSee('525600');
 });
 
-// Les descriptions du registre sont des clés de traduction que le paquet ne
-// publie pas : elles s'affichaient brutes à l'écran.
+// The registrar's descriptions are translation keys the package does not ship:
+// they used to render raw on screen.
 it('never renders an unresolved translation key', function (): void {
     $root = makeCookieUser('root');
 

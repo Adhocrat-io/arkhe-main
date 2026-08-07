@@ -3,10 +3,10 @@
     'description' => null,
 ])
 
-{{-- Section de formulaire : le padding est porté par l'en-tête et le corps,
-     pour que le bandeau du titre file jusqu'aux bords. Grouper les champs par
-     intention (identité, sécurité, accès) vaut mieux qu'une longue colonne :
-     on retrouve ce qu'on cherche sans tout relire. --}}
+{{-- Form section: the padding is carried by the header and the body, so the
+     title band runs to the edges. Grouping fields by intent (identity,
+     security, access) beats one long column: you find what you are after
+     without rereading everything. --}}
 <div {{ $attributes->class(['overflow-hidden rounded-lg border border-gray-200 dark:border-zinc-700']) }}>
     <div class="border-b border-gray-200 bg-gray-50 px-6 py-3 dark:border-zinc-700 dark:bg-zinc-800">
         <h3 class="text-lg font-medium">{{ $title }}</h3>

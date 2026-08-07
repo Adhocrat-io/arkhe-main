@@ -2,8 +2,8 @@
     'targets' => 'search, roleFilter, sortBy, gotoPage, previousPage, nextPage, resetFilters',
 ])
 
-{{-- Carte qui porte un tableau de liste : le contenu s'estompe et un
-     indicateur prend le relais pendant que la requête tourne. --}}
+{{-- Card that carries a list table: the content fades and a spinner takes
+     over while the query runs. --}}
 <div
     class="relative min-w-0 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
     wire:loading.class.delay="opacity-60 pointer-events-none"

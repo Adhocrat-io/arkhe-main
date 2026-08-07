@@ -82,8 +82,8 @@ class UserService
             $user->password = $this->hasher->make((string) $data['password']);
         }
 
-        // Un nouveau fichier l'emporte sur un retrait demandé : on ne supprime
-        // pas ce qu'on vient de remplacer.
+        // A new file wins over a requested removal: we do not delete what we
+        // have just replaced.
         if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
             $this->deleteAvatar($user->avatar_path ?? null);
             $user->avatar_path = $this->storeAvatar($data['avatar']);
@@ -173,15 +173,15 @@ class UserService
     }
 
     /**
-     * On n'accorde qu'une permission qu'on détient soi-même.
+     * You only grant a permission you hold yourself.
      *
-     * Le rang protégeait déjà les rôles, mais rien ne gardait les permissions
-     * attribuées directement : `create-user` suffisait à fabriquer un compte
-     * porteur de `manage-roles`, puis à s'y connecter. La hiérarchie était
-     * contournée par la porte d'à côté.
+     * Rank already protected the roles, but nothing guarded permissions
+     * assigned directly: `create-user` was enough to build an account carrying
+     * `manage-roles`, then log into it. The hierarchy was bypassed through the
+     * door next to it.
      *
-     * Seul le delta est vérifié : retirer une permission qu'on n'a pas reste
-     * permis, et réenregistrer un compte sans y toucher ne demande rien.
+     * Only the delta is checked: removing a permission you do not hold stays
+     * allowed, and re-saving an account without touching it asks for nothing.
      *
      * @param  array<int, string>  $permissions
      *

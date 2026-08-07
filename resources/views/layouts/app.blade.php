@@ -35,9 +35,9 @@
     {{ $slot }}
 </flux:main>
 
-{{-- Les pages Arkhe confirment leurs actions par un toast. Les layouts des
-     starter kits en rendent un de leur côté ; celui-ci sert aux apps qui
-     s'appuient sur le layout fourni par le paquet. --}}
+{{-- Arkhe pages confirm their actions with a toast. Starter kit layouts render
+     one of their own; this is for apps relying on the layout the package
+     ships. --}}
 <flux:toast.group>
     <flux:toast />
 </flux:toast.group>

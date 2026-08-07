@@ -33,9 +33,9 @@
         </x-slot:actions>
     </x-arkhe::form-header>
 
-    {{-- La génération automatique coupée n'est pas une erreur : c'est un choix
-         de configuration, que le bouton ci-dessus contourne à la demande. On
-         le dit sans alarmer. --}}
+    {{-- Automatic generation being off is not an error: it is a configuration
+         choice, which the button above works around on demand. We say so
+         without raising alarm. --}}
     @if (! $enabled)
         <flux:callout variant="warning" icon="exclamation-triangle" class="mb-6">
             {{ __('arkhe::arkhe.sitemap.disabled') }}
@@ -59,9 +59,9 @@
             </x-arkhe::readonly-field>
         </x-arkhe::form-section>
 
-        {{-- Ces trois valeurs viennent de la configuration : on les donne à
-             lire, pas à modifier. Les changer se fait dans le `.env`, que
-             l'écran rappelle en description. --}}
+        {{-- These three values come from the configuration: we give them to
+             read, not to edit. Changing them happens in the `.env`, which the
+             screen recalls in the description. --}}
         <x-arkhe::form-section
             :title="__('arkhe::arkhe.sitemap.sections.settings')"
             :description="__('arkhe::arkhe.sitemap.sections.settings_hint')"

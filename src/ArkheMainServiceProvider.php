@@ -133,8 +133,8 @@ class ArkheMainServiceProvider extends PackageServiceProvider
                 active: 'arkhe.users.*',
                 priority: 10,
             )
-            // Les permissions se gèrent depuis la page des rôles : une seule
-            // entrée couvre les deux (la route permissions redirige ici).
+            // Permissions are managed from the roles page: a single entry
+            // covers both (the permissions route redirects here).
             ->item(
                 key: 'roles',
                 label: static fn (): string => __('arkhe::arkhe.roles.title'),

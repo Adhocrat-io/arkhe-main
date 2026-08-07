@@ -36,16 +36,31 @@ return [
 
     'sitemap' => [
         'title' => 'Sitemap',
-        'intro' => "Le sitemap est régénéré automatiquement selon la planification ci-dessous. Utilisez « Régénérer maintenant » pour lancer un job immédiat (mis en file via la queue de l'application).",
+        'intro' => 'Le fichier qui liste vos pages aux moteurs de recherche. Il se régénère seul, et à la demande.',
         'regenerate' => 'Régénérer maintenant',
-        'dispatched' => 'Job de régénération envoyé sur la queue. Le sitemap sera mis à jour sous peu.',
-        'disabled' => 'La génération automatique est désactivée (ARKHE_SITEMAP_ENABLED=false). Le bouton ci-dessus reste fonctionnel.',
+        'dispatched' => 'Régénération lancée. Le sitemap sera à jour sous peu.',
+        'disabled' => 'La génération automatique est désactivée (ARKHE_SITEMAP_ENABLED=false). Le bouton « Régénérer maintenant » reste utilisable.',
         'never_generated' => 'Jamais généré.',
+        'status' => [
+            'scheduled' => 'Régénération automatique',
+            'manual' => 'Manuel seulement',
+        ],
+        'sections' => [
+            'state' => 'État',
+            'state_hint' => 'Où en est le fichier publié.',
+            'settings' => 'Réglages',
+            'settings_hint' => 'Définis dans config/arkhe.php et le fichier .env : cet écran les donne à lire, pas à modifier.',
+        ],
         'fields' => [
-            'url' => 'URL crawlée',
+            'url' => 'URL parcourue',
             'path' => 'Fichier de sortie',
-            'schedule' => 'Planification (cron)',
+            'schedule' => 'Planification',
             'last_generated' => 'Dernière génération',
+        ],
+        'hints' => [
+            'url' => 'Le point de départ du parcours.',
+            'path' => 'Où le fichier est écrit.',
+            'schedule' => 'Au format cron.',
         ],
     ],
 

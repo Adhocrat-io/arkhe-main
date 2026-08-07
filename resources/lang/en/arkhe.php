@@ -36,16 +36,31 @@ return [
 
     'sitemap' => [
         'title' => 'Sitemap',
-        'intro' => "The sitemap is regenerated automatically on the schedule below. Use \"Regenerate now\" to dispatch an immediate job (queued through the app's default queue).",
+        'intro' => 'The file that lists your pages to search engines. It regenerates on its own, and on demand.',
         'regenerate' => 'Regenerate now',
-        'dispatched' => 'Regeneration job dispatched. The sitemap will be updated shortly.',
-        'disabled' => 'Automatic generation is disabled (ARKHE_SITEMAP_ENABLED=false). The button above still works.',
+        'dispatched' => 'Regeneration started. The sitemap will be up to date shortly.',
+        'disabled' => 'Automatic generation is disabled (ARKHE_SITEMAP_ENABLED=false). The "Regenerate now" button still works.',
         'never_generated' => 'Never generated.',
+        'status' => [
+            'scheduled' => 'Automatic regeneration',
+            'manual' => 'Manual only',
+        ],
+        'sections' => [
+            'state' => 'State',
+            'state_hint' => 'Where the published file stands.',
+            'settings' => 'Settings',
+            'settings_hint' => 'Defined in config/arkhe.php and the .env file: this screen shows them, it does not change them.',
+        ],
         'fields' => [
             'url' => 'Crawled URL',
             'path' => 'Output file',
-            'schedule' => 'Schedule (cron)',
+            'schedule' => 'Schedule',
             'last_generated' => 'Last generated',
+        ],
+        'hints' => [
+            'url' => 'Where the crawl starts.',
+            'path' => 'Where the file is written.',
+            'schedule' => 'In cron format.',
         ],
     ],
 

@@ -14,7 +14,7 @@
     <x-arkhe::stat-bar :stats="[
         ['label' => __('arkhe::arkhe.roles.stats.roles'), 'value' => $stats['roles'], 'color' => 'zinc'],
         ['label' => __('arkhe::arkhe.roles.stats.permissions'), 'value' => $stats['permissions'], 'color' => 'blue'],
-        ['label' => __('arkhe::arkhe.roles.stats.canonical'), 'value' => $stats['canonical'], 'color' => 'amber'],
+        ['label' => __('arkhe::arkhe.roles.stats.custom'), 'value' => $stats['custom'], 'color' => 'amber'],
     ]" />
 
     {{-- Filtres --}}
@@ -72,25 +72,20 @@
                         @php($canonical = $canonicalResolver($role->name))
 
                         <tr wire:key="role-{{ $role->id }}" class="{{ $loop->odd ? 'bg-white dark:bg-zinc-800' : 'bg-gray-50 dark:bg-zinc-900' }} transition-colors hover:bg-blue-50 dark:hover:bg-zinc-700">
+                            {{-- Pas de badge « canonique » ici : sur une installation
+                                 par défaut tous les rôles le sont, il ne distinguerait
+                                 rien. Ce que le statut implique se lit là où il compte —
+                                 la suppression absente du menu, les champs verrouillés
+                                 dans le flyout, qui porte l'explication. --}}
                             <td class="px-6 py-4 text-sm 2xl:text-base">
-                                <div class="flex min-w-0 items-center gap-2">
-                                    <button
-                                        type="button"
-                                        wire:click="openEdit({{ $role->id }})"
-                                        title="{{ $role->name }}"
-                                        class="cursor-pointer font-medium text-gray-900 hover:underline dark:text-gray-100"
-                                    >
-                                        {{ $role->name }}
-                                    </button>
-
-                                    {{-- Un rôle canonique se signale : son nom est immuable
-                                         et la suppression lui est refusée. --}}
-                                    @if ($canonical)
-                                        <flux:badge size="sm" color="amber" icon="lock-closed">
-                                            {{ __('arkhe::arkhe.roles.canonical') }}
-                                        </flux:badge>
-                                    @endif
-                                </div>
+                                <button
+                                    type="button"
+                                    wire:click="openEdit({{ $role->id }})"
+                                    title="{{ $role->name }}"
+                                    class="cursor-pointer font-medium text-gray-900 hover:underline dark:text-gray-100"
+                                >
+                                    {{ $role->name }}
+                                </button>
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">

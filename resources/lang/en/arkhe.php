@@ -132,7 +132,6 @@ return [
         'empty_hint' => 'Create your first role to get started.',
         'empty_filtered' => 'No role matches this search.',
         'search_placeholder' => 'Role name…',
-        'canonical' => 'System',
         'canonical_hint' => 'This role is canonical to Arkhe: its name is immutable, but its permissions are editable.',
         'delete_title' => 'Delete this role',
         'delete_confirm' => 'Users carrying this role will lose it. Continue?',
@@ -145,7 +144,7 @@ return [
         'stats' => [
             'roles' => 'Roles',
             'permissions' => 'Permissions',
-            'canonical' => 'Canonical',
+            'custom' => 'Custom',
         ],
         'columns' => [
             'name' => 'Label',

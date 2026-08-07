@@ -132,7 +132,6 @@ return [
         'empty_hint' => 'Créez votre premier rôle pour commencer.',
         'empty_filtered' => 'Aucun rôle ne correspond à cette recherche.',
         'search_placeholder' => 'Nom du rôle…',
-        'canonical' => 'Système',
         'canonical_hint' => 'Ce rôle est canonique à Arkhe : son nom est immuable, mais ses permissions sont modifiables.',
         'delete_title' => 'Supprimer ce rôle',
         'delete_confirm' => 'Les utilisateurs portant ce rôle le perdront. Continuer ?',
@@ -145,7 +144,7 @@ return [
         'stats' => [
             'roles' => 'Rôles',
             'permissions' => 'Permissions',
-            'canonical' => 'Canoniques',
+            'custom' => 'Personnalisés',
         ],
         'columns' => [
             'name' => 'Libellé',

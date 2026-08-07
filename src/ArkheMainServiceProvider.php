@@ -133,23 +133,16 @@ class ArkheMainServiceProvider extends PackageServiceProvider
                 active: 'arkhe.users.*',
                 priority: 10,
             )
+            // Les permissions se gèrent depuis la page des rôles : une seule
+            // entrée couvre les deux (la route permissions redirige ici).
             ->item(
                 key: 'roles',
                 label: static fn (): string => __('arkhe::arkhe.roles.title'),
                 icon: 'key',
                 route: 'arkhe.roles.index',
-                active: 'arkhe.roles.*',
+                active: static fn (): bool => request()->routeIs('arkhe.roles.*', 'arkhe.permissions.*'),
                 can: $rootGate,
                 priority: 20,
-            )
-            ->item(
-                key: 'permissions',
-                label: static fn (): string => __('arkhe::arkhe.permissions.title'),
-                icon: 'shield-check',
-                route: 'arkhe.permissions.index',
-                active: 'arkhe.permissions.*',
-                can: $rootGate,
-                priority: 30,
             );
 
         ArkheNav::section(

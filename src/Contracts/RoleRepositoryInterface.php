@@ -12,7 +12,12 @@ interface RoleRepositoryInterface
     /**
      * @param  array{search?: string}  $filters
      */
-    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator;
+    public function paginate(
+        array $filters = [],
+        int $perPage = 15,
+        string $sort = 'name',
+        string $direction = 'asc',
+    ): LengthAwarePaginator;
 
     public function find(int $id): ?Role;
 

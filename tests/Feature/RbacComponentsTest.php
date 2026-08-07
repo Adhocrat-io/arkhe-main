@@ -120,6 +120,21 @@ it('blocks administrateur from /administration/permissions', function (): void {
         ->assertForbidden();
 });
 
+// Les permissions se gèrent depuis la page des rôles : l'ancienne URL survit
+// en redirigeant, pour ne pas casser les liens des apps consommatrices.
+it('redirects the legacy permissions page to the roles page', function (): void {
+    $root = makeRbacUser('root');
+
+    $this->actingAs($root)
+        ->get('/administration/permissions')
+        ->assertRedirect('/administration/roles');
+});
+
+it('keeps the arkhe.permissions.index route name resolvable', function (): void {
+    expect(route('arkhe.permissions.index', absolute: false))
+        ->toBe('/administration/permissions');
+});
+
 it('creates a permission through the ListPermissions flow', function (): void {
     $root = makeRbacUser('root');
 

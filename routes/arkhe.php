@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Arkhe\Main\Livewire\Dashboard;
-use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
 use Arkhe\Main\Livewire\Cookies;
@@ -37,7 +36,14 @@ Route::middleware($middleware)
         // Roles + permissions + site SEO are restricted to the `root` role.
         Route::middleware('arkhe.root')->group(function () use ($component): void {
             Route::get('/roles',       $component('list-roles', ListRoles::class))->name('roles.index');
-            Route::get('/permissions', $component('list-permissions', ListPermissions::class))->name('permissions.index');
+
+            // Les permissions se gèrent depuis la page des rôles depuis la 3.3 :
+            // la route survit en redirigeant, pour ne pas casser les
+            // `route('arkhe.permissions.index')` des apps consommatrices.
+            // À retirer à la prochaine majeure (cf. UPGRADE.md).
+            Route::redirect('/permissions', '/'.trim((string) config('arkhe.admin.prefix', 'administration'), '/').'/roles')
+                ->name('permissions.index');
+
             Route::get('/seo',         $component('site-seo',   SiteSeo::class))->name('site-seo.edit');
             Route::get('/sitemap',     $component('sitemap',    Sitemap::class))->name('sitemap.edit');
             Route::get('/cookies',     $component('cookies',    Cookies::class))->name('cookies.index');

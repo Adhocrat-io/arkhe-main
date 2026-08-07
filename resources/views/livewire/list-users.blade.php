@@ -121,12 +121,19 @@
                             </td>
 
                             <td class="px-6 py-4">
+                                {{-- `@foreach` + test explicite plutôt qu'un `@forelse` :
+                                     imbriqué dans le `@forelse` des lignes, ce dernier
+                                     déséquilibre la compilation Blade des composants. --}}
+                                @php($userRoles = $user->getRoleNames() ?? [])
+
                                 <div class="flex flex-wrap gap-1">
-                                    @forelse ($user->getRoleNames() ?? [] as $role)
-                                        <flux:badge size="sm">{{ $role }}</flux:badge>
-                                    @empty
+                                    @if (count($userRoles) > 0)
+                                        @foreach ($userRoles as $role)
+                                            <flux:badge size="sm">{{ $role }}</flux:badge>
+                                        @endforeach
+                                    @else
                                         <span class="text-sm text-gray-400 dark:text-gray-500">—</span>
-                                    @endforelse
+                                    @endif
                                 </div>
                             </td>
 
@@ -138,6 +145,10 @@
                                 <flux:dropdown align="end" wire:key="dropdown-{{ $user->getKey() }}">
                                     <flux:button icon="ellipsis-vertical"></flux:button>
 
+                                    {{-- Supprimer n'est proposé qu'à qui peut gérer la
+                                         cible. Le `@if` reste hors du slot `flux:menu` :
+                                         imbriqué dedans, Blade seul (sans livewire/blaze)
+                                         compile un `endif` orphelin. --}}
                                     <flux:menu>
                                         <flux:menu.item
                                             icon="pencil-square"
@@ -148,30 +159,27 @@
                                             {{ __('arkhe::arkhe.actions.edit') }}
                                         </flux:menu.item>
 
-                                        @if ($canManage)
-                                            <flux:menu.separator />
-
-                                            <flux:menu.item
-                                                variant="danger"
-                                                icon="trash"
-                                                wire:click="confirmDelete({{ $user->getKey() }})"
-                                                class="cursor-pointer"
-                                            >
-                                                {{ __('arkhe::arkhe.actions.delete') }}
-                                            </flux:menu.item>
-                                        @endif
+                                        <flux:menu.item
+                                            variant="danger"
+                                            icon="trash"
+                                            wire:click="confirmDelete({{ $user->getKey() }})"
+                                            :disabled="! $canManage"
+                                            class="cursor-pointer"
+                                        >
+                                            {{ __('arkhe::arkhe.actions.delete') }}
+                                        </flux:menu.item>
                                     </flux:menu>
                                 </flux:dropdown>
                             </td>
                         </tr>
                     @empty
+                        @php($emptyHint = $this->hasActiveFilters() ? __('arkhe::arkhe.users.empty_filtered') : __('arkhe::arkhe.users.empty_hint'))
+
                         <x-arkhe::table-empty-state
                             colspan="5"
                             icon="users"
                             :title="__('arkhe::arkhe.users.empty')"
-                            :description="$this->hasActiveFilters()
-                                ? __('arkhe::arkhe.users.empty_filtered')
-                                : __('arkhe::arkhe.users.empty_hint')"
+                            :description="$emptyHint"
                         >
                             @if ($this->hasActiveFilters())
                                 <flux:button variant="outline" icon="arrow-path" wire:click="resetFilters" type="button" size="sm">

@@ -6,7 +6,6 @@ namespace Arkhe\Main\Tests;
 
 use Arkhe\Main\ArkheMainServiceProvider;
 use Arkhe\Main\Tests\Stubs\User;
-use Flux\FluxServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
@@ -30,10 +29,6 @@ abstract class TestCase extends Orchestra
     {
         return [
             LivewireServiceProvider::class,
-            // Les pages Livewire confirment leurs actions par `Flux::toast()`,
-            // qui résout le service `flux` : sans ce provider, toute action
-            // qui notifie échoue en test alors qu'elle passe en application.
-            FluxServiceProvider::class,
             PermissionServiceProvider::class,
             \RalphJSmit\Laravel\SEO\LaravelSEOServiceProvider::class,
             \Whitecube\LaravelCookieConsent\ServiceProvider::class,
@@ -65,6 +60,15 @@ abstract class TestCase extends Orchestra
         ]);
 
         $app['config']->set('arkhe.avatar_disk', 'local');
+
+        // Les pages Livewire confirment leurs actions par `Flux::toast()`, qui
+        // résout le service `flux`. Testbench ne découvre pas le provider de
+        // Flux, et l'ajouter à getPackageProviders() l'enregistrerait deux fois
+        // (ses directives Blade compilent alors des composants déséquilibrés).
+        // On se contente donc de lier le service dont la façade a besoin.
+        $app->bind('flux', fn () => new class {
+            public function __call(string $method, array $arguments): void {}
+        });
 
         // A stub login route so the auth middleware can redirect anonymous
         // visitors during HTTP tests instead of throwing RouteNotFoundException.

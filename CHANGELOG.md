@@ -4,6 +4,29 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+### Changed
+- **Refonte des pages de liste.** `list-users` et `list-roles` adoptent le
+  langage visuel des back-offices maison : en-tête titre + description,
+  compteurs de tête, table encadrée à lignes zébrées avec en-têtes triables
+  et overlay pendant les requêtes, états vides qui distinguent « rien à
+  afficher » de « rien qui corresponde aux filtres », et toasts sur chaque
+  action. Six composants Blade partagés (`x-arkhe::page-header`, `stat-bar`,
+  `list-table-wrapper`, `sortable-header`, `table-empty-state`,
+  `confirm-modal`) portent ce langage et sont réutilisables par les paquets
+  satellites.
+- **Rôles et permissions réunis sur une page.** `/administration/roles`
+  devient « Rôles & permissions » : chaque ligne donne le libellé du rôle,
+  son identifiant et le nombre de permissions qu'il porte. Les filtres et le
+  tri sont persistés dans l'URL sur les deux listes.
+
+### Deprecated
+- La page de liste des permissions. `/administration/permissions` redirige
+  désormais vers `/administration/roles` ; le nom de route
+  `arkhe.permissions.index` et le composant `Arkhe\Main\Livewire\ListPermissions`
+  restent en place pour ne rien casser, mais seront retirés à la prochaine
+  majeure. L'entrée « Permissions » disparaît de la barre latérale, l'entrée
+  « Rôles » couvrant les deux.
+
 ### Added
 - `arkhe:main:upgrade-from-v2` now rewrites the V2 `roles` / `permissions`
   config layout into the V3 one: `roles` becomes a key => name map,

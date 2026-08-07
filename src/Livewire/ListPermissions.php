@@ -11,6 +11,15 @@ use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @deprecated depuis la 3.3 — les permissions se consultent et s'attachent
+ *             depuis la page des rôles ({@see ListRoles}), qui les porte
+ *             désormais toutes. Le composant reste enregistré sous l'alias
+ *             `arkhe.list-permissions` (et surchargeable via
+ *             `config('arkhe.components.list-permissions')`) pour les apps
+ *             qui le montent sur une route à elles ; la route du paquet,
+ *             elle, redirige vers les rôles. Retrait à la prochaine majeure.
+ */
 class ListPermissions extends Component
 {
     use WithPagination;

@@ -235,6 +235,7 @@ return [
         'in_progress' => 'In progress…',
         'search' => 'Search',
         'back' => 'Back',
+        'back_to_list' => 'Back to the list',
         'check_all' => 'Check all',
         'uncheck_all' => 'Uncheck all',
     ],

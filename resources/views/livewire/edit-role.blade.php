@@ -3,7 +3,6 @@
         :title="$roleForm->name"
         :description="$isCanonical ? __('arkhe::arkhe.roles.canonical_hint') : __('arkhe::arkhe.roles.edit_hint')"
         :back-route="route('arkhe.roles.index')"
-        :back-label="__('arkhe::arkhe.roles.title')"
     >
         <x-slot:badges>
             @if ($isCanonical)

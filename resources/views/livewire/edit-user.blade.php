@@ -5,7 +5,6 @@
         :title="$creating ? __('arkhe::arkhe.users.create') : __('arkhe::arkhe.users.edit')"
         :description="$creating ? __('arkhe::arkhe.users.create_hint') : __('arkhe::arkhe.users.edit_hint')"
         :back-route="route('arkhe.users.index')"
-        :back-label="__('arkhe::arkhe.users.title')"
     />
 
     <form wire:submit="save" class="my-6 w-full space-y-6" enctype="multipart/form-data">

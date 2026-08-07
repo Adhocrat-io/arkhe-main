@@ -4,7 +4,7 @@
         :description="__('arkhe::arkhe.users.description')"
     >
         <x-slot:actions>
-            <flux:button variant="primary" icon="plus" :href="route('arkhe.users.create')" wire:navigate>
+            <flux:button variant="filled" icon="plus" :href="route('arkhe.users.create')" wire:navigate>
                 <span class="font-semibold uppercase">{{ __('arkhe::arkhe.users.create') }}</span>
             </flux:button>
         </x-slot:actions>

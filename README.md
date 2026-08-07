@@ -122,34 +122,19 @@ In `config/arkhe.php`:
 
 Arkhe pages will render inside your existing chrome (sidebar, topbar, your CSS).
 
-### 2. Take over the dashboard route (opt-in)
+### 2. Keep your own dashboard
 
-Comment out the dashboard route in your `routes/web.php` and set the path:
+Arkhe ships no dashboard. The backend's landing page belongs to your app — the
+starter kits provide one, ready for the figures that matter to you, and the
+package has no business replacing it with its own user counters. Those live
+where they belong: at the top of the users list.
 
-```dotenv
-ARKHE_DASHBOARD_ROUTE=administration/dashboard
-```
-
-Arkhe mounts a minimal users-by-role dashboard at the path you choose. Keep the env var unset and your own dashboard remains untouched.
-
-**Login redirect.** The Laravel starter kits redirect to `route('dashboard', absolute: false)` after authentication. Two ways to point that at Arkhe:
-
-- **A — re-use the `dashboard` route name** (zero patch on your starter):
-
-  ```dotenv
-  ARKHE_DASHBOARD_ROUTE=administration/dashboard
-  ARKHE_DASHBOARD_ROUTE_NAME=dashboard
-  ```
-
-  `route('dashboard')` now resolves to `/administration/dashboard`, the after-login redirect just works.
-
-- **B — keep `arkhe.dashboard` and patch the starter's login**: open the login Livewire/Volt component and replace `route('dashboard', absolute: false)` with `route('arkhe.dashboard', absolute: false)`. Pick this when another part of your app still needs `dashboard` to mean something else.
-
-> **Fortify users** (Laravel 12 Livewire starter kit included): the starter's login form posts to Fortify, which redirects to the literal value of `config('fortify.home')` after auth — not via the named `dashboard` route. Arkhe detects Fortify automatically and rewrites that value to your `ARKHE_DASHBOARD_ROUTE` at boot, so neither A nor B is needed for the form submission to land on the right page. Set `ARKHE_OVERRIDE_FORTIFY_REDIRECT=false` to opt out.
+Nothing to configure. `route('dashboard')` keeps pointing wherever your app
+says it does, and the after-login redirect is untouched.
 
 ### 3. Inject Arkhe entries into your sidebar
 
-Include the bundled partial at the top level of your `<flux:sidebar.nav>` — it emits its own Dashboard item plus the registry-driven groups ("Accès", "Réglages", and any group contributed by a satellite package), so it sits alongside your own groups rather than nested inside one:
+Include the bundled partial at the top level of your `<flux:sidebar.nav>` — it emits the registry-driven groups ("Accès", "Réglages", and any group contributed by a satellite package), so it sits alongside your own groups rather than nested inside one:
 
 ```blade
 <flux:sidebar.nav>
@@ -506,7 +491,7 @@ Seven layered ways to customise Arkhe without forking it — pick the lightest o
 | --- | --- | --- |
 | 1 | **Events** — `UserCreated`, `UserUpdated`, `UserDeleted` (see [Events](#events)) | You need a side-effect (newsletter sync, audit log, webhook) that does NOT need access to the Livewire component state. |
 | 2 | **Lifecycle hooks** on the Livewire pages — `beforeSave(array): array`, `afterCreate(Model, array)`, `afterUpdate(Model, array)`, `beforeDelete(Model)` | The side-effect needs UI context — form payload, flash messages, redirects. Override in a subclass (see lever 3). |
-| 3 | **Rebindable Livewire components** via `config('arkhe.components')` | You want to subclass `ListUsers` / `ListRoles` / `ListPermissions` / `Dashboard` / `SiteSeo` / `Sitemap` / `Cookies` to add `wire:click` targets or extra fields. The route map auto-resolves to your class. |
+| 3 | **Rebindable Livewire components** via `config('arkhe.components')` | You want to subclass `ListUsers` / `EditUser` / `ListRoles` / `EditRole` / `SiteSeo` / `Sitemap` / `Cookies` to add `wire:click` targets or extra fields. The route map auto-resolves to your class. |
 | 4 | **`RoleHierarchy::register()`** (runtime) or `config('arkhe.roles')` (static) | You ship a new role from a package or a host module — see [Role hierarchy](#role-hierarchy--authorization). |
 | 5 | **Custom permissions** via `config('arkhe.permissions')` + `config('arkhe.role_permissions')`, re-seed with `ArkheRolesSeeder` | You add domain permissions (`manage-posts`, `publish-article`, …) that should live next to Arkhe's bundled set. |
 | 6 | **`ArkheNav` navigation registry** — add an item to the shared `settings` section or declare your own group (see [Branch a package onto the shared menu](#4-branch-a-package-onto-the-shared-menu--arkhenav)) | A package needs to contribute sidebar entries that show up in the common backend menu, gated by permission, with no Blade patching. |
@@ -547,9 +532,8 @@ Things that may surprise you. None are blockers — most are deliberate trade-of
 | **Sidebar patch** | Step 8 of `arkhe:main:install` only patches a file matching `*sidebar*.blade.php` that contains `<flux:sidebar.nav>`. No match → silently skipped (the bundled layout uses a `<flux:header>` dropdown, so a sidebar is not strictly required). If your app has multiple sidebar candidates, the installer refuses to choose and you must `@include('arkhe::partials.sidebar-items')` manually. |
 | **Tailwind v3** | Step 9 only auto-patches Tailwind v4 (`@import "tailwindcss"` in `resources/css/app.css`). Tailwind v3 setups get a printed snippet for `tailwind.config.js` — patching JS would be too brittle. |
 | **User model patch** | Step 10 refuses to inject `HasBackendProfile` if the model already imports `Spatie\Permission\Traits\HasRoles` (it would conflict — `HasBackendProfile` already wraps `HasRoles`). Remove the explicit `use HasRoles;` first, or add `use HasBackendProfile;` by hand. |
-| **`/administration/dashboard`** | Not registered by default — set `ARKHE_DASHBOARD_ROUTE=administration/dashboard` to opt in. Useful when you want Arkhe's users-by-role widget to replace the starter kit's empty `/dashboard`. |
 | **Layout chrome** | The bundled `arkhe::layouts.app` ships with a Flux header (brand + profile dropdown) but no sidebar, navigation menu, or footer. It's deliberately minimal — to keep its real chrome, override the layout config. |
-| **Fortify redirect rewrite** | When Fortify is detected and `arkhe.dashboard_route` is set, Arkhe rewrites `config('fortify.home')` at boot. Set `ARKHE_OVERRIDE_FORTIFY_REDIRECT=false` to opt out. |
+| **Dark-mode flash** | Some Laravel starter kits hard-code `class="dark"` on the `<html>` tag of their layouts. The page then paints dark before `@fluxAppearance` applies the visitor's real theme — a brief flash, most visible on list pages where the table is the heaviest thing to paint. Not an Arkhe behaviour, but you will see it on Arkhe screens: drop the attribute from every file under `resources/views/layouts/`, auth layouts included, and keep only `lang`. |
 | **`spatie/laravel-permission` cache** | The seeder calls `Permission::create()` directly. After re-running it (e.g. to add new permissions), clear the permission cache — `php artisan permission:cache-reset` — or restart your queue workers. |
 | **Sitemap on `sync` queue** | The "Regenerate now" button dispatches `GenerateSitemap` onto the host app's default queue. With the `sync` driver it runs inline; with a real driver, make sure a worker is up — otherwise the page reports "queued" with no visible progress. |
 
@@ -578,7 +562,7 @@ php artisan arkhe:main:upgrade-from-v2             # apply
 
 What it does:
 
-- Appends V3-only keys to your published `config/arkhe.php` (`dashboard_route`, `role_permissions`, `components`, `backend_permission`, `root_permission`, `features`) without touching existing V2 entries.
+- Appends V3-only keys to your published `config/arkhe.php` (`role_permissions`, `components`, `backend_permission`, `root_permission`, `features`) without touching existing V2 entries.
 - Rewrites legacy Livewire aliases inside `resources/views/` (e.g. `arkhe.main.livewire.admin.users.users-list` → `arkhe.list-users`).
 - Runs the V3 permission seeder so the new 16 default permissions and their role mappings land in your DB.
 

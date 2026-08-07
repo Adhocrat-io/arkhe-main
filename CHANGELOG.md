@@ -4,6 +4,60 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+### Security
+
+Quatre élévations de privilèges, toutes de la même famille : **on pouvait
+accorder ce qu'on ne détenait pas**. Chacune permettait à un compte du
+back-office de devenir root. Elles sont fermées au niveau des *services*, donc
+sur tous les chemins d'écriture — composants, méthodes dépréciées,
+sous-classes, commandes.
+
+- **Permissions d'un rôle.** `update-role` suffisait à s'attribuer
+  `manage-roles` en éditant son propre rôle. `RoleService` n'accorde plus
+  qu'une permission que l'acteur détient lui-même.
+- **Permissions directes d'un utilisateur.** Le champ `permissions` de
+  `UserForm` n'était pas gardé, alors que les rôles voisins l'étaient :
+  `create-user` suffisait à fabriquer un compte porteur de `manage-roles`,
+  puis à s'y connecter. `UserService` applique désormais la même règle.
+- **Rôles hors hiérarchie.** Un rôle absent de `config('arkhe.roles')` avait
+  le rang `-1`, comme un utilisateur sans rôle : `-1 <= -1` ouvrait son
+  attribution à quiconque, quelles que soient les permissions qu'il portait.
+  `RoleHierarchy` distingue maintenant « aucun rôle » de « rôle inconnu » : un
+  rôle non classé n'est attribuable que par qui détient déjà tout ce qu'il
+  accorde. `canManage()` avait le même angle mort.
+- **Renommage d'une permission.** Le plus retors, car il contournait les trois
+  gardes précédentes d'un coup : les tables pivots référencent l'identifiant,
+  pas le nom. Rebaptiser `view-user` en `manage-roles` transformait
+  instantanément tous ses porteurs en administrateurs, sans toucher à un rôle
+  ni à un compte. `PermissionService` refuse désormais de renommer ou
+  supprimer une permission canonique — même pour root, le code du paquet s'y
+  réfère en dur — et n'autorise à altérer que ce que l'acteur détient.
+
+Durcissements associés :
+
+- `#[Locked]` sur les propriétés qui portent l'identité de l'objet édité
+  (`EditRole::$roleId`, `$isCanonical`, `EditUser::$userId`) : sans lui, le
+  client les réécrivait avant `save()` et pivotait vers une autre cible, les
+  `authorize()` ne portant que sur la permission, jamais sur *quoi*.
+- `RoleForm` relit le caractère canonique depuis la base au lieu de croire son
+  propre drapeau public : forcé à `true`, il faisait tomber *toutes* les règles
+  du nom, unicité comprise.
+- `EditRole::toggleGroup()`, publique donc appelable directement, porte sa
+  propre autorisation.
+- Les noms de rôles qui valent l'accès au back-office par eux-mêmes — ceux
+  listés bruts dans `arkhe.admin.roles`, chemin de compatibilité V2 — sont
+  réservés à la création : fabriquer un rôle homonyme et se l'attribuer
+  ouvrait la porte sans détenir `access-backend`. Le repli du middleware, lui,
+  est **inchangé** : le durcir aurait privé d'accès les apps qui s'en servent,
+  à la simple montée de version.
+- Le tri des listes est filtré côté composant *et* côté repository — la garde
+  ne repose plus sur une implémentation que l'app hôte peut remplacer.
+- `ListPermissions` exige la permission de zone sensible : il reste montable
+  sur une route applicative et donne accès au socle du RBAC.
+
+Vingt tests de non-régression couvrent ces chemins
+(`tests/Feature/PrivilegeEscalationTest.php`).
+
 ### Fixed
 - **Création d'utilisateur impossible depuis l'interface.** `passwordConfirmation`
   ne faisait pas partie du contrat sérialisé de `UserForm` : Livewire ne la
@@ -27,11 +81,22 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
   son identifiant et le nombre de permissions qu'il porte. Les filtres et le
   tri sont persistés dans l'URL sur les deux listes.
 - **Création et édition sur leur propre page.** Les flyouts laissent place à
-  quatre routes — `arkhe.users.create`, `arkhe.users.edit`,
-  `arkhe.roles.create`, `arkhe.roles.edit` — servies par les composants
-  `EditUser` et `EditRole`, surchargeables via `config('arkhe.components')`
-  comme les listes. Le formulaire y est découpé en sections (identité, photo,
-  sécurité, accès), chaque champ portant sa description.
+  trois routes — `arkhe.users.create`, `arkhe.users.edit`, `arkhe.roles.edit` —
+  servies par les composants `EditUser` et `EditRole`, surchargeables via
+  `config('arkhe.components')` comme les listes. Le formulaire y est découpé en
+  sections (identité, photo, sécurité, accès), chaque champ portant sa
+  description.
+- **Les rôles ne se créent ni ne se suppriment plus depuis l'interface.** Ils
+  sont déclarés dans `config('arkhe.roles')` et créés par `ArkheRolesSeeder` :
+  le code en fait foi, pas un écran. La liste n'offre plus « Créer un rôle » ni
+  « Supprimer », et sa colonne Actions mène directement à la fiche, qui sert à
+  régler les permissions. Côté service, rien ne change :
+  `RoleService::create()` / `delete()`, les événements `RoleCreated` /
+  `RoleDeleted` et les permissions `create-role` / `delete-role` restent en
+  place pour les seeders et les commandes.
+- **Chaque champ des formulaires porte sa description.** Au-delà de l'aide
+  qu'elle apporte, c'est ce qui aligne deux champs voisins dans une grille : un
+  champ décrit à côté d'un champ nu poussait son contrôle vers le bas.
 - **Les permissions d'un rôle se cochent par ressource.** La fiche d'un rôle
   range les permissions en cartes (`users`, `roles`, `sitemap`…) avec un
   « tout cocher » par groupe, plutôt qu'une liste à choix multiple de plusieurs
@@ -46,7 +111,13 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
   sur `ListUsers` et `ListRoles`). Elles ne sont plus appelées par les vues du
   paquet — les pages dédiées les remplacent — mais restent en place pour les
   sous-classes qui les surchargent. Retrait à la prochaine majeure : portez
-  vos surcharges sur `EditUser` / `EditRole`, qui exposent les mêmes hooks.
+  vos surcharges sur `EditUser` / `EditRole`, qui exposent les mêmes hooks aux
+  mêmes signatures. Seule exception, `afterCreate` sur les rôles : il n'a plus
+  d'équivalent actif, la création ayant quitté l'interface.
+- `ListRoles::confirmDelete()`, `delete()`, `cancelDelete()` et le hook
+  `beforeDelete` : la suppression d'un rôle a quitté l'interface. Le paquet ne
+  les appelle plus ; elles restent pour les sous-classes et partiront à la
+  prochaine majeure.
 - La page de liste des permissions. `/administration/permissions` redirige
   désormais vers `/administration/roles` ; le nom de route
   `arkhe.permissions.index` et le composant `Arkhe\Main\Livewire\ListPermissions`

@@ -86,10 +86,20 @@ return [
             'security' => 'Security',
             'access' => 'Access',
         ],
+        // Every field carries one: in a two-column grid, a described field
+        // next to a bare one pushes its control down. One rendered line at
+        // most — beyond that, the imbalance is back.
         'hints' => [
+            'first_name' => 'The given name, as it will appear on screen.',
+            'last_name' => 'Used for sorting and searching in the list.',
             'email' => 'Also used as the sign-in identifier.',
+            'phone' => 'Free format, dialling code included.',
+            'civility' => 'Two words at most, for example "Ms".',
+            'date_of_birth' => 'Never shown publicly.',
+            'bio' => 'A few lines of introduction, 5,000 characters at most.',
             'avatar' => 'Square image preferred, 4 MB maximum.',
             'password' => 'Eight characters minimum.',
+            'password_confirmation' => 'Must match the previous field exactly.',
             'password_edit' => 'Leave both fields empty to keep the current password.',
             'role' => 'What the user will be able to do in the backend.',
             'role_tooltip' => 'A role carries a set of permissions. You can only assign roles ranked at or below your own — assigning higher would grant you rights you do not have.',
@@ -126,7 +136,6 @@ return [
             'last_name' => 'Last name',
             'email' => 'Email',
             'password' => 'Password',
-            'password_hint' => '(leave blank to keep current)',
             'password_confirmation' => 'Confirm password',
             'phone' => 'Phone',
             'date_of_birth' => 'Date of birth',
@@ -141,9 +150,7 @@ return [
         'placeholder' => 'Select a role…',
         'none' => 'None',
         'title' => 'Roles & permissions',
-        'description' => 'Permissions attached to each role. Canonical roles are defined by configuration: their name is immutable and they cannot be deleted.',
-        'create' => 'Create role',
-        'create_hint' => 'A role groups the permissions granted to whoever carries it.',
+        'description' => 'Permissions attached to each role. Roles are defined by the application configuration: they are added and removed from code, not from this screen.',
         'edit' => 'Edit role',
         'edit_hint' => 'Tick what this role allows. Users carrying it gain or lose these rights immediately.',
         'canonical_badge' => 'System role',
@@ -157,17 +164,18 @@ return [
             'permissions' => 'Grouped by resource. The "manage-…" permission is the shortcut covering the whole resource.',
         ],
         'empty' => 'No roles found.',
-        'empty_hint' => 'Create your first role to get started.',
+        'empty_hint' => 'Roles are declared in config/arkhe.php, then created by the seeder.',
         'empty_filtered' => 'No role matches this search.',
         'search_placeholder' => 'Role name…',
         'canonical_hint' => 'This role is canonical to Arkhe: its name is immutable, but its permissions are editable.',
-        'delete_title' => 'Delete this role',
-        'delete_confirm' => 'Users carrying this role will lose it. Continue?',
-        'delete_intro' => 'The role :name will be permanently deleted. Users carrying it will lose it.',
-        'delete_canonical_refused' => 'This role is canonical to Arkhe and cannot be deleted.',
-        'created' => 'Role created.',
         'updated' => 'Role updated.',
+
+        // These three messages only serve the deprecated ListRoles methods
+        // (creation and deletion, dropped from the interface in 3.3). They
+        // will go away with them at the next major.
+        'created' => 'Role created.',
         'deleted' => 'Role deleted.',
+        'delete_canonical_refused' => 'This role is canonical to Arkhe and cannot be deleted.',
         'permissions_count' => '{0}No permission|{1}:count permission|[2,*]:count permissions',
         'stats' => [
             'roles' => 'Roles',

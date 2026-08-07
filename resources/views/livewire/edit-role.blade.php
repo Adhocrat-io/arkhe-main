@@ -1,9 +1,7 @@
-@php($creating = $this->isCreating())
-
 <section class="mx-auto w-full max-w-6xl">
     <x-arkhe::form-header
-        :title="$creating ? __('arkhe::arkhe.roles.create') : $roleForm->name"
-        :description="$isCanonical ? __('arkhe::arkhe.roles.canonical_hint') : ($creating ? __('arkhe::arkhe.roles.create_hint') : __('arkhe::arkhe.roles.edit_hint'))"
+        :title="$roleForm->name"
+        :description="$isCanonical ? __('arkhe::arkhe.roles.canonical_hint') : __('arkhe::arkhe.roles.edit_hint')"
         :back-route="route('arkhe.roles.index')"
         :back-label="__('arkhe::arkhe.roles.title')"
     >
@@ -18,15 +16,23 @@
 
     <form wire:submit="save" class="my-6 w-full space-y-6">
         <x-arkhe::form-section :title="__('arkhe::arkhe.roles.sections.identity')">
-            <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
+            <x-arkhe::form-grid>
+                {{-- Sur un rôle canonique, ces deux champs sont figés : la variante
+                     « filled » les aplatit en gris, ce qui se voit avant même
+                     d'essayer de cliquer dedans. --}}
+                @php($lockedVariant = $isCanonical ? 'filled' : 'outline')
+
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.roles.fields.name') }}</flux:label>
                     <flux:description>{{ __('arkhe::arkhe.roles.hints.name') }}</flux:description>
+                    {{-- `autofocus` seulement si le champ accepte la saisie :
+                         `autofocus="false"` reste un attribut présent en HTML. --}}
                     <flux:input
                         wire:model="roleForm.name"
+                        :variant="$lockedVariant"
                         :disabled="$isCanonical"
                         :readonly="$isCanonical"
-                        autofocus="{{ $creating ? 'true' : 'false' }}"
+                        :autofocus="! $isCanonical"
                     />
                     <flux:error name="roleForm.name" />
                 </flux:field>
@@ -36,12 +42,13 @@
                     <flux:description>{{ __('arkhe::arkhe.roles.hints.guard') }}</flux:description>
                     <flux:input
                         wire:model="roleForm.guard_name"
+                        :variant="$lockedVariant"
                         :disabled="$isCanonical"
                         :readonly="$isCanonical"
                     />
                     <flux:error name="roleForm.guard_name" />
                 </flux:field>
-            </div>
+            </x-arkhe::form-grid>
         </x-arkhe::form-section>
 
         <x-arkhe::form-section
@@ -97,7 +104,7 @@
 
         <x-arkhe::form-actions
             :cancel-route="route('arkhe.roles.index')"
-            :submit-label="$creating ? __('arkhe::arkhe.roles.create') : __('arkhe::arkhe.actions.save')"
+            :submit-label="__('arkhe::arkhe.actions.save')"
         />
     </form>
 </section>

@@ -39,9 +39,12 @@ Route::middleware($middleware)
 
         // Roles + permissions + site SEO are restricted to the `root` role.
         Route::middleware('arkhe.root')->group(function () use ($component): void {
-            Route::get('/roles',            $component('list-roles', ListRoles::class))->name('roles.index');
-            Route::get('/roles/create',     $component('edit-role',  EditRole::class))->name('roles.create');
-            Route::get('/roles/{role}/edit', $component('edit-role', EditRole::class))->name('roles.edit');
+            // Pas de route de création : les rôles viennent de
+            // `config('arkhe.roles')` et du seeder, parce que le code s'y
+            // réfère (middlewares, `isArkheRoot()`). La fiche sert à régler
+            // leurs permissions, pas à en fabriquer.
+            Route::get('/roles',             $component('list-roles', ListRoles::class))->name('roles.index');
+            Route::get('/roles/{role}/edit', $component('edit-role',  EditRole::class))->name('roles.edit');
 
             // Les permissions se gèrent depuis la page des rôles depuis la 3.3 :
             // la route survit en redirigeant, pour ne pas casser les

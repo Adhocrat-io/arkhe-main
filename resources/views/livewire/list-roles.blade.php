@@ -1,14 +1,10 @@
 <section class="w-full">
+    {{-- Pas d'action de création : les rôles viennent de `config('arkhe.roles')`
+         et du seeder. --}}
     <x-arkhe::page-header
         :title="__('arkhe::arkhe.roles.title')"
         :description="__('arkhe::arkhe.roles.description')"
-    >
-        <x-slot:actions>
-            <flux:button variant="primary" icon="plus" :href="route('arkhe.roles.create')" wire:navigate>
-                <span class="font-semibold uppercase">{{ __('arkhe::arkhe.roles.create') }}</span>
-            </flux:button>
-        </x-slot:actions>
-    </x-arkhe::page-header>
+    />
 
     {{-- Statistiques --}}
     <x-arkhe::stat-bar :stats="[
@@ -68,14 +64,11 @@
 
                 <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
                     @forelse ($roles as $role)
-                        @php($canonical = $canonicalResolver($role->name))
-
                         <tr wire:key="role-{{ $role->id }}" class="{{ $loop->odd ? 'bg-white dark:bg-zinc-800' : 'bg-gray-50 dark:bg-zinc-900' }} transition-colors hover:bg-blue-50 dark:hover:bg-zinc-700">
                             {{-- Pas de badge « canonique » ici : sur une installation
                                  par défaut tous les rôles le sont, il ne distinguerait
-                                 rien. Ce que le statut implique se lit là où il compte —
-                                 la suppression absente du menu, les champs verrouillés
-                                 sur la fiche, qui porte l'explication. --}}
+                                 rien. Ce que le statut implique se lit sur la fiche —
+                                 nom et guard verrouillés, avec l'explication. --}}
                             <td class="px-6 py-4 text-sm 2xl:text-base">
                                 <a
                                     href="{{ route('arkhe.roles.edit', $role->id) }}"
@@ -99,36 +92,18 @@
                                 {{ trans_choice('arkhe::arkhe.roles.permissions_count', $role->permissions_count, ['count' => $role->permissions_count]) }}
                             </td>
 
+                            {{-- Un bouton plutôt qu'un menu : modifier est le seul geste
+                                 possible sur un rôle, autant l'atteindre d'un clic. --}}
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <flux:dropdown align="end" wire:key="dropdown-{{ $role->id }}">
-                                    <flux:button icon="ellipsis-vertical"></flux:button>
-
-                                    <flux:menu>
-                                        <flux:menu.item
-                                            icon="pencil-square"
-                                            :href="route('arkhe.roles.edit', $role->id)"
-                                            wire:navigate
-                                            class="cursor-pointer"
-                                        >
-                                            {{ __('arkhe::arkhe.actions.edit') }}
-                                        </flux:menu.item>
-
-                                        {{-- Un rôle canonique ne se supprime pas : le service
-                                             refuse, on n'offre donc pas le geste. --}}
-                                        @if (! $canonical)
-                                            <flux:menu.separator />
-
-                                            <flux:menu.item
-                                                variant="danger"
-                                                icon="trash"
-                                                wire:click="confirmDelete({{ $role->id }})"
-                                                class="cursor-pointer"
-                                            >
-                                                {{ __('arkhe::arkhe.actions.delete') }}
-                                            </flux:menu.item>
-                                        @endif
-                                    </flux:menu>
-                                </flux:dropdown>
+                                <flux:button
+                                    variant="ghost"
+                                    size="sm"
+                                    icon="pencil-square"
+                                    :href="route('arkhe.roles.edit', $role->id)"
+                                    wire:navigate
+                                    :title="__('arkhe::arkhe.actions.edit')"
+                                    :aria-label="__('arkhe::arkhe.actions.edit')"
+                                />
                             </td>
                         </tr>
                     @empty
@@ -140,13 +115,11 @@
                                 ? __('arkhe::arkhe.roles.empty_filtered')
                                 : __('arkhe::arkhe.roles.empty_hint')"
                         >
+                            {{-- Rien à proposer quand la table est vraiment vide : les
+                                 rôles se déclarent en config, pas depuis cet écran. --}}
                             @if ($this->hasActiveFilters())
                                 <flux:button variant="outline" icon="arrow-path" wire:click="resetFilters" type="button" size="sm">
                                     {{ __('arkhe::arkhe.actions.reset') }}
-                                </flux:button>
-                            @else
-                                <flux:button variant="primary" icon="plus" :href="route('arkhe.roles.create')" wire:navigate size="sm">
-                                    {{ __('arkhe::arkhe.roles.create') }}
                                 </flux:button>
                             @endif
                         </x-arkhe::table-empty-state>
@@ -161,26 +134,4 @@
             </div>
         @endif
     </x-arkhe::list-table-wrapper>
-
-
-    <x-arkhe::confirm-modal
-        name="role-delete"
-        wire-model="showDeleteModal"
-        tone="danger"
-        icon="trash"
-        :title="__('arkhe::arkhe.roles.delete_title')"
-        :confirm-label="__('arkhe::arkhe.actions.delete')"
-        confirm-action="delete"
-        cancel-action="cancelDelete"
-    >
-        @if ($this->pendingDeleteRole)
-            <p>
-                {!! __('arkhe::arkhe.roles.delete_intro', [
-                    'name' => '<strong>'.e($this->pendingDeleteRole->name).'</strong>',
-                ]) !!}
-            </p>
-        @else
-            <p>{{ __('arkhe::arkhe.roles.delete_confirm') }}</p>
-        @endif
-    </x-arkhe::confirm-modal>
 </section>

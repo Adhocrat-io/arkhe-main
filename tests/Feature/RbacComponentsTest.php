@@ -8,6 +8,7 @@ use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -63,6 +64,10 @@ it('searches roles by name', function (): void {
         ->assertDontSee('root', false);
 })->skip('view rendering also outputs the actor `root` role badge elsewhere; covered by repository search test');
 
+// Les trois tests qui suivent exercent des méthodes dépréciées en 3.3 : aucune
+// n'est plus atteignable depuis l'interface, mais UPGRADE.md promet aux apps
+// qu'elles restent appelables jusqu'à la prochaine majeure. Ils vérifient donc
+// que la promesse tient, pas un parcours utilisateur.
 it('creates a new role through the ListRoles flow', function (): void {
     $root = makeRbacUser('root');
 
@@ -133,6 +138,23 @@ it('redirects the legacy permissions page to the roles page', function (): void 
 it('keeps the arkhe.permissions.index route name resolvable', function (): void {
     expect(route('arkhe.permissions.index', absolute: false))
         ->toBe('/administration/permissions');
+});
+
+// Son pendant : celle-là disparaît. Les rôles viennent de `config('arkhe.roles')`
+// et du seeder, l'interface n'en fabrique plus.
+it('no longer registers a role creation route', function (): void {
+    expect(Route::has('arkhe.roles.create'))->toBeFalse();
+});
+
+it('offers neither creation nor deletion on the roles list', function (): void {
+    // Un rôle non canonique : sans lui, l'absence du bouton « Supprimer » ne
+    // prouverait rien, tous les rôles seedés étant protégés de toute façon.
+    Role::query()->create(['name' => 'editor', 'guard_name' => 'web']);
+
+    Livewire::actingAs(makeRbacUser('root'))
+        ->test(ListRoles::class)
+        ->assertDontSee('roles/create')
+        ->assertDontSee('confirmDelete');
 });
 
 it('creates a permission through the ListPermissions flow', function (): void {

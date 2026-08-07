@@ -172,17 +172,18 @@ it('toggles a whole permission group at once', function (): void {
         ->toContain('create-user');
 });
 
-it('creates a role from the dedicated page', function (): void {
+// Un rôle vient du code, pas de l'écran : la fiche édite un rôle existant et
+// n'a rien à offrir sans identifiant.
+it('404s when the role page is mounted without an id', function (): void {
     Livewire::actingAs(makeEditPagesUser('root'))
         ->test(EditRole::class)
-        ->set('roleForm.name', 'moderateur')
-        ->set('roleForm.guard_name', 'web')
-        ->set('roleForm.permissions', ['view-user'])
-        ->call('save')
-        ->assertHasNoErrors()
-        ->assertRedirect(route('arkhe.roles.index'));
+        ->assertNotFound();
+});
 
-    expect(Role::query()->where('name', 'moderateur')->exists())->toBeTrue();
+it('404s on an unknown role', function (): void {
+    Livewire::actingAs(makeEditPagesUser('root'))
+        ->test(EditRole::class, ['role' => 99999])
+        ->assertNotFound();
 });
 
 // ─── Groupement des permissions ──────────────────────────────────────────

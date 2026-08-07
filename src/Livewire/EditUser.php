@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
 use Livewire\WithFileUploads;
@@ -32,9 +33,17 @@ class EditUser extends Component
 
     /**
      * L'utilisateur édité, ou null en création. Porté par la route.
+     *
+     * Verrouillée : elle dit *qui* on édite, et `save()` s'en sert pour
+     * choisir entre créer et mettre à jour. `save()` revérifie déjà la
+     * hiérarchie sur le modèle rechargé, mais le jour où une méthode publique
+     * lira cette propriété sans cette précaution, la faille s'ouvrirait sans
+     * bruit.
      */
+    #[Locked]
     public ?int $userId = null;
 
+    #[Locked]
     public ?string $currentAvatarUrl = null;
 
     public function mount(?int $user = null, ?UserRepositoryInterface $repository = null): void

@@ -86,10 +86,20 @@ return [
             'security' => 'Sécurité',
             'access' => 'Accès',
         ],
+        // Chaque champ porte la sienne : dans une grille à deux colonnes, un
+        // champ décrit à côté d'un champ nu pousse son contrôle vers le bas.
+        // Une ligne rendue maximum — au-delà, le déséquilibre revient.
         'hints' => [
+            'first_name' => 'Le prénom usuel, tel qu’il s’affichera à l’écran.',
+            'last_name' => 'Sert au tri et à la recherche dans la liste.',
             'email' => 'Sert aussi d’identifiant de connexion.',
+            'phone' => 'Format libre, indicatif compris.',
+            'civility' => 'Deux mots au plus, par exemple « Madame ».',
+            'date_of_birth' => 'Jamais affichée publiquement.',
+            'bio' => 'Quelques lignes de présentation, 5 000 caractères au plus.',
             'avatar' => 'Image carrée de préférence, 4 Mo maximum.',
             'password' => 'Huit caractères au minimum.',
+            'password_confirmation' => 'Doit correspondre exactement au champ précédent.',
             'password_edit' => 'Laissez les deux champs vides pour conserver le mot de passe actuel.',
             'role' => 'Ce que l’utilisateur pourra faire dans le back-office.',
             'role_tooltip' => 'Un rôle porte un jeu de permissions. Vous ne pouvez attribuer que les rôles de rang inférieur ou égal au vôtre — attribuer plus haut reviendrait à vous donner des droits que vous n’avez pas.',
@@ -126,7 +136,6 @@ return [
             'last_name' => 'Nom',
             'email' => 'Email',
             'password' => 'Mot de passe',
-            'password_hint' => '(laisser vide pour ne pas modifier)',
             'password_confirmation' => 'Confirmation du mot de passe',
             'phone' => 'Téléphone',
             'date_of_birth' => 'Date de naissance',
@@ -141,9 +150,7 @@ return [
         'placeholder' => 'Sélectionner un rôle…',
         'none' => 'Aucun',
         'title' => 'Rôles & permissions',
-        'description' => 'Permissions attachées à chaque rôle. Les rôles canoniques sont définis par la configuration : leur nom est immuable et ils ne peuvent pas être supprimés.',
-        'create' => 'Créer un rôle',
-        'create_hint' => 'Un rôle regroupe les permissions accordées à ceux qui le portent.',
+        'description' => 'Permissions attachées à chaque rôle. Les rôles sont définis par la configuration de l’application : ils s’ajoutent et se retirent depuis le code, pas depuis cet écran.',
         'edit' => 'Modifier le rôle',
         'edit_hint' => 'Cochez ce que ce rôle autorise. Les utilisateurs qui le portent gagnent ou perdent ces droits immédiatement.',
         'canonical_badge' => 'Rôle système',
@@ -157,17 +164,18 @@ return [
             'permissions' => 'Rangées par ressource. La permission « manage-… » est le raccourci qui couvre toute la ressource.',
         ],
         'empty' => 'Aucun rôle trouvé.',
-        'empty_hint' => 'Créez votre premier rôle pour commencer.',
+        'empty_hint' => 'Les rôles sont déclarés dans config/arkhe.php, puis créés par le seeder.',
         'empty_filtered' => 'Aucun rôle ne correspond à cette recherche.',
         'search_placeholder' => 'Nom du rôle…',
         'canonical_hint' => 'Ce rôle est canonique à Arkhe : son nom est immuable, mais ses permissions sont modifiables.',
-        'delete_title' => 'Supprimer ce rôle',
-        'delete_confirm' => 'Les utilisateurs portant ce rôle le perdront. Continuer ?',
-        'delete_intro' => 'Le rôle :name va être définitivement supprimé. Les utilisateurs qui le portent le perdront.',
-        'delete_canonical_refused' => 'Ce rôle est canonique à Arkhe : il ne peut pas être supprimé.',
-        'created' => 'Rôle créé.',
         'updated' => 'Rôle mis à jour.',
+
+        // Ces trois messages ne servent plus qu'aux méthodes dépréciées de
+        // ListRoles (création et suppression, retirées de l'interface en 3.3).
+        // Ils partiront avec elles à la prochaine majeure.
+        'created' => 'Rôle créé.',
         'deleted' => 'Rôle supprimé.',
+        'delete_canonical_refused' => 'Ce rôle est canonique à Arkhe : il ne peut pas être supprimé.',
         'permissions_count' => '{0}Aucune permission|{1}:count permission|[2,*]:count permissions',
         'stats' => [
             'roles' => 'Rôles',

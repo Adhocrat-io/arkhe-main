@@ -63,7 +63,9 @@ class ListRoles extends Component
     // majeure.
 
     /**
-     * @deprecated depuis la 3.3 — voir `arkhe.roles.create` ({@see EditRole}).
+     * @deprecated depuis la 3.3 — la création de rôle a quitté l'interface :
+     *             les rôles viennent de `config('arkhe.roles')` et du seeder.
+     *             Pour en créer un par programme, passez par `RoleService`.
      */
     public function openCreate(): void
     {
@@ -231,6 +233,19 @@ class ListRoles extends Component
         $this->resetPage();
     }
 
+    /**
+     * Le tri arrive de l'URL : un champ inconnu retombe sur le défaut plutôt
+     * que de partir tel quel dans la requête. Le repository refiltre de son
+     * côté — mais il est rebindable par l'app hôte, et la garde ne doit pas
+     * reposer sur une implémentation qu'on ne maîtrise pas.
+     */
+    private function safeSortField(): string
+    {
+        return in_array($this->sortField, self::SORTABLE_FIELDS, strict: true)
+            ? $this->sortField
+            : 'name';
+    }
+
     public function resetFilters(): void
     {
         $this->search = '';
@@ -283,10 +298,15 @@ class ListRoles extends Component
         $paginator = $roles->paginate(
             filters: ['search' => $this->search],
             perPage: $this->perPage,
-            sort: $this->sortField,
+            sort: $this->safeSortField(),
             direction: $this->sortDirection,
         );
 
+        // `availablePerms` et `canonicalResolver` ne sont plus consommés par la
+        // vue du paquet depuis que le formulaire et la suppression l'ont
+        // quittée. On continue de les passer : une app qui a publié cette vue
+        // les attend encore, et leur absence serait un `Undefined variable`
+        // chez elle. Ils partiront avec les méthodes dépréciées.
         return view('arkhe::livewire.list-roles', [
             'roles'              => $paginator,
             'availablePerms'     => $permissions->all()->pluck('name'),

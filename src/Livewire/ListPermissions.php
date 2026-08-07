@@ -38,6 +38,12 @@ class ListPermissions extends Component
 
     public function mount(): void
     {
+        // Ce composant reste enregistré sous l'alias `arkhe.list-permissions`
+        // pour les apps qui le montent sur une route à elles. Il donne accès
+        // à `PermissionService`, dont les écritures touchent le socle du RBAC
+        // — il porte donc lui-même la garde de la zone sensible, sans compter
+        // sur le middleware d'une route qu'on ne contrôle pas.
+        $this->authorize((string) config('arkhe.root_permission', 'manage-roles'));
         $this->authorize('view-permission');
         $this->perPage = (int) config('arkhe.per_page', 15);
     }

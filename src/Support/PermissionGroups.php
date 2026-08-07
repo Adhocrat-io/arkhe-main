@@ -34,7 +34,7 @@ final class PermissionGroups
 
     /**
      * @param  iterable<int, string>  $permissionNames
-     * @return array<string, array<int, string>>  groupe => permissions triées
+     * @return array<string, array<int, string>> groupe => permissions triées
      */
     public static function build(iterable $permissionNames): array
     {
@@ -60,8 +60,8 @@ final class PermissionGroups
     private static function fromConfig(array $configured, iterable $permissionNames): array
     {
         $existing = self::normalise($permissionNames);
-        $groups   = [];
-        $placed   = [];
+        $groups = [];
+        $placed = [];
 
         foreach ($configured as $group => $children) {
             $names = array_values(array_filter(

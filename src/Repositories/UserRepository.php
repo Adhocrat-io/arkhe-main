@@ -12,6 +12,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserRepository implements UserRepositoryInterface
 {
+    /**
+     * Colonnes autorisées au tri.
+     *
+     * La liste vit aussi dans `ListUsers`, et c'est voulu : `$sort` est un
+     * paramètre public du contrat, que n'importe quel appelant applicatif peut
+     * alimenter depuis une requête. Il finit dans un `orderBy()`, où il n'est
+     * pas passé en binding — le filtrer ici est la dernière barrière.
+     *
+     * @var array<int, string>
+     */
+    private const SORTABLE_FIELDS = [
+        'first_name', 'last_name', 'email', 'created_at', 'updated_at', 'id',
+    ];
+
     public function __construct(
         private readonly ConfigRepository $config,
     ) {
@@ -50,9 +64,12 @@ class UserRepository implements UserRepositoryInterface
         }
 
         $direction = strtolower($direction) === 'asc' ? 'asc' : 'desc';
+        $sort = in_array($sort, self::SORTABLE_FIELDS, true) ? $sort : 'created_at';
 
         return $query
             ->orderBy($sort, $direction)
+            // Départage les ex æquo pour que la pagination reste stable.
+            ->orderBy('id')
             ->paginate(max(1, $perPage));
     }
 

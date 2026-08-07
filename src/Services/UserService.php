@@ -162,7 +162,53 @@ class UserService
         }
 
         if (array_key_exists('permissions', $data) && is_array($data['permissions'])) {
+            $this->assertCanGrantPermissions($user, $data['permissions']);
             $user->syncPermissions($data['permissions']);
+        }
+    }
+
+    /**
+     * On n'accorde qu'une permission qu'on détient soi-même.
+     *
+     * Le rang protégeait déjà les rôles, mais rien ne gardait les permissions
+     * attribuées directement : `create-user` suffisait à fabriquer un compte
+     * porteur de `manage-roles`, puis à s'y connecter. La hiérarchie était
+     * contournée par la porte d'à côté.
+     *
+     * Seul le delta est vérifié : retirer une permission qu'on n'a pas reste
+     * permis, et réenregistrer un compte sans y toucher ne demande rien.
+     *
+     * @param  array<int, string>  $permissions
+     *
+     * @throws AuthorizationException
+     */
+    private function assertCanGrantPermissions(Model $user, array $permissions): void
+    {
+        /** @var Model|null $actor */
+        $actor = $this->auth->guard()->user();
+
+        if ($actor === null) {
+            if (app()->runningInConsole()) {
+                return;
+            }
+
+            throw new AuthorizationException('Cannot change permissions without an authenticated actor.');
+        }
+
+        if (method_exists($actor, 'hasRole') && $actor->hasRole((string) $this->config->get('arkhe.roles.root'))) {
+            return;
+        }
+
+        $current = method_exists($user, 'getDirectPermissions')
+            ? $user->getDirectPermissions()->pluck('name')->all()
+            : [];
+
+        foreach (array_diff($permissions, $current) as $permission) {
+            if (! method_exists($actor, 'can') || ! $actor->can($permission)) {
+                throw new AuthorizationException(
+                    "You are not allowed to grant the permission [{$permission}]."
+                );
+            }
         }
     }
 

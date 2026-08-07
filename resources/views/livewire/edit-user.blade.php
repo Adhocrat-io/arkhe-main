@@ -10,15 +10,17 @@
 
     <form wire:submit="save" class="my-6 w-full space-y-6" enctype="multipart/form-data">
         <x-arkhe::form-section :title="__('arkhe::arkhe.users.sections.identity')">
-            <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
+            <x-arkhe::form-grid>
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.users.fields.first_name') }}</flux:label>
+                    <flux:description>{{ __('arkhe::arkhe.users.hints.first_name') }}</flux:description>
                     <flux:input wire:model="userForm.first_name" autofocus />
                     <flux:error name="userForm.first_name" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.users.fields.last_name') }}</flux:label>
+                    <flux:description>{{ __('arkhe::arkhe.users.hints.last_name') }}</flux:description>
                     <flux:input wire:model="userForm.last_name" />
                     <flux:error name="userForm.last_name" />
                 </flux:field>
@@ -32,25 +34,29 @@
 
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.users.fields.phone') }}</flux:label>
+                    <flux:description>{{ __('arkhe::arkhe.users.hints.phone') }}</flux:description>
                     <flux:input wire:model="userForm.phone" />
                     <flux:error name="userForm.phone" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.users.fields.civility') }}</flux:label>
+                    <flux:description>{{ __('arkhe::arkhe.users.hints.civility') }}</flux:description>
                     <flux:input wire:model="userForm.civility" />
                     <flux:error name="userForm.civility" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.users.fields.date_of_birth') }}</flux:label>
+                    <flux:description>{{ __('arkhe::arkhe.users.hints.date_of_birth') }}</flux:description>
                     <flux:input type="date" wire:model="userForm.date_of_birth" />
                     <flux:error name="userForm.date_of_birth" />
                 </flux:field>
-            </div>
+            </x-arkhe::form-grid>
 
             <flux:field>
                 <flux:label>{{ __('arkhe::arkhe.users.fields.bio') }}</flux:label>
+                <flux:description>{{ __('arkhe::arkhe.users.hints.bio') }}</flux:description>
                 <flux:textarea wire:model="userForm.bio" rows="3" />
                 <flux:error name="userForm.bio" />
             </flux:field>
@@ -91,7 +97,7 @@
             :title="__('arkhe::arkhe.users.sections.security')"
             :description="$creating ? null : __('arkhe::arkhe.users.hints.password_edit')"
         >
-            <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
+            <x-arkhe::form-grid>
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.users.fields.password') }}</flux:label>
                     <flux:description>{{ __('arkhe::arkhe.users.hints.password') }}</flux:description>
@@ -101,10 +107,11 @@
 
                 <flux:field>
                     <flux:label>{{ __('arkhe::arkhe.users.fields.password_confirmation') }}</flux:label>
+                    <flux:description>{{ __('arkhe::arkhe.users.hints.password_confirmation') }}</flux:description>
                     <flux:input type="password" wire:model="userForm.passwordConfirmation" autocomplete="new-password" viewable />
                     <flux:error name="userForm.passwordConfirmation" />
                 </flux:field>
-            </div>
+            </x-arkhe::form-grid>
         </x-arkhe::form-section>
 
         <x-arkhe::form-section :title="__('arkhe::arkhe.users.sections.access')">

@@ -263,6 +263,15 @@ Vingt tests de non-régression couvrent ces chemins
   if the consumer's Tailwind build doesn't `@source` the vendor path.
 
 ### Removed
+- **Le tableau de bord d'Arkhe**, composant, vue, route et configuration
+  (`dashboard_route`, `dashboard_route_name`, `override_fortify_redirect`).
+  Il faisait doublon avec celui que les starter kits fournissent déjà, en
+  moins riche : trois compteurs d'utilisateurs contre une page prête à
+  recevoir les indicateurs de l'app. Pire, une app qui posait
+  `ARKHE_DASHBOARD_ROUTE_NAME=dashboard` voyait le sien remplacé par celui du
+  paquet. La page d'accueil du back-office appartient à l'app ; les compteurs
+  d'utilisateurs, eux, sont déjà en tête de la liste des utilisateurs.
+
 - The unused `arkhe.install.patch_restart` translation key.
 
 ## [3.0.0] — 2026-05-21

@@ -21,17 +21,8 @@
 
 @php($arkheNavUser = auth()->user())
 
-@if(config('arkhe.dashboard_route'))
-    @php($arkheDashboardRoute = (string) config('arkhe.dashboard_route_name', 'arkhe.dashboard'))
-    <flux:sidebar.item
-        icon="home"
-        :href="route($arkheDashboardRoute)"
-        :current="request()->routeIs($arkheDashboardRoute)"
-        wire:navigate
-    >
-        {{ __('arkhe::arkhe.dashboard.title') }}
-    </flux:sidebar.item>
-@endif
+{{-- Pas d'entrée « Tableau de bord » : la page d'accueil du back-office
+     appartient à l'app, qui la place elle-même dans son menu. --}}
 
 @foreach(\Arkhe\Main\Support\ArkheNav::sectionsFor($arkheNavUser) as $arkheSection)
     <flux:sidebar.group

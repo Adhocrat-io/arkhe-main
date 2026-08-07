@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Arkhe\Main\Livewire\Dashboard;
 use Arkhe\Main\Livewire\EditRole;
 use Arkhe\Main\Livewire\EditUser;
 use Arkhe\Main\Livewire\ListRoles;
@@ -19,15 +18,11 @@ $middleware = (array) config('arkhe.middleware');
 // Falls back to the package's default class when no override is set.
 $component = static fn (string $alias, string $default): string => (string) config("arkhe.components.{$alias}", $default);
 
-// Top-level dashboard route (opt-in via ARKHE_DASHBOARD_ROUTE).
-// Registered outside the `arkhe.` name group so its full name is
-// configurable (defaults to `arkhe.dashboard`, can be set to `dashboard`
-// so the starter kit's after-login `route('dashboard')` resolves here).
-if ($dashboardPath = config('arkhe.dashboard_route')) {
-    Route::middleware($middleware)
-        ->get('/'.ltrim((string) $dashboardPath, '/'), $component('dashboard', Dashboard::class))
-        ->name((string) config('arkhe.dashboard_route_name', 'arkhe.dashboard'));
-}
+// Pas de route de tableau de bord : la page d'accueil du back-office
+// appartient à l'app, pas au paquet. Les starter kits en fournissent une,
+// prête à recevoir les indicateurs qui comptent pour elle — Arkhe n'a pas à
+// la remplacer par ses propres compteurs d'utilisateurs, que la liste des
+// utilisateurs affiche déjà en tête.
 
 Route::middleware($middleware)
     ->prefix((string) config('arkhe.admin.prefix', config('arkhe.route_prefix', 'administration')))

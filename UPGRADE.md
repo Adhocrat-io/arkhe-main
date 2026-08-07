@@ -48,6 +48,55 @@ pas une obligation.
 modifier avant de déployer ; le repli par rôle du middleware d'accès reste en
 place à l'identique, pour ne priver personne d'accès à la montée de version.
 
+## Depuis la 3.2 — le tableau de bord quitte le paquet
+
+Arkhe ne fournit plus de tableau de bord. Il faisait doublon avec celui des
+starter kits, en moins riche, et une app qui avait posé
+`ARKHE_DASHBOARD_ROUTE_NAME=dashboard` voyait le sien purement remplacé.
+
+**Si vous n'aviez pas défini `ARKHE_DASHBOARD_ROUTE`** — le cas par défaut —
+il n'y a rien à faire : la page n'existait pas chez vous.
+
+**Si vous l'aviez défini**, trois choses :
+
+1. Retirez `ARKHE_DASHBOARD_ROUTE` et `ARKHE_DASHBOARD_ROUTE_NAME` de vos
+   `.env` et `.env.example`, ainsi que les clés `dashboard_route`,
+   `dashboard_route_name` et `override_fortify_redirect` de
+   `config/arkhe.php` — elles n'ont plus d'effet.
+
+2. **Si vous aviez pris le nom `dashboard`**, votre app n'a probablement plus
+   aucune route portant ce nom, alors qu'elle le référence sans doute dans son
+   logo, sa barre de navigation ou sa barre latérale. Déclarez la vôtre ; les
+   starter kits livrent déjà la vue :
+
+   ```php
+   // routes/web.php
+   Route::view('dashboard', 'dashboard')
+       ->middleware(['auth', 'verified'])
+       ->name('dashboard');
+   ```
+
+   Vérifiez ensuite d'un coup d'œil :
+
+   ```bash
+   php artisan route:list --name=dashboard
+   grep -rn "route('dashboard')" resources/views app routes
+   ```
+
+3. L'entrée « Tableau de bord » disparaît de la barre latérale d'Arkhe. Si
+   vous voulez un lien vers votre propre page, ajoutez-le à votre menu, ou
+   déclarez-le dans le registre partagé :
+
+   ```php
+   ArkheNav::section('access')->item(
+       key: 'dashboard',
+       label: fn () => __('Tableau de bord'),
+       icon: 'home',
+       route: 'dashboard',
+       priority: 0,
+   );
+   ```
+
 ## Depuis la 3.2 — refonte du back-office
 
 > Version cible non arrêtée : ces changements vivent dans la section

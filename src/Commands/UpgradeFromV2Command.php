@@ -21,7 +21,7 @@ use function Laravel\Prompts\confirm;
  *    role => permissions mapping in `role_permissions`. The command rewrites
  *    the host config accordingly (the V2 `roles` body moves verbatim to
  *    `role_permissions`, so enum keys and comments survive).
- *  - new top-level config keys (dashboard_route, role_permissions, components,
+ *  - new top-level config keys (role_permissions, components,
  *    backend_permission, root_permission, features…) — merged into the host
  *    app's config/arkhe.php without overwriting V2 entries.
  *  - Livewire component aliases shifted from `arkhe.main.livewire.admin.…`
@@ -74,7 +74,7 @@ class UpgradeFromV2Command extends Command
         $this->line('  • Run: php artisan migrate    (the profile-columns migration is idempotent)');
         $this->line('  • Run: php artisan db:seed --class=\\Arkhe\\Main\\Database\\Seeders\\ArkheRolesSeeder');
         $this->line('  • If you customised Livewire pages, ensure your overrides extend the V3 classes');
-        $this->line('    (Arkhe\\Main\\Livewire\\ListUsers, ListRoles, ListPermissions, Dashboard).');
+        $this->line('    (Arkhe\\Main\\Livewire\\ListUsers, ListRoles, ListPermissions).');
 
         return self::SUCCESS;
     }
@@ -431,8 +431,6 @@ class UpgradeFromV2Command extends Command
     private function detectMissingKeys(string $contents): array
     {
         $candidates = [
-            'dashboard_route' => "'dashboard_route' => env('ARKHE_DASHBOARD_ROUTE'),",
-            'dashboard_route_name' => "'dashboard_route_name' => env('ARKHE_DASHBOARD_ROUTE_NAME', 'arkhe.dashboard'),",
             'override_fortify_redirect' => "'override_fortify_redirect' => env('ARKHE_OVERRIDE_FORTIFY_REDIRECT', true),",
             'middleware' => "'middleware' => ['web', 'auth', 'arkhe.backend'],",
             'avatar_disk' => "'avatar_disk' => env('ARKHE_AVATAR_DISK', 'public'),",
@@ -442,7 +440,7 @@ class UpgradeFromV2Command extends Command
             'role_permissions' => "'role_permissions' => [\n        'root' => ['*'],\n    ],",
             'backend_permission' => "'backend_permission' => 'access-backend',",
             'root_permission' => "'root_permission' => 'manage-roles',",
-            'components' => "'components' => [\n        'list-users'       => \\Arkhe\\Main\\Livewire\\ListUsers::class,\n        'list-roles'       => \\Arkhe\\Main\\Livewire\\ListRoles::class,\n        'list-permissions' => \\Arkhe\\Main\\Livewire\\ListPermissions::class,\n        'dashboard'        => \\Arkhe\\Main\\Livewire\\Dashboard::class,\n    ],",
+            'components' => "'components' => [\n        'list-users'       => \\Arkhe\\Main\\Livewire\\ListUsers::class,\n        'list-roles'       => \\Arkhe\\Main\\Livewire\\ListRoles::class,\n        'list-permissions' => \\Arkhe\\Main\\Livewire\\ListPermissions::class,\n    ],",
             'features' => "'features' => [\n        'cookie_consent' => false,\n        'seo' => false,\n    ],",
         ];
 

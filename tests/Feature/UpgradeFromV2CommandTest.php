@@ -35,15 +35,14 @@ it('appends missing V3 keys to a V2-shaped config when confirmed', function (): 
     $this->artisan('arkhe:main:upgrade-from-v2')
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 12 missing V3 keys to config/arkhe.php?',
+            'Append 10 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->assertSuccessful();
 
     $patched = $this->files->get($this->configPath);
 
-    expect($patched)->toContain("'dashboard_route'")
-        ->toContain("'role_permissions'")
+    expect($patched)->toContain("'role_permissions'")
         ->toContain("'backend_permission' => 'access-backend'")
         ->toContain("'components'")
         ->toContain('// ── V3 additions');
@@ -60,7 +59,7 @@ it('reshapes V2 roles and permissions into the V3 layout', function (): void {
     $this->artisan('arkhe:main:upgrade-from-v2')
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 12 missing V3 keys to config/arkhe.php?',
+            'Append 10 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->assertSuccessful();
@@ -98,7 +97,7 @@ PHP);
     $this->artisan('arkhe:main:upgrade-from-v2')
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 12 missing V3 keys to config/arkhe.php?',
+            'Append 10 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->assertSuccessful();
@@ -130,7 +129,7 @@ PHP;
 
     $this->artisan('arkhe:main:upgrade-from-v2', ['--dry-run' => true])
         ->expectsConfirmation(
-            'Append 12 missing V3 keys to config/arkhe.php?',
+            'Append 10 missing V3 keys to config/arkhe.php?',
             'no',
         )
         ->expectsOutputToContain('merge them manually')
@@ -144,11 +143,11 @@ it('does not modify the file in dry-run mode', function (): void {
     $this->files->put($this->configPath, $original);
 
     // Even in dry-run, a confirmed reshape removes role_permissions from the
-    // keys to append (13 → 12): the reshape itself will create it.
+    // keys to append (11 → 10): the reshape itself will create it.
     $this->artisan('arkhe:main:upgrade-from-v2', ['--dry-run' => true])
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 12 missing V3 keys to config/arkhe.php?',
+            'Append 10 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->expectsOutputToContain('dry run')

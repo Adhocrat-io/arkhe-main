@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 return [
 
-    'dashboard' => [
-        'title' => 'Dashboard',
-        'total_users' => 'Total users',
-    ],
-
     'access' => [
         'title' => 'Access',
     ],

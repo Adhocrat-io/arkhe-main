@@ -14,7 +14,6 @@ use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Arkhe\Main\Cookies\ArkheCookiesServiceProvider;
 use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
 use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
-use Arkhe\Main\Livewire\Dashboard;
 use Arkhe\Main\Livewire\EditRole;
 use Arkhe\Main\Livewire\EditUser;
 use Arkhe\Main\Livewire\ListPermissions;
@@ -86,7 +85,6 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         'list-roles'       => ListRoles::class,
         'edit-role'        => EditRole::class,
         'list-permissions' => ListPermissions::class,
-        'dashboard'        => Dashboard::class,
         'site-seo'         => SiteSeo::class,
         'sitemap'          => Sitemap::class,
         'cookies'          => Cookies::class,
@@ -103,8 +101,6 @@ class ArkheMainServiceProvider extends PackageServiceProvider
             $class = (string) config("arkhe.components.{$alias}", $default);
             Livewire::component("arkhe.{$alias}", $class);
         }
-
-        $this->overrideFortifyHome();
 
         $this->bootSeo();
 
@@ -225,25 +221,6 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         });
     }
 
-    private function overrideFortifyHome(): void
-    {
-        if (! (bool) config('arkhe.override_fortify_redirect', true)) {
-            return;
-        }
-
-        $dashboard = (string) config('arkhe.dashboard_route', '');
-        if ($dashboard === '') {
-            return;
-        }
-
-        // Only act when Fortify is actually wired up — Arkhe doesn't depend on it.
-        if (! interface_exists(\Laravel\Fortify\Contracts\LoginResponse::class)) {
-            return;
-        }
-
-        $path = '/'.ltrim($dashboard, '/');
-        config(['fortify.home' => $path]);
-    }
 
     private function bootFeatures(): void
     {

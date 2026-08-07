@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
-use Arkhe\Main\Livewire\Dashboard;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Tests\Stubs\User;
@@ -15,7 +14,6 @@ use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
     $this->app->make(ArkheRolesSeeder::class)->run();
-    config()->set('arkhe.dashboard_route', 'dashboard');
 });
 
 function makeRbacUser(?string $role = null): User
@@ -181,19 +179,5 @@ it('deletes a permission through the ListPermissions flow', function (): void {
         ->call('delete');
 
     expect(Permission::query()->find($p->id))->toBeNull();
-});
-
-// ─── Dashboard ────────────────────────────────────────────────────────────────
-
-it('renders the dashboard with user counts per role', function (): void {
-    $root  = makeRbacUser('root');
-    makeRbacUser('administrateur');
-    makeRbacUser('user');
-    makeRbacUser('user');
-
-    Livewire::actingAs($root)
-        ->test(Dashboard::class)
-        ->assertStatus(200)
-        ->assertSee('4'); // total users incl. root
 });
 

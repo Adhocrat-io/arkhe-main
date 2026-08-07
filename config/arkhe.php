@@ -28,45 +28,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Dashboard route (opt-in)
-    |--------------------------------------------------------------------------
-    |
-    | When set, Arkhe registers a top-level dashboard at this path with the
-    | named route `arkhe.dashboard`. Leave null to keep your app's existing
-    | dashboard untouched. Typical value: `dashboard`.
-    |
-    */
-    'dashboard_route' => env('ARKHE_DASHBOARD_ROUTE'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard route name
-    |--------------------------------------------------------------------------
-    |
-    | Named route under which the dashboard is registered. Defaults to
-    | `arkhe.dashboard`. Set to `dashboard` (via ARKHE_DASHBOARD_ROUTE_NAME)
-    | so the Laravel starter kit's `route('dashboard')` after-login redirect
-    | resolves to Arkhe's dashboard without having to patch the login form.
-    |
-    */
-    'dashboard_route_name' => env('ARKHE_DASHBOARD_ROUTE_NAME', 'arkhe.dashboard'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Override Fortify's `home` redirect
-    |--------------------------------------------------------------------------
-    |
-    | When Fortify is installed and `dashboard_route` is set, Arkhe rewrites
-    | `config('fortify.home')` at boot so the post-login (and post-2FA, post
-    | password confirm) redirect lands on the Arkhe dashboard instead of the
-    | starter kit's hard-coded `/dashboard`. Disable if you want to manage
-    | Fortify's redirect yourself.
-    |
-    */
-    'override_fortify_redirect' => env('ARKHE_OVERRIDE_FORTIFY_REDIRECT', true),
-
-    /*
-    |--------------------------------------------------------------------------
     | Middleware
     |--------------------------------------------------------------------------
     |
@@ -263,7 +224,6 @@ return [
         'list-roles'       => \Arkhe\Main\Livewire\ListRoles::class,
         'edit-role'        => \Arkhe\Main\Livewire\EditRole::class,
         'list-permissions' => \Arkhe\Main\Livewire\ListPermissions::class,
-        'dashboard'        => \Arkhe\Main\Livewire\Dashboard::class,
         'site-seo'         => \Arkhe\Main\Livewire\SiteSeo::class,
         'sitemap'          => \Arkhe\Main\Livewire\Sitemap::class,
         'cookies'          => \Arkhe\Main\Livewire\Cookies::class,

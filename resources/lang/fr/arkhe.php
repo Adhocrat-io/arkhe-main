@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 return [
 
-    'dashboard' => [
-        'title' => 'Tableau de bord',
-        'total_users' => 'Utilisateurs au total',
-    ],
-
     'access' => [
         'title' => 'Accès',
     ],

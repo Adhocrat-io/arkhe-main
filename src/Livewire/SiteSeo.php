@@ -6,6 +6,7 @@ namespace Arkhe\Main\Livewire;
 
 use Arkhe\Main\Livewire\Forms\SiteSeoForm;
 use Arkhe\Main\Services\SiteSeoService;
+use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -35,7 +36,7 @@ class SiteSeo extends Component
 
         $this->siteSeoForm->fillFromModel($row);
 
-        session()->flash('arkhe.site_seo.saved', true);
+        Flux::toast(variant: 'success', text: __('arkhe::arkhe.site_seo.saved'));
     }
 
     // ─── Extensibility hooks ──────────────────────────────────────────────

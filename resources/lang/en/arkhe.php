@@ -51,8 +51,16 @@ return [
 
     'site_seo' => [
         'title' => 'SEO',
-        'intro' => 'SEO settings applied across the site. These values act as defaults: a model that defines its own SEO (via the HasArkheSeo trait) overrides them.',
+        'intro' => 'These values apply across the site, except where a model defines its own SEO — the HasArkheSeo trait then overrides them.',
         'saved' => 'SEO settings saved.',
+        'sections' => [
+            'identity' => 'Site identity',
+            'identity_hint' => 'What names and describes the site in search results.',
+            'sharing' => 'Sharing',
+            'sharing_hint' => 'What social networks and the browser tab display.',
+            'indexing' => 'Indexing',
+            'indexing_hint' => 'What search engines are allowed to do.',
+        ],
         'fields' => [
             'site_name' => 'Site name',
             'title_suffix' => 'Title suffix',
@@ -64,12 +72,15 @@ return [
             'favicon' => 'Favicon',
         ],
         'hints' => [
-            'site_name' => 'Used in OpenGraph tags.',
-            'title_suffix' => 'Appended after every <title> (e.g. "| Acme").',
-            'description' => 'Used when a page does not provide its own.',
-            'image' => 'Path (e.g. /images/og.png) or absolute URL. Used as fallback for OG/Twitter tags.',
-            'robots' => 'Default: max-snippet:-1, max-image-preview:large, max-video-preview:-1.',
+            'site_name' => 'The name carried by every share.',
+            'title_suffix' => 'Appended after each page title.',
+            'description' => 'Used when a page does not give its own.',
+            'author' => 'Shown as the default author of pages.',
+            'image' => 'Path or absolute URL, used when a page has no image of its own.',
             'twitter_username' => 'Without the @.',
+            'favicon' => 'The tab icon, for example "/favicon.ico".',
+            'robots' => 'What search engines may index.',
+            'robots_tooltip' => 'Left empty, Arkhe applies "max-snippet:-1, max-image-preview:large, max-video-preview:-1" — the widest indexing. "noindex, nofollow" removes the whole site from search results.',
         ],
     ],
 

@@ -94,6 +94,12 @@ Vingt tests de non-régression couvrent ces chemins
   `RoleService::create()` / `delete()`, les événements `RoleCreated` /
   `RoleDeleted` et les permissions `create-role` / `delete-role` restent en
   place pour les seeders et les commandes.
+- **La page SEO adopte le même langage.** Ses huit champs, jusqu'ici alignés
+  d'un bloc, se répartissent en trois sections qui disent à quoi ils servent :
+  identité du site, partage, indexation. Chaque champ porte sa description, et
+  le réglage `robots` gagne une infobulle — c'est le seul qui puisse retirer
+  le site des moteurs de recherche. L'enregistrement se signale par un toast,
+  comme ailleurs, au lieu d'un bandeau passé par la session.
 - **Zone de dépôt pour la photo de profil.** L'`<input type="file">` brut, seul
   endroit des fiches qui échappait au langage Flux, laisse place à
   `x-arkhe::image-upload` : aperçu de ce qu'on vient de déposer, glisser-déposer

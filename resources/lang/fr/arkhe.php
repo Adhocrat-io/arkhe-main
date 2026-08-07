@@ -51,8 +51,16 @@ return [
 
     'site_seo' => [
         'title' => 'SEO',
-        'intro' => 'Réglages SEO appliqués à toutes les pages du site. Ces valeurs servent de défauts : un modèle qui définit son propre SEO (via le trait HasArkheSeo) les remplace.',
+        'intro' => 'Ces valeurs s’appliquent à toutes les pages du site, sauf là où un modèle définit son propre SEO — le trait HasArkheSeo les remplace alors.',
         'saved' => 'Réglages SEO enregistrés.',
+        'sections' => [
+            'identity' => 'Identité du site',
+            'identity_hint' => 'Ce qui nomme et décrit le site dans les résultats de recherche.',
+            'sharing' => 'Partage',
+            'sharing_hint' => 'Ce qu’affichent les réseaux sociaux et l’onglet du navigateur.',
+            'indexing' => 'Indexation',
+            'indexing_hint' => 'Ce que les moteurs de recherche ont le droit de faire.',
+        ],
         'fields' => [
             'site_name' => 'Nom du site',
             'title_suffix' => 'Suffixe de titre',
@@ -64,12 +72,15 @@ return [
             'favicon' => 'Favicon',
         ],
         'hints' => [
-            'site_name' => 'Utilisé dans les balises OpenGraph.',
-            'title_suffix' => 'Concaténé après chaque <title> (ex. "| Acme").',
-            'description' => "Utilisé quand la page n'en définit pas une explicitement.",
-            'image' => 'Chemin (ex. /images/og.png) ou URL absolue. Utilisé en fallback pour les balises OG/Twitter.',
-            'robots' => 'Par défaut : max-snippet:-1, max-image-preview:large, max-video-preview:-1.',
+            'site_name' => 'Le nom qui accompagne chaque partage.',
+            'title_suffix' => 'Ajouté après chaque titre de page.',
+            'description' => 'Reprise quand la page n’en donne pas la sienne.',
+            'author' => 'Affiché comme auteur par défaut des pages.',
+            'image' => 'Chemin ou URL absolue, reprise à défaut d’image propre à la page.',
             'twitter_username' => 'Sans le @.',
+            'favicon' => 'L’icône de l’onglet, par exemple « /favicon.ico ».',
+            'robots' => 'Ce que les moteurs peuvent indexer.',
+            'robots_tooltip' => 'Laissé vide, Arkhe applique « max-snippet:-1, max-image-preview:large, max-video-preview:-1 » — l’indexation la plus large. « noindex, nofollow » retire le site entier des résultats de recherche.',
         ],
     ],
 

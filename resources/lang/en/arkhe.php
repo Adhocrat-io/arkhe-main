@@ -144,7 +144,6 @@ return [
         'stats' => [
             'roles' => 'Roles',
             'permissions' => 'Permissions',
-            'custom' => 'Custom',
         ],
         'columns' => [
             'name' => 'Label',

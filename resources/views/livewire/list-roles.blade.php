@@ -14,7 +14,6 @@
     <x-arkhe::stat-bar :stats="[
         ['label' => __('arkhe::arkhe.roles.stats.roles'), 'value' => $stats['roles'], 'color' => 'zinc'],
         ['label' => __('arkhe::arkhe.roles.stats.permissions'), 'value' => $stats['permissions'], 'color' => 'blue'],
-        ['label' => __('arkhe::arkhe.roles.stats.custom'), 'value' => $stats['custom'], 'color' => 'amber'],
     ]" />
 
     {{-- Filtres --}}

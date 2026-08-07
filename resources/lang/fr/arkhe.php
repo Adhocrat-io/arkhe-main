@@ -144,7 +144,6 @@ return [
         'stats' => [
             'roles' => 'Rôles',
             'permissions' => 'Permissions',
-            'custom' => 'Personnalisés',
         ],
         'columns' => [
             'name' => 'Libellé',

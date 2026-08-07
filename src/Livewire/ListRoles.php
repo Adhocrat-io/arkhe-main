@@ -247,19 +247,15 @@ class ListRoles extends Component
      * Compteurs d'en-tête : ils ne suivent pas les filtres, ils donnent
      * l'état global du RBAC.
      *
-     * @return array{roles: int, permissions: int, custom: int}
+     * @return array{roles: int, permissions: int}
      */
-    private function globalStats(RoleService $service): array
+    private function globalStats(): array
     {
-        $names = Role::query()->pluck('name');
-
         return [
-            'roles' => $names->count(),
+            'roles' => Role::query()->count(),
+            // Le seul des deux qui ne se lise pas dans la table : les lignes
+            // ne donnent qu'un nombre de permissions par rôle, jamais le total.
             'permissions' => Permission::query()->count(),
-            // Les rôles ajoutés par l'app, pas ceux d'Arkhe : compter les
-            // canoniques donnerait le total sur une installation par défaut,
-            // où ils sont les seuls présents.
-            'custom' => $names->reject(fn (string $name): bool => $service->isCanonical($name))->count(),
         ];
     }
 
@@ -279,7 +275,7 @@ class ListRoles extends Component
             'roles'              => $paginator,
             'availablePerms'     => $permissions->all()->pluck('name'),
             'canonicalResolver'  => fn (string $name): bool => $service->isCanonical($name),
-            'stats'              => $this->globalStats($service),
+            'stats'              => $this->globalStats(),
         ])->layout((string) config('arkhe.admin.layout', config('arkhe.layout', 'arkhe::layouts.app')));
     }
 }

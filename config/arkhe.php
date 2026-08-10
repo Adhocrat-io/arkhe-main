@@ -200,6 +200,57 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Strong authentication
+    |--------------------------------------------------------------------------
+    |
+    | Requires one strong factor before reaching the backend: a registered
+    | passkey OR a confirmed TOTP. A passkey exempts from TOTP — it is already
+    | two-factor and, being bound to the domain, phishing-resistant where a
+    | TOTP code is not.
+    |
+    | This gates access to the backend, not the sign-in itself: how users
+    | authenticate belongs to your app's Fortify pipeline. A user without a
+    | factor stays signed in and keeps the rest of the site — only the admin
+    | area closes until they enrol.
+    |
+    |   'enforce'  false  no enforcement. The default: upgrading the package
+    |                     must never lock an app out of its own backend
+    |              true   every backend page demands a strong factor
+    |
+    | All or nothing, on purpose. Guarding the sensitive area alone would leave
+    | the user list open — where accounts are created and roles handed out —
+    | which reads as prudence but mostly buys a false sense of safety. Roles and
+    | permissions already draw that line where it belongs.
+    |
+    |   'route'    route name of the page where users enrol. Left null, Arkhe
+    |              probes `security.edit` then `two-factor.show`, so current
+    |              starter kits work with no configuration at all. Set it if
+    |              your app names that page differently.
+    |
+    | Enrol before switching this on: turning it on without a factor bounces
+    | you to the explanation page on every attempt. Nothing breaks — it leads
+    | to your security page and a minute fixes it — but the other order is more
+    | comfortable.
+    |
+    | A blocked user lands on `/administration/strong-auth`, an Arkhe page that
+    | states the requirement and links on to the enrolment screen. Override it
+    | through `components.strong-auth-required` like any other page.
+    |
+    | Two degraded cases are handled rather than left to fail. If no enrolment
+    | page can be resolved, that page reports what to configure instead of
+    | linking nowhere. And if the user model exposes neither mechanism, the
+    | requirement is unsatisfiable by anyone, so it is skipped with a logged
+    | warning — blocking a backend nobody could re-enter would be worse than
+    | leaving it as it was.
+    |
+    */
+    'strong_auth' => [
+        'enforce' => env('ARKHE_STRONG_AUTH', false),
+        'route'   => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Livewire components
     |--------------------------------------------------------------------------
     |

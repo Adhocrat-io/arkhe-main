@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Arkhe\Main\Livewire\Forms\RoleForm;
@@ -33,6 +34,8 @@ use Spatie\Permission\Models\Role;
  */
 class EditRole extends Component
 {
+    use RequiresStrongAuth;
+
     public RoleForm $roleForm;
 
     // Locked: these two say *which* role is being edited and *whether* it is

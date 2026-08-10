@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Arkhe\Main\Livewire\Forms\RoleForm;
@@ -20,6 +21,8 @@ use Spatie\Permission\Models\Role;
 
 class ListRoles extends Component
 {
+    use RequiresStrongAuth;
+
     use WithPagination;
 
     public RoleForm $roleForm;

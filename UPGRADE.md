@@ -2,6 +2,105 @@
 
 This document tracks breaking and behavioural changes between major versions of `adhocrat-io/arkhe-main`.
 
+## Depuis la 3.2 — authentification forte (optionnelle)
+
+**Rien ne change pour vous.** La fonctionnalité arrive désactivée :
+`arkhe.strong_auth.enforce` vaut `false`, et votre back-office se comporte
+exactement comme avant la montée de version. Vous pouvez déployer sans lire la
+suite.
+
+Ce qu'elle fait, quand on l'active : exiger un facteur fort — clé d'accès ou 2FA
+confirmée — avant d'atteindre l'administration. Une clé d'accès dispense de la
+2FA, étant déjà à deux facteurs et résistante au hameçonnage.
+
+Le verrou porte sur l'**accès au back-office**, pas sur la connexion. Un compte
+sans facteur reste connecté et garde le reste du site ; seul
+`/administration/*` se ferme, jusqu'à son enrôlement.
+
+### Pour l'activer, dans cet ordre
+
+**1. Vérifiez que votre app peut y répondre.** Il faut que votre modèle
+`User` expose au moins l'une des deux méthodes — c'est le cas avec le trait
+`TwoFactorAuthenticatable` de Fortify et/ou `laravel/passkeys` :
+
+```bash
+php artisan tinker --execute="\$u = App\Models\User::first();
+  var_dump(method_exists(\$u, 'hasEnabledTwoFactorAuthentication'));
+  var_dump(method_exists(\$u, 'hasPasskeysEnabled'));"
+```
+
+Deux `false` : installez `laravel/fortify` ou `laravel/passkeys` d'abord.
+Activer le drapeau sans cela reste sans effet, et le signale en journal.
+
+**2. Étendez le verrou à vos propres pages d'administration.** Arkhe garde ses
+routes ; votre tableau de bord est le vôtre. L'alias est inerte jusqu'à
+l'étape 4, donc l'ajouter maintenant ne change rien :
+
+```php
+// routes/web.php
+Route::middleware(['auth', 'verified', 'arkhe.strong-auth'])->group(function () {
+    Route::view('dashboard', 'dashboard')->name('dashboard');
+});
+```
+
+Le tableau de bord mérite d'être protégé : c'est l'entrée du back-office, et le
+laisser ouvert ne fait que repousser le blocage au premier clic.
+
+**3. Enrôlez-vous, tant que le back-office est encore ouvert.** Passez par vos
+réglages de sécurité et enregistrez une clé d'accès, ou confirmez une 2FA. Sauter
+cette étape n'est pas grave — l'écran d'explication vous mène toujours à la page
+d'enrôlement — mais l'ordre inverse évite le détour à chaque tentative.
+
+**4. Activez.**
+
+```dotenv
+ARKHE_STRONG_AUTH=true
+```
+
+```bash
+php artisan config:clear
+php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled());"
+```
+
+La dernière commande doit afficher `true`. Si elle affiche `false`, la valeur
+n'a pas été comprise et rien n'est appliqué — tout ce qui n'est pas un « oui »
+explicite se lit comme désactivé, pour qu'une faute de frappe laisse le
+back-office ouvert plutôt qu'elle n'enferme l'équipe dehors.
+
+C'est tout ou rien : soit le back-office exige un facteur fort, soit non. Ne
+verrouiller que la zone sensible a été envisagé puis écarté — cela laissait la
+liste des utilisateurs ouverte, là où l'on crée des comptes et attribue des
+rôles. Les rôles et permissions tracent déjà cette frontière là où il faut.
+
+**Ce que voit l'utilisateur bloqué.** Une page Arkhe, à
+`/administration/strong-auth`, qui énonce l'exigence, présente clé d'accès et 2FA,
+et annonce la confirmation de mot de passe avant qu'elle ne survienne. Elle
+renvoie ensuite vers vos réglages de sécurité. Vous pouvez l'écraser comme
+n'importe quelle page du paquet, via `components.strong-auth-required`.
+
+**La page d'enrôlement est trouvée toute seule** : Arkhe sonde `security.edit`
+(starter kits récents), puis `two-factor.show` (Jetstream). Si la vôtre porte un
+autre nom, dites-le :
+
+```php
+// config/arkhe.php
+'strong_auth' => [
+    'enforce' => env('ARKHE_STRONG_AUTH', false),
+    'route'   => 'reglages.securite',
+],
+```
+
+Les pages de profil ne sont volontairement pas sondées : dans les starter kits
+actuels elles ne portent aucun réglage 2FA ni clé d'accès, et y renvoyer
+laisserait l'utilisateur devant un écran où il ne peut rien activer. Quand rien
+ne résout, l'écran d'explication retire son bouton et nomme la clé à régler,
+plutôt que de pointer vers le vide.
+
+**Config publiée avant cette version ?** La clé y sera absente, ce qui se lit
+comme `false` — donc désactivé, donc sans effet. Le middleware, lui, est câblé
+dans les routes du paquet et non dans `arkhe.middleware` : il vous parvient donc
+même si votre tableau `middleware` publié est figé.
+
 ## Depuis la 3.2 — correctifs de sécurité (à lire avant de déployer)
 
 Quatre élévations de privilèges ont été fermées. Les gardes vivent dans les

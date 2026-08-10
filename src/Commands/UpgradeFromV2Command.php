@@ -440,6 +440,12 @@ class UpgradeFromV2Command extends Command
             'role_permissions' => "'role_permissions' => [\n        'root' => ['*'],\n    ],",
             'backend_permission' => "'backend_permission' => 'access-backend',",
             'root_permission' => "'root_permission' => 'manage-roles',",
+            // Appended so the key is visible in the published config, not to
+            // turn anything on: `false` is the default, and absent reads the
+            // same as false. Note `middleware` above keeps the V3 stack — the
+            // strong-auth middleware is wired in routes/arkhe.php instead, so
+            // that apps with a frozen published config still receive it.
+            'strong_auth' => "'strong_auth' => [\n        'enforce' => env('ARKHE_STRONG_AUTH', false),\n        'route'   => null,\n    ],",
             'components' => "'components' => [\n        'list-users'       => \\Arkhe\\Main\\Livewire\\ListUsers::class,\n        'list-roles'       => \\Arkhe\\Main\\Livewire\\ListRoles::class,\n        'list-permissions' => \\Arkhe\\Main\\Livewire\\ListPermissions::class,\n    ],",
             'features' => "'features' => [\n        'cookie_consent' => false,\n        'seo' => false,\n    ],",
         ];

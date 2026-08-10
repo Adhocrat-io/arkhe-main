@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Livewire\Forms\PermissionForm;
 use Arkhe\Main\Services\PermissionService;
@@ -22,6 +23,8 @@ use Livewire\WithPagination;
  */
 class ListPermissions extends Component
 {
+    use RequiresStrongAuth;
+
     use WithPagination;
 
     public PermissionForm $permissionForm;

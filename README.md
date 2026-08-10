@@ -108,6 +108,124 @@ By default: `GET /administration/users` (the prefix is configurable).
 
 Access is granted to users carrying either the `root` or `administrateur` role; everyone else gets a `403` via the `arkhe.backend` middleware.
 
+## Strong authentication
+
+Arkhe can require a strong second factor — a registered **passkey** or a **confirmed TOTP** — before anyone reaches the backend. A passkey exempts from TOTP: it is already two-factor (device possession plus biometric or PIN) and, being bound to the domain by the browser, phishing-resistant where a TOTP code is not.
+
+This gates **access to the backend, not sign-in**. How users authenticate belongs to your app's Fortify pipeline, which the package does not touch — a user without a factor stays signed in and keeps the rest of the site; only `/administration/*` closes until they enrol. Fortify offers no equivalent: it provides two-factor authentication but never compels it, and ships no middleware at all.
+
+### Turning it on
+
+Disabled by default, so upgrading the package never locks an app out of its own backend. Four steps, in this order — the order matters, and step 3 is the one people skip.
+
+**1. Check your app can satisfy it.** Enforcement needs a user model exposing at least one of the two probe methods below. With Fortify's `TwoFactorAuthenticatable` and/or `laravel/passkeys` on your `User`, you are set. Without either, the flag has no effect (see [When it cannot be satisfied](#when-it-cannot-be-satisfied)).
+
+```bash
+php artisan tinker --execute="\$u = App\Models\User::first();
+  var_dump(method_exists(\$u, 'hasEnabledTwoFactorAuthentication'));
+  var_dump(method_exists(\$u, 'hasPasskeysEnabled'));"
+```
+
+**2. Extend the gate to your own admin pages.** Arkhe guards its own routes; your dashboard is yours. See [Extending it to your own routes](#extending-it-to-your-own-routes) — the alias is inert until step 4, so this is safe to do first.
+
+**3. Enrol yourself before switching it on.** Go to your security settings and register a passkey (or confirm a TOTP) *now*, while the backend is still open. Skipping this is not fatal — the interstitial always routes you to the enrolment page — but doing it first spares you the detour on every attempt.
+
+**4. Switch it on.**
+
+```dotenv
+ARKHE_STRONG_AUTH=true
+```
+
+```bash
+php artisan config:clear
+```
+
+Verify it took effect — this must print `true`:
+
+```bash
+php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled());"
+```
+
+It is all or nothing: either the backend requires a strong factor or it does not. Guarding only the sensitive area was considered and dropped — it left the user list open, where accounts are created and roles handed out, which reads as prudence while buying little. Roles and permissions already draw that line where it belongs.
+
+Anything unrecognised reads as disabled rather than as "protect everything", so a typo fails towards a working backend rather than towards a lockout.
+
+The published config, should you want to set it there instead of in `.env`:
+
+```php
+// config/arkhe.php
+'strong_auth' => [
+    'enforce' => env('ARKHE_STRONG_AUTH', false),
+    'route'   => null,   // enrolment page; auto-detected when null
+],
+```
+
+> **Config published before this release?** The key will simply be absent, which reads as `false`. The middleware itself is wired into the package's own routes rather than into `arkhe.middleware`, so it reaches you even with a frozen published stack.
+
+### What counts as a strong factor
+
+Detection probes the user model for two methods, never for traits or vendor classes, so neither `laravel/fortify` nor `laravel/passkeys` becomes a dependency:
+
+| Method | Comes from | Cost |
+| --- | --- | --- |
+| `hasEnabledTwoFactorAuthentication()` | Fortify's `TwoFactorAuthenticatable` | attribute read, no query |
+| `hasPasskeysEnabled()` | `laravel/passkeys` | one `exists()` query |
+
+Either one satisfies the requirement. Two-factor is probed first because it is free, and the verdict is cached for the rest of the request. A TOTP secret that was generated but never confirmed does **not** count.
+
+### When it cannot be satisfied
+
+Two degraded states are handled rather than left to fail:
+
+- **No enrolment page resolves.** Arkhe probes `security.edit` then `two-factor.show`. Profile pages are deliberately excluded — in current starter kits they carry no 2FA or passkey controls, so sending someone there would strand them where nothing can be enabled. When nothing resolves, the interstitial drops its call to action and reports which config key to set, rather than linking into the void.
+- **The user model exposes neither method.** No user could ever satisfy the requirement, so it is skipped with a logged warning. Failing closed would brick the backend with no way back in, since the config is only reachable with server access — and this state means the flag was set on an app with no 2FA support, which is a misconfiguration rather than an intent.
+
+### Extending it to your own routes
+
+Arkhe guards its own pages. Your dashboard, and anything else you consider part of the admin area, belongs to your app — so the gate is exposed as a reusable middleware alias you apply where you want it:
+
+```php
+// routes/web.php
+Route::middleware(['auth', 'verified', 'arkhe.strong-auth'])->group(function () {
+    Route::view('dashboard', 'dashboard')->name('dashboard');
+});
+```
+
+The dashboard is worth protecting: it is the way into the admin area, and leaving it open only postpones the block to the first click. The alias is inert while `arkhe.strong_auth.enforce` is `false`, so adding it costs nothing until you switch enforcement on.
+
+Place it after `auth`, which resolves the user it reads. There is nothing else to configure — the alias takes no parameter.
+
+### Why route middleware alone is not enough
+
+Livewire's update endpoint is a separate route carrying only `['web']`, so every action after the initial page render — saving a user, deleting a role — travels a path where route middleware does not run. A gate wired only on `/administration/*` would guard the first GET and nothing else: anyone holding a snapshot from an earlier legitimate page load could keep acting on the backend.
+
+Arkhe closes that on both halves. The three gates are declared persistent (`Livewire::addPersistentMiddleware()`), so Livewire re-applies them on component requests; and backend components carry `RequiresStrongAuth`, which re-asserts the requirement server-side on every request through Livewire's `booted()` hook. The second half matters because persistent middleware still keys off the client-supplied snapshot path — a gate whose only enforcement can be influenced by the payload it polices is not a gate.
+
+If you build your own backend Livewire components, apply the trait to them too:
+
+```php
+use Arkhe\Main\Concerns\RequiresStrongAuth;
+
+class MyAdminPage extends Component
+{
+    use RequiresStrongAuth;
+}
+```
+
+### What a blocked user sees
+
+They land on an Arkhe page at `/administration/strong-auth` that names the requirement, describes both options, and walks through what comes next — including the password prompt, which most starter kits put in front of their security page. Only then does it hand off.
+
+The interstitial exists because handing off directly did not work: the security page belongs to your app and usually sits behind `password.confirm`, and that intermediate hop consumes any flashed message. Users met a password prompt and a settings screen with nothing saying what was expected of them.
+
+The page sits **outside** the guarded route group, since a gate that redirects to a page it also guards is an infinite loop. It stays registered even when enforcement is off, so a stale link finds a page rather than a 404. Override it like any other Arkhe page:
+
+```php
+'components' => [
+    'strong-auth-required' => App\Livewire\MyStrongAuthNotice::class,
+],
+```
+
 ## Coexisting with a custom admin (Livewire starter kit)
 
 Arkhe is designed to **plug into** your existing admin shell rather than replace it. Two integration points:
@@ -534,6 +652,7 @@ Things that may surprise you. None are blockers — most are deliberate trade-of
 | **User model patch** | Step 10 refuses to inject `HasBackendProfile` if the model already imports `Spatie\Permission\Traits\HasRoles` (it would conflict — `HasBackendProfile` already wraps `HasRoles`). Remove the explicit `use HasRoles;` first, or add `use HasBackendProfile;` by hand. |
 | **Layout chrome** | The bundled `arkhe::layouts.app` ships with a Flux header (brand + profile dropdown) but no sidebar, navigation menu, or footer. It's deliberately minimal — to keep its real chrome, override the layout config. |
 | **Dark-mode flash** | Some Laravel starter kits hard-code `class="dark"` on the `<html>` tag of their layouts. The page then paints dark before `@fluxAppearance` applies the visitor's real theme — a brief flash, most visible on list pages where the table is the heaviest thing to paint. Not an Arkhe behaviour, but you will see it on Arkhe screens: drop the attribute from every file under `resources/views/layouts/`, auth layouts included, and keep only `lang`. |
+| **Strong-auth hand-off** | Arkhe explains the block on its own page, then links out to your security settings — it cannot highlight the right panel once the user is there, since that page belongs to your app. The walkthrough names what to look for instead. If your security page is unusual, override the interstitial (see above) to point at the exact section. |
 | **`spatie/laravel-permission` cache** | The seeder calls `Permission::create()` directly. After re-running it (e.g. to add new permissions), clear the permission cache — `php artisan permission:cache-reset` — or restart your queue workers. |
 | **Sitemap on `sync` queue** | The "Regenerate now" button dispatches `GenerateSitemap` onto the host app's default queue. With the `sync` driver it runs inline; with a real driver, make sure a worker is up — otherwise the page reports "queued" with no visible progress. |
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Jobs\GenerateSitemap;
 use Arkhe\Main\Services\SitemapService;
@@ -13,6 +14,8 @@ use Livewire\Component;
 
 class Sitemap extends Component
 {
+    use RequiresStrongAuth;
+
     public function mount(): void
     {
         $this->authorize('view-sitemap');

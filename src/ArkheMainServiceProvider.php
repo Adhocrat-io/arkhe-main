@@ -13,6 +13,7 @@ use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Arkhe\Main\Cookies\ArkheCookiesServiceProvider;
 use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
+use Arkhe\Main\Http\Middleware\EnsureUserHasStrongAuth;
 use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
 use Arkhe\Main\Livewire\EditRole;
 use Arkhe\Main\Livewire\EditUser;
@@ -22,6 +23,7 @@ use Arkhe\Main\Livewire\ListUsers;
 use Arkhe\Main\Livewire\Cookies;
 use Arkhe\Main\Livewire\SiteSeo;
 use Arkhe\Main\Livewire\Sitemap;
+use Arkhe\Main\Livewire\StrongAuthRequired;
 use Arkhe\Main\Jobs\GenerateSitemap;
 use Arkhe\Main\Repositories\PermissionRepository;
 use Arkhe\Main\Repositories\RoleRepository;
@@ -88,14 +90,34 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         'site-seo'         => SiteSeo::class,
         'sitemap'          => Sitemap::class,
         'cookies'          => Cookies::class,
+        'strong-auth-required' => StrongAuthRequired::class,
     ];
 
     public function packageBooted(): void
     {
         /** @var Router $router */
         $router = $this->app->make(Router::class);
-        $router->aliasMiddleware('arkhe.backend', EnsureUserHasBackendAccess::class);
-        $router->aliasMiddleware('arkhe.root',    EnsureUserIsRoot::class);
+        $router->aliasMiddleware('arkhe.backend',     EnsureUserHasBackendAccess::class);
+        $router->aliasMiddleware('arkhe.root',        EnsureUserIsRoot::class);
+        $router->aliasMiddleware('arkhe.strong-auth', EnsureUserHasStrongAuth::class);
+
+        // Route middleware only guards the initial page load. Livewire's own
+        // update endpoint carries just `['web']`, so every subsequent action —
+        // saving a user, deleting a role — travels a path where none of the
+        // gates above would otherwise run. Livewire re-applies a middleware on
+        // those requests only if it is declared persistent.
+        //
+        // The two permission gates were never exposed by that gap because
+        // every component re-checks with `$this->authorize()` on each action.
+        // The strong-auth gate has no such per-action equivalent, so declaring
+        // it here is what makes it real rather than a speed bump on the first
+        // GET. Registered alongside the others so the whole stack behaves
+        // consistently on both paths.
+        Livewire::addPersistentMiddleware([
+            EnsureUserHasBackendAccess::class,
+            EnsureUserIsRoot::class,
+            EnsureUserHasStrongAuth::class,
+        ]);
 
         foreach (self::COMPONENT_DEFAULTS as $alias => $default) {
             $class = (string) config("arkhe.components.{$alias}", $default);

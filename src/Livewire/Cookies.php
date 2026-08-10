@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Whitecube\LaravelCookieConsent\CookiesRegistrar;
@@ -18,6 +19,8 @@ use Whitecube\LaravelCookieConsent\CookiesRegistrar;
  */
 class Cookies extends Component
 {
+    use RequiresStrongAuth;
+
     public function mount(): void
     {
         $this->authorize('view-cookies');

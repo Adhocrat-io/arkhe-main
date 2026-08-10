@@ -291,6 +291,38 @@ return [
         'role_above_rank' => 'You cannot assign a role higher than your own.',
     ],
 
+    // The strong-authentication gate (`arkhe.strong-auth` middleware). These
+    // are the package's first refusal strings — every other 403 it raises
+    // renders the framework's default page.
+    'strong_auth' => [
+        'required' => 'This area requires a passkey or two-factor authentication. Enrol one to continue — it takes about a minute.',
+        'no_route' => 'Strong authentication is required, but Arkhe could not find the page where you would enrol. Point `arkhe.strong_auth.route` at your security settings route, or set `arkhe.strong_auth.enforce` back to false.',
+
+        // The interstitial shown before handing off to the host app's security
+        // page. It exists so the requirement gets stated somewhere the user is
+        // guaranteed to read it.
+        'page' => [
+            'title'           => 'Extra protection required',
+            'intro'           => 'Reaching the admin area takes a second factor. Set one up and you will not see this screen again.',
+            'options_title'   => 'Two ways to do it',
+            'passkey_title'   => 'Passkey — recommended',
+            'passkey_body'    => 'Your fingerprint, your face or your device PIN. Nothing to remember, nothing to retype, and it only works on the real site: a lookalike cannot use it.',
+            'totp_title'      => 'Two-factor authentication',
+            'totp_body'       => 'A six-digit code that changes every thirty seconds, from an authenticator app. If you already have a passkey, that one is enough.',
+            'steps_title'     => 'What happens next',
+            // Arkhe does not own the security page and cannot highlight
+            // anything on it, so the journey is described before it starts —
+            // in the order the user will meet each step.
+            'steps'           => [
+                'password' => 'You will be asked for your password again. That is expected: it guards your security settings.',
+                'find'     => 'On the next page, look for the "Passkeys" or "Two-factor authentication" section.',
+                'follow'   => 'Follow the prompts, then head back to the admin area. You will be let straight through.',
+            ],
+            'cta'             => 'Set up my protection',
+            'no_route_title'  => 'Enrolment page not found',
+        ],
+    ],
+
     'install' => [
         'intro' => 'Arkhe Main installation',
         'publish_config' => 'Publish the config file?',

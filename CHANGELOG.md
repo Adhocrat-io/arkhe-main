@@ -4,6 +4,74 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+### Added
+
+**Authentification forte du back-office.** Un facteur fort — clé d'accès ou 2FA
+confirmée — peut désormais être exigé avant d'atteindre l'administration. Une
+clé d'accès dispense de la 2FA : elle est déjà à deux facteurs, et liée au
+domaine, donc résistante au hameçonnage là où un code TOTP ne l'est pas.
+
+Le verrou porte sur l'**accès**, pas sur la connexion : la façon dont un
+utilisateur s'authentifie appartient au pipeline Fortify de l'app. Un compte
+sans facteur reste connecté et garde le reste du site ; seul
+`/administration/*` se ferme jusqu'à son enrôlement. Fortify ne propose rien
+d'équivalent — il fournit la 2FA mais ne l'impose jamais, et n'embarque aucun
+middleware.
+
+**Désactivé par défaut** : `arkhe.strong_auth.enforce` vaut `false`, donc une
+montée de version ne prive personne d'accès. `ARKHE_STRONG_AUTH=true` protège
+tout le back-office. Toute valeur non reconnue se lit comme désactivé : une
+faute de frappe ne doit pas enfermer une équipe dehors.
+
+C'est tout ou rien, délibérément. Ne verrouiller que la zone sensible laissait
+la liste des utilisateurs ouverte — là où l'on crée des comptes et attribue des
+rôles — ce qui a l'air prudent mais protège peu ; les rôles et permissions
+tracent déjà cette frontière.
+
+**Extensible à vos propres routes.** Le verrou est exposé comme alias
+réutilisable, `arkhe.strong-auth`, à poser sur ce que votre app considère comme
+faisant partie de l'administration — son tableau de bord au premier chef, qui en
+est l'entrée. L'alias est inerte tant que le drapeau est éteint.
+
+**Couvert aussi côté Livewire.** Le middleware de route ne garde que le premier
+affichage : les actions suivantes passent par le point d'entrée de Livewire, qui
+ne porte que `['web']`. Les trois portails d'Arkhe sont donc déclarés persistants,
+et les composants du back-office portent `RequiresStrongAuth`, qui revérifie
+l'exigence côté serveur à chaque requête. Les deux moitiés sont nécessaires : le
+middleware persistant s'appuie encore sur le chemin fourni par le client. Une
+app qui écrit ses propres composants d'administration doit leur appliquer le
+trait.
+
+La détection porte sur les méthodes du modèle, jamais sur les traits ni les
+classes : ni `laravel/fortify` ni `laravel/passkeys` ne deviennent des
+dépendances, et la surface exposée aux montées de version se limite à deux noms
+de méthodes publiques.
+
+**Un écran d'explication, pas une redirection sèche.** Un utilisateur bloqué
+arrive sur une page Arkhe qui énonce l'exigence, présente les deux options et
+décrit la suite — y compris la confirmation de mot de passe que la plupart des
+starter kits placent devant leur page de sécurité. Elle ne renvoie vers celle-ci
+qu'ensuite.
+
+Cette page existe parce que renvoyer directement ne fonctionnait pas : la page
+de sécurité appartient à l'app et se trouve généralement derrière
+`password.confirm`, dont le passage consomme le message en session. L'utilisateur
+se retrouvait devant une demande de mot de passe puis un écran de réglages, sans
+rien qui lui dise ce qu'on attendait de lui.
+
+Elle vit **hors** du groupe verrouillé — une porte qui redirige vers une page
+qu'elle garde elle-même est une boucle infinie — et reste enregistrée même
+verrou éteint, pour qu'un lien périmé trouve une page plutôt qu'un 404. Elle
+s'écrase comme n'importe quelle page Arkhe, via
+`components.strong-auth-required`.
+
+Deux états dégradés sont traités plutôt que subis. Sans page d'enrôlement
+résoluble, Arkhe affiche l'avertissement nommant la clé à configurer, au lieu de
+rediriger vers rien. Et si le modèle n'expose aucun des deux mécanismes,
+l'exigence — que personne ne pourrait alors satisfaire — est ignorée avec un
+avertissement en journal : condamner un back-office que nul ne pourrait plus
+rouvrir serait pire que le laisser en l'état.
+
 ### Security
 
 Quatre élévations de privilèges, toutes de la même famille : **on pouvait

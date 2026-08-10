@@ -291,6 +291,38 @@ return [
         'role_above_rank' => 'Vous ne pouvez pas attribuer un rôle supérieur au vôtre.',
     ],
 
+    // The strong-authentication gate (`arkhe.strong-auth` middleware). These
+    // are the package's first refusal strings — every other 403 it raises
+    // renders the framework's default page.
+    'strong_auth' => [
+        'required' => 'Cette zone demande une clé d’accès ou une double authentification. Enrôlez-en une pour continuer — c’est l’affaire d’une minute.',
+        'no_route' => 'L’authentification forte est exigée, mais Arkhe n’a pas trouvé la page où l’activer. Faites pointer `arkhe.strong_auth.route` vers votre route de réglages de sécurité, ou remettez `arkhe.strong_auth.enforce` à false.',
+
+        // The interstitial shown before handing off to the host app's security
+        // page. It exists so the requirement gets stated somewhere the user is
+        // guaranteed to read it.
+        'page' => [
+            'title'           => 'Une protection supplémentaire est requise',
+            'intro'           => 'L’accès à l’administration demande un second facteur. Activez-en un, et vous ne reverrez plus cet écran.',
+            'options_title'   => 'Deux façons de faire',
+            'passkey_title'   => 'Clé d’accès — recommandé',
+            'passkey_body'    => 'Votre empreinte, votre visage ou le code de votre appareil. Rien à retenir, rien à recopier, et elle ne fonctionne que sur le vrai site : un site imitant le vôtre ne peut pas s’en servir.',
+            'totp_title'      => 'Double authentification',
+            'totp_body'       => 'Un code à six chiffres renouvelé toutes les trente secondes, dans une application d’authentification. Si vous avez déjà une clé d’accès, celle-ci suffit.',
+            'steps_title'     => 'Ce qui vous attend',
+            // Arkhe does not own the security page and cannot highlight
+            // anything on it, so the journey is described before it starts —
+            // in the order the user will meet each step.
+            'steps'           => [
+                'password' => 'Votre mot de passe vous sera redemandé. C’est normal : il protège vos réglages de sécurité.',
+                'find'     => 'Sur la page qui suit, cherchez la section « Clés d’accès » ou « Double authentification ».',
+                'follow'   => 'Laissez-vous guider, puis revenez à l’administration. L’accès sera ouvert.',
+            ],
+            'cta'             => 'Activer ma protection',
+            'no_route_title'  => 'Page d’activation introuvable',
+        ],
+    ],
+
     'install' => [
         'intro' => "Installation d'Arkhe Main",
         'publish_config' => 'Publier la configuration ?',

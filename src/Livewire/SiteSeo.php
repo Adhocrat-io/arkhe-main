@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Livewire\Forms\SiteSeoForm;
 use Arkhe\Main\Services\SiteSeoService;
 use Flux\Flux;
@@ -12,6 +13,8 @@ use Livewire\Component;
 
 class SiteSeo extends Component
 {
+    use RequiresStrongAuth;
+
     public SiteSeoForm $siteSeoForm;
 
     public function mount(SiteSeoService $service): void

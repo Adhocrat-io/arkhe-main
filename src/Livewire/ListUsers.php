@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Arkhe\Main\Livewire\Forms\UserForm;
 use Arkhe\Main\Services\UserService;
@@ -23,6 +24,8 @@ use Spatie\Permission\Models\Role;
 
 class ListUsers extends Component
 {
+    use RequiresStrongAuth;
+
     use WithFileUploads;
     use WithPagination;
 

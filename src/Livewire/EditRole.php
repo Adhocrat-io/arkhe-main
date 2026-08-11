@@ -76,7 +76,7 @@ class EditRole extends Component
     }
 
     /**
-     * @deprecated since 3.3 — roles are no longer created from the
+     * @deprecated since 4.0 — roles are no longer created from the
      *             back-office, so this method always returns `false`. It
      *             stays for published views that still call it; removal in
      *             the next major.
@@ -148,7 +148,7 @@ class EditRole extends Component
     }
 
     /**
-     * @deprecated since 3.3 — roles are no longer created from the
+     * @deprecated since 4.0 — roles are no longer created from the
      *             back-office, so this hook is never called. Kept so a
      *             subclass's `parent::` does not break; removal in the next
      *             major.

@@ -73,7 +73,7 @@ class ListUsers extends Component
     // longer call them, and they will go in the next major.
 
     /**
-     * @deprecated since 3.3 — see `arkhe.users.create` ({@see EditUser}).
+     * @deprecated since 4.0 — see `arkhe.users.create` ({@see EditUser}).
      */
     public function openCreate(): void
     {
@@ -86,7 +86,7 @@ class ListUsers extends Component
     }
 
     /**
-     * @deprecated since 3.3 — see `arkhe.users.edit` ({@see EditUser}).
+     * @deprecated since 4.0 — see `arkhe.users.edit` ({@see EditUser}).
      */
     public function openEdit(int $id, UserRepositoryInterface $repository): void
     {
@@ -108,7 +108,7 @@ class ListUsers extends Component
     }
 
     /**
-     * @deprecated since 3.3 — saving happens on {@see EditUser}.
+     * @deprecated since 4.0 — saving happens on {@see EditUser}.
      */
     public function save(UserRepositoryInterface $repository, UserService $service): void
     {

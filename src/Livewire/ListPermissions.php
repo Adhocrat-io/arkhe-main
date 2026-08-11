@@ -13,7 +13,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * @deprecated since 3.3 — permissions are viewed and attached from the roles
+ * @deprecated since 4.0 — permissions are viewed and attached from the roles
  *             page ({@see ListRoles}), which now carries them all. The
  *             component stays registered under the `arkhe.list-permissions`
  *             alias (and overridable via

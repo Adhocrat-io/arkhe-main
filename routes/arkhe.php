@@ -19,11 +19,10 @@ $middleware = (array) config('arkhe.middleware');
 // Falls back to the package's default class when no override is set.
 $component = static fn (string $alias, string $default): string => (string) config("arkhe.components.{$alias}", $default);
 
-// Pas de route de tableau de bord : la page d'accueil du back-office
-// appartient à l'app, pas au paquet. Les starter kits en fournissent une,
-// prête à recevoir les indicateurs qui comptent pour elle — Arkhe n'a pas à
-// la remplacer par ses propres compteurs d'utilisateurs, que la liste des
-// utilisateurs affiche déjà en tête.
+// No dashboard route: the backend's landing page belongs to the app, not to
+// the package. Starter kits ship one, ready for whichever indicators matter to
+// them — Arkhe has no business replacing it with its own user counters, which
+// the user list already shows at the top.
 
 // The interstitial the strong-auth gate redirects to. It sits OUTSIDE the
 // guarded group on purpose: guarded, it would block the very page that explains
@@ -70,17 +69,17 @@ Route::middleware($middleware)
         // after the gate: a factorless user is sent to enrol without learning
         // whether this area exists or whether they could enter it.
         Route::middleware('arkhe.root')->group(function () use ($component): void {
-            // Pas de route de création : les rôles viennent de
-            // `config('arkhe.roles')` et du seeder, parce que le code s'y
-            // réfère (middlewares, `isArkheRoot()`). La fiche sert à régler
-            // leurs permissions, pas à en fabriquer.
+            // No creation route: roles come from `config('arkhe.roles')` and
+            // the seeder, because code refers to them by name (middleware,
+            // `isArkheRoot()`). The edit page is for tuning their permissions,
+            // not for minting new ones.
             Route::get('/roles',             $component('list-roles', ListRoles::class))->name('roles.index');
             Route::get('/roles/{role}/edit', $component('edit-role',  EditRole::class))->name('roles.edit');
 
-            // Les permissions se gèrent depuis la page des rôles depuis la 3.3 :
-            // la route survit en redirigeant, pour ne pas casser les
-            // `route('arkhe.permissions.index')` des apps consommatrices.
-            // À retirer à la prochaine majeure (cf. UPGRADE.md).
+            // Permissions have been managed from the roles page since 4.0: the
+            // route survives as a redirect so consumer apps calling
+            // `route('arkhe.permissions.index')` do not break.
+            // Due for removal in the next major (see UPGRADE.md).
             Route::redirect('/permissions', '/'.trim((string) config('arkhe.admin.prefix', 'administration'), '/').'/roles')
                 ->name('permissions.index');
 

@@ -65,7 +65,7 @@ class ListRoles extends Component
     // for the subclasses that override them, and will go in the next major.
 
     /**
-     * @deprecated since 3.3 — role creation left the interface: roles come
+     * @deprecated since 4.0 — role creation left the interface: roles come
      *             from `config('arkhe.roles')` and the seeder. To create one
      *             programmatically, go through `RoleService`.
      */
@@ -80,7 +80,7 @@ class ListRoles extends Component
     }
 
     /**
-     * @deprecated since 3.3 — see `arkhe.roles.edit` ({@see EditRole}).
+     * @deprecated since 4.0 — see `arkhe.roles.edit` ({@see EditRole}).
      */
     public function openEdit(int $id, RoleRepositoryInterface $roles, RoleService $service): void
     {
@@ -98,7 +98,7 @@ class ListRoles extends Component
     }
 
     /**
-     * @deprecated since 3.3 — saving happens on {@see EditRole}.
+     * @deprecated since 4.0 — saving happens on {@see EditRole}.
      */
     public function save(RoleRepositoryInterface $roles, RoleService $service): void
     {

@@ -2,7 +2,48 @@
 
 This document tracks breaking and behavioural changes between major versions of `adhocrat-io/arkhe-main`.
 
-## Depuis la 3.2 — authentification forte (optionnelle)
+## Vers la 4.0 — depuis la 3.1.2
+
+Le dernier tag publié est `3.1.2` : les sections `3.2.0` et `3.2.1` du CHANGELOG
+n'ont jamais été taguées, la 4.0 les englobe donc. Une app en `^3.0` ne monte
+pas toute seule — il faut passer la contrainte à `^4.0` délibérément.
+
+**Une seule rupture**, le retrait du tableau de bord (voir plus bas). Tout le
+reste est additif ou interne. La marche à suivre, dans l'ordre :
+
+```bash
+composer update adhocrat-io/arkhe-main:^4.0
+php artisan arkhe:main:upgrade-to-v4 --dry-run   # voir ce qui sera fait
+php artisan arkhe:main:upgrade-to-v4             # appliquer
+php artisan arkhe:main:install                   # idempotent : « non » aux étapes déjà faites
+```
+
+La commande fait trois choses :
+
+1. **Retire les trois clés mortes** de votre `config/arkhe.php`, bandeau de
+   commentaire compris — `dashboard_route`, `dashboard_route_name`,
+   `override_fortify_redirect` n'ont plus d'effet. Elle demande confirmation, et
+   `--dry-run` n'écrit rien.
+
+2. **Signale les vues publiées** qui appellent une route disparue. C'est le seul
+   point qui casse vraiment une page : `route('arkhe.roles.create')` lève une
+   `RouteNotFoundException` **à l'affichage**, pas au clic. Elle signale sans
+   réécrire — ces fichiers vous appartiennent, et le bon correctif dépend de ce
+   que le bouton devait faire.
+
+3. **Signale les surcharges devenues muettes.** Une sous-classe de `ListUsers`
+   qui redéfinit `afterCreate` compile toujours et s'exécute toujours — elle ne
+   se déclenche simplement plus, l'enregistrement ayant migré vers `EditUser`.
+   C'est ce silence qui justifie le signalement.
+
+Elle refuse de tourner sur une config encore en V2 et vous renvoie vers
+`arkhe:main:upgrade-from-v2` — enchaînez les deux si vous venez d'une `^1` ou
+`^2`.
+
+Si vous n'aviez jamais posé `ARKHE_DASHBOARD_ROUTE`, la rupture ne vous touche
+pas : la commande retirera trois clés inertes, et ce sera tout.
+
+## Vers la 4.0 — authentification forte (optionnelle)
 
 **Rien ne change pour vous.** La fonctionnalité arrive désactivée :
 `arkhe.strong_auth.enforce` vaut `false`, et votre back-office se comporte
@@ -101,7 +142,7 @@ comme `false` — donc désactivé, donc sans effet. Le middleware, lui, est câ
 dans les routes du paquet et non dans `arkhe.middleware` : il vous parvient donc
 même si votre tableau `middleware` publié est figé.
 
-## Depuis la 3.2 — correctifs de sécurité (à lire avant de déployer)
+## Vers la 4.0 — correctifs de sécurité (à lire avant de déployer)
 
 Quatre élévations de privilèges ont été fermées. Les gardes vivent dans les
 services, donc elles s'appliquent à tous les appelants — y compris au code de
@@ -147,14 +188,16 @@ pas une obligation.
 modifier avant de déployer ; le repli par rôle du middleware d'accès reste en
 place à l'identique, pour ne priver personne d'accès à la montée de version.
 
-## Depuis la 3.2 — le tableau de bord quitte le paquet
+## Vers la 4.0 — le tableau de bord quitte le paquet (rupture)
 
 Arkhe ne fournit plus de tableau de bord. Il faisait doublon avec celui des
 starter kits, en moins riche, et une app qui avait posé
 `ARKHE_DASHBOARD_ROUTE_NAME=dashboard` voyait le sien purement remplacé.
 
 **Si vous n'aviez pas défini `ARKHE_DASHBOARD_ROUTE`** — le cas par défaut —
-il n'y a rien à faire : la page n'existait pas chez vous.
+il n'y a rien à faire : la page n'existait pas chez vous. Les trois clés mortes
+restent inertes dans votre config publiée ; les retirer est un rangement, pas
+une nécessité.
 
 **Si vous l'aviez défini**, trois choses :
 
@@ -196,11 +239,7 @@ il n'y a rien à faire : la page n'existait pas chez vous.
    );
    ```
 
-## Depuis la 3.2 — refonte du back-office
-
-> Version cible non arrêtée : ces changements vivent dans la section
-> `[Unreleased]` du CHANGELOG. Ce titre prendra son numéro au moment de la
-> publication.
+## Vers la 4.0 — refonte du back-office
 
 ### Création et édition sur leur propre page
 
@@ -313,32 +352,17 @@ Route::get('/administration/permissions', \Arkhe\Main\Livewire\ListPermissions::
     ->name('admin.permissions.index');
 ```
 
-## From `dev-main` to `v0.1.0` (phase 1)
-
-There is nothing to upgrade — `v0.1.0` will be the first tagged release.
-
-When upgrading consumer apps from `dev-main` to `v0.1.0`:
-
-1. Bump the constraint in `composer.json`:
-
-   ```json
-   {
-       "require": {
-           "adhocrat-io/arkhe-main": "^0.1.0"
-       }
-   }
-   ```
-
-2. Republish (and re-merge) the config to pick up any tweaked defaults:
-
-   ```bash
-   php artisan vendor:publish --tag=arkhe-config --force
-   ```
-
-3. No migration changes between `dev-main` and `v0.1.0`.
-
 ## Conventions
 
-- One **minor** version per new Laravel major supported (Laravel 14 → Arkhe 0.2.x, etc.).
-- Breaking changes that aren't tied to a Laravel upgrade ship in a **major** version.
+- Une version **mineure** par nouvelle version majeure de Laravel prise en
+  charge.
+- Les ruptures qui ne tiennent pas à une montée de Laravel sortent en version
+  **majeure** : une app contrainte en `^3.0` ne bascule alors pas toute seule,
+  ce qui rend la migration volontaire.
+- Chaque entrée du CHANGELOG liste les commandes à lancer, les clés de config
+  ajoutées ou retirées, les changements d'API publique et les dépréciations.
+- Une commande de montée de version n'est écrite que lorsque le passage exige
+  un geste mécanique et répétitif sur le fichier publié — retirer des clés
+  mortes, réécrire des alias. Une fonctionnalité additive livrée éteinte n'en
+  demande aucune.
 - Each release entry below should list: required commands, config keys added/removed, public API changes, deprecations.

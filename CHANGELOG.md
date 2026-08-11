@@ -2,6 +2,12 @@
 
 All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+> **Note sur les tags.** Les sections `3.0.0`, `3.2.0` et `3.2.1` documentent des
+> versions qui n'ont jamais été taguées : le dernier tag publié est `3.1.2`. Leur
+> contenu est donc encore en attente de publication, et la prochaine version les
+> englobe. Les liens de comparaison en bas de page ne renvoient qu'aux tags qui
+> existent réellement.
+
 ## [Unreleased]
 
 ### Added
@@ -71,6 +77,22 @@ rediriger vers rien. Et si le modèle n'expose aucun des deux mécanismes,
 l'exigence — que personne ne pourrait alors satisfaire — est ignorée avec un
 avertissement en journal : condamner un back-office que nul ne pourrait plus
 rouvrir serait pire que le laisser en l'état.
+
+**`arkhe:main:upgrade-to-v4`**, la commande de montée de version. Elle retire de
+la config publiée les trois clés que le retrait du tableau de bord laisse
+mortes — bandeau de commentaire compris, l'édition passant par les tokens PHP
+plutôt que par une expression régulière, faute de quoi une mention de la clé
+dans un commentaire suffirait à couper le fichier au mauvais endroit.
+
+Elle **signale sans réécrire** deux choses qui appartiennent au consommateur :
+les vues publiées qui appellent une route disparue — `arkhe.roles.create` lève
+à l'affichage de la page, pas au clic — et les sous-classes dont un hook
+redéfini n'est plus appelé depuis que l'enregistrement a migré vers `EditUser` /
+`EditRole`. Ce dernier cas échoue en silence, ce qui est précisément ce qui le
+rend digne d'un rapport.
+
+`--dry-run` n'écrit rien, la commande est idempotente, et elle refuse de tourner
+sur une config encore en V2 en renvoyant vers `arkhe:main:upgrade-from-v2`.
 
 ### Security
 
@@ -150,6 +172,23 @@ Vingt tests de non-régression couvrent ces chemins
   de la liste des rôles qui, lui, les avait déjà.
 
 ### Removed
+- **BREAKING — le tableau de bord quitte le paquet**, avec son composant, sa
+  vue, sa route, son entrée de barre latérale et ses clés de configuration
+  (`dashboard_route`, `dashboard_route_name`, `override_fortify_redirect`),
+  ainsi que l'override de `fortify.home`. Il faisait doublon avec celui que les
+  starter kits fournissent déjà, en moins riche : trois compteurs
+  d'utilisateurs contre une page prête à recevoir les indicateurs de l'app.
+  Pire, une app qui posait `ARKHE_DASHBOARD_ROUTE_NAME=dashboard` voyait le
+  sien remplacé par celui du paquet. La page d'accueil du back-office
+  appartient à l'app ; les compteurs, eux, sont déjà en tête de la liste des
+  utilisateurs.
+
+  Rien à faire pour une app qui n'avait pas défini `ARKHE_DASHBOARD_ROUTE` — le
+  cas par défaut, la route n'existait pas chez elle. Celles qui l'avaient posée
+  trouveront la marche à suivre dans [`UPGRADE.md`](UPGRADE.md) ; le point
+  sensible est celles qui avaient pris le nom `dashboard`, dont les liens de
+  logo et de menu pointent vers une route qu'Arkhè ne fournit plus.
+
 - **Permissions individuelles retirées du formulaire utilisateur.** Les droits
   passent par les rôles : c'est plus lisible, et un audit n'a plus qu'un endroit
   à interroger. Le champ `permissions` de `UserForm` n'était affiché par aucune
@@ -362,15 +401,6 @@ Vingt tests de non-régression couvrent ces chemins
   if the consumer's Tailwind build doesn't `@source` the vendor path.
 
 ### Removed
-- **Le tableau de bord d'Arkhe**, composant, vue, route et configuration
-  (`dashboard_route`, `dashboard_route_name`, `override_fortify_redirect`).
-  Il faisait doublon avec celui que les starter kits fournissent déjà, en
-  moins riche : trois compteurs d'utilisateurs contre une page prête à
-  recevoir les indicateurs de l'app. Pire, une app qui posait
-  `ARKHE_DASHBOARD_ROUTE_NAME=dashboard` voyait le sien remplacé par celui du
-  paquet. La page d'accueil du back-office appartient à l'app ; les compteurs
-  d'utilisateurs, eux, sont déjà en tête de la liste des utilisateurs.
-
 - The unused `arkhe.install.patch_restart` translation key.
 
 ## [3.0.0] — 2026-05-21
@@ -466,6 +496,6 @@ the Livewire 4 page rewrites, and the lifecycle-hook extensibility layer.
 - Pest 4 test suite covering install command, ListUsers CRUD/auth/search/sort, and `HasBackendProfile`.
 - GitHub Actions matrix: PHP 8.3/8.4 × Laravel 12/13 × prefer-lowest/prefer-stable, with an optional dev-master job.
 
-[Unreleased]: https://github.com/adhocrat-io/arkhe-main/compare/v3.0.0...HEAD
-[3.0.0]: https://github.com/adhocrat-io/arkhe-main/compare/v2.0.0...v3.0.0
+[Unreleased]: https://github.com/adhocrat-io/arkhe-main/compare/3.1.2...HEAD
+[3.1.0]: https://github.com/adhocrat-io/arkhe-main/compare/v2.0.5...v3.1.0
 [2.0.0]: https://github.com/adhocrat-io/arkhe-main/releases/tag/v2.0.0

@@ -1,5 +1,7 @@
 # adhocrat-io/arkhe-main
 
+*Read this in [French / Français](README.fr.md).*
+
 Bootstrap a Laravel backend with **users, roles and permissions** management, served by **Livewire 4** and **Flux UI Free**. Ships first-class SEO, sitemap and cookie-consent integrations on top.
 
 > First module of the `adhocrat-io/arkhe-*` namespace.
@@ -171,7 +173,7 @@ Detection probes the user model for two methods, never for traits or vendor clas
 | `hasEnabledTwoFactorAuthentication()` | Fortify's `TwoFactorAuthenticatable` | attribute read, no query |
 | `hasPasskeysEnabled()` | `laravel/passkeys` | one `exists()` query |
 
-Either one satisfies the requirement. Two-factor is probed first because it is free, and the verdict is cached for the rest of the request. A TOTP secret that was generated but never confirmed does **not** count.
+Either one satisfies the requirement. Two-factor is probed first because it is free, so the passkey query only runs for users who have no TOTP. The verdict is deliberately not cached: a revoked factor must stop working immediately, and under Octane a memoized verdict would outlive the request that produced it. A TOTP secret that was generated but never confirmed does **not** count.
 
 ### When it cannot be satisfied
 
@@ -391,6 +393,33 @@ The four canonical Arkhe keys — `root`, `administrator`, `user`, `guest` — m
 - ✅ change the **value** (the actual role name stored in DB), e.g. `'user' => 'membre'`,
 - ❌ rename or remove the four canonical **keys**.
 
+## Permissions
+
+Permissions are edited from a role's page — there is no separate permissions screen. `/administration/permissions` still resolves, redirecting to the roles list, so links in consumer apps do not break.
+
+Rights are granted **through roles**. A user's own permissions are not editable from the backend: it keeps a single place to look when auditing who can do what. `UserService` still accepts a `permissions` key for programmatic callers — a seeder, a command, your own code — guarded against privilege escalation.
+
+### Grouping the checkboxes — `permission_groups`
+
+A role's page can carry several dozen checkboxes, so they are grouped by resource. Groups are inferred from the `<verb>-<resource>` convention: `view-user`, `create-user` and `manage-users` all land under "users". Anything naming no resource (`access-backend`) goes to "other" rather than being dropped.
+
+To decide the split and the ordering yourself — useful when your permissions do not follow the convention, or when a business grouping reads better:
+
+```php
+// config/arkhe.php
+'permission_groups' => [
+    // A group name that is itself a permission shows at the head of its own group.
+    'manage-users' => ['view-user', 'create-user', 'update-user', 'delete-user'],
+
+    // Or a plain label.
+    'Content'      => ['view-article', 'publish-article'],
+],
+```
+
+Only permissions that exist in the database are rendered, so a config running ahead of the seeder never produces empty checkboxes. Whatever the config omits is appended at the end rather than hidden. This is display only — it changes no access rule.
+
+Group labels are translatable under `arkhe::arkhe.permissions.groups`; a missing key falls back to the resource name.
+
 ## Styling — Tailwind / Flux
 
 Tailwind only compiles classes it can **see**. Since this package's Blade files live in `vendor/adhocrat-io/arkhe-main/resources/views/`, they are not scanned by the default Laravel setup. The installer takes care of this for Tailwind v4 (step 8 above); the snippets below document the same thing for reference or for manual setups.
@@ -609,7 +638,7 @@ Seven layered ways to customise Arkhe without forking it — pick the lightest o
 | --- | --- | --- |
 | 1 | **Events** — `UserCreated`, `UserUpdated`, `UserDeleted` (see [Events](#events)) | You need a side-effect (newsletter sync, audit log, webhook) that does NOT need access to the Livewire component state. |
 | 2 | **Lifecycle hooks** on the Livewire pages — `beforeSave(array): array`, `afterCreate(Model, array)`, `afterUpdate(Model, array)`, `beforeDelete(Model)` | The side-effect needs UI context — form payload, flash messages, redirects. Override in a subclass (see lever 3). |
-| 3 | **Rebindable Livewire components** via `config('arkhe.components')` | You want to subclass `ListUsers` / `EditUser` / `ListRoles` / `EditRole` / `SiteSeo` / `Sitemap` / `Cookies` to add `wire:click` targets or extra fields. The route map auto-resolves to your class. |
+| 3 | **Rebindable Livewire components** via `config('arkhe.components')` | You want to subclass any of the nine bundled pages — `ListUsers`, `EditUser`, `ListRoles`, `EditRole`, `ListPermissions`, `SiteSeo`, `Sitemap`, `Cookies`, `StrongAuthRequired` — to add `wire:click` targets or extra fields. The route map auto-resolves to your class. |
 | 4 | **`RoleHierarchy::register()`** (runtime) or `config('arkhe.roles')` (static) | You ship a new role from a package or a host module — see [Role hierarchy](#role-hierarchy--authorization). |
 | 5 | **Custom permissions** via `config('arkhe.permissions')` + `config('arkhe.role_permissions')`, re-seed with `ArkheRolesSeeder` | You add domain permissions (`manage-posts`, `publish-article`, …) that should live next to Arkhe's bundled set. |
 | 6 | **`ArkheNav` navigation registry** — add an item to the shared `settings` section or declare your own group (see [Branch a package onto the shared menu](#4-branch-a-package-onto-the-shared-menu--arkhenav)) | A package needs to contribute sidebar entries that show up in the common backend menu, gated by permission, with no Blade patching. |
@@ -668,6 +697,29 @@ php artisan arkhe:main:install   # re-run, answer "no" to steps already done
 `arkhe:main:install` is idempotent on every step (publish, migrate, seed, sidebar patch, css patch, trait patch). Re-running it after upgrading is the canonical way to pick up new install-time integrations (e.g. a new `@source` to add to `app.css`, a new sidebar entry to inject).
 
 If you'd rather skip the prompts, the manual snippets in the [Styling](#styling--tailwind--flux) and [Wiring up your User model](#wiring-up-your-user-model) sections give you the exact lines to add.
+
+### From V3 to V4
+
+One breaking change — the dashboard left the package — plus a backend reshape.
+No PHP you wrote against `Arkhe\Main\…` needs touching; a dedicated command
+handles the rest:
+
+```bash
+composer update adhocrat-io/arkhe-main:^4.0
+php artisan arkhe:main:upgrade-to-v4 --dry-run   # preview
+php artisan arkhe:main:upgrade-to-v4             # apply
+```
+
+It removes the three config keys the dashboard removal left dead
+(`dashboard_route`, `dashboard_route_name`, `override_fortify_redirect`), banner
+comment included. Then it **reports without rewriting** two things that belong
+to you: published views calling a route the package no longer registers — those
+throw on render, not on click — and subclasses whose overridden hooks are never
+called any more, saving having moved to `EditUser` / `EditRole`. That second one
+fails silently, which is exactly why it is worth naming.
+
+Coming from `^1` or `^2`? Run `arkhe:main:upgrade-from-v2` first — this command
+refuses a V2-shaped config and says so.
 
 ### From V2 to V3
 

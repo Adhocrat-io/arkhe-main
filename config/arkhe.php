@@ -175,6 +175,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Permission groups (role form display)
+    |--------------------------------------------------------------------------
+    |
+    | How the role edit screen groups its checkboxes. Left empty, groups are
+    | inferred from the `<verb>-<resource>` convention above: `view-user`,
+    | `create-user` and `manage-users` all land under "users", and anything
+    | that names no resource (`access-backend`) goes to "other" rather than
+    | being dropped.
+    |
+    | Set it to decide the split and the ordering yourself — useful when your
+    | permissions do not follow the convention, or when a business grouping
+    | reads better than a resource one. A group name that is itself an existing
+    | permission is shown at the head of its own group:
+    |
+    |   'permission_groups' => [
+    |       'manage-users' => ['view-user', 'create-user', 'delete-user'],
+    |       'Moderation'   => ['ban-user', 'review-comment'],
+    |   ],
+    |
+    | Only permissions that exist in the database are rendered, so a config
+    | running ahead of the seeder never produces empty checkboxes; whatever
+    | the config omits is appended at the end rather than hidden.
+    |
+    | Display only — this changes no access rule.
+    |
+    */
+    'permission_groups' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Backend access permission
     |--------------------------------------------------------------------------
     |

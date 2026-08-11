@@ -266,16 +266,23 @@ d'équivalent actif — une app qui créait des rôles par ce biais doit passer 
 
 **Permissions groupées.** La fiche d'un rôle range les permissions par
 ressource, déduites de la convention `<verbe>-<ressource>`. Pour imposer votre
-propre découpage, déclarez `permission_groups` dans `config/arkhe.php` :
+propre découpage, renseignez `permission_groups` dans `config/arkhe.php` — la
+clé y figure désormais, vide, avec sa documentation :
 
 ```php
 'permission_groups' => [
+    // Le nom du groupe est lui-même une permission : elle s'affiche en tête
+    // des siennes, comme le veut la convention Arkhè.
     'manage-users' => ['view-user', 'create-user', 'update-user', 'delete-user'],
+
+    // Ou un simple libellé, quand vos permissions ne suivent pas la convention.
+    'Contenu'      => ['view-article', 'publish-article'],
 ],
 ```
 
 Ce que la config oublie reste affiché dans un groupe « Autres » — rien ne
-disparaît de l'écran.
+disparaît de l'écran. Seules les permissions présentes en base sont rendues :
+une config en avance sur le seeder ne produit pas de cases vides.
 
 ### Rôles et permissions réunis
 

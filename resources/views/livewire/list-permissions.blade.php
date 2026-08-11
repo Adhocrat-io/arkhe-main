@@ -35,7 +35,13 @@
                     <flux:table.cell>{{ $permission->guard_name }}</flux:table.cell>
                     <flux:table.cell align="end">
                         <flux:dropdown>
-                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
+                            <flux:button
+                                variant="ghost"
+                                size="sm"
+                                icon="ellipsis-horizontal"
+                                :title="__('arkhe::arkhe.permissions.row_actions')"
+                                :aria-label="__('arkhe::arkhe.permissions.row_actions')"
+                            />
                             <flux:menu>
                                 <flux:menu.item icon="pencil-square" wire:click="openEdit({{ $permission->id }})">
                                     {{ __('arkhe::arkhe.actions.edit') }}

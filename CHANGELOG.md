@@ -134,6 +134,37 @@ Vingt tests de non-régression couvrent ces chemins
   touchait aussi l'ancien flyout ; aucun test ne le couvrait, les suites
   existantes appelant `UserService` directement.
 
+- **`permission_groups` absente du fichier de config publié.** La clé était lue
+  par le code et documentée dans UPGRADE comme *le* moyen d'imposer son propre
+  découpage des permissions, mais ne figurait nulle part dans
+  `config/arkhe.php` : il fallait lire la doc de montée de version pour
+  découvrir qu'elle existait. Elle y est désormais, vide — comportement
+  inchangé, la déduction par convention reste la valeur par défaut — avec sa
+  documentation. La commande de montée de version l'ajoute aux configs déjà
+  publiées.
+
+- **Boutons d'actions sans nom accessible.** Le « ⋮ » de chaque ligne, dans la
+  liste des utilisateurs comme dans celle des permissions, était une icône
+  seule au libellé vide : ni lecteur d'écran ni infobulle n'avaient de quoi le
+  nommer. Ils portent maintenant `title` et `aria-label`, comme leur homologue
+  de la liste des rôles qui, lui, les avait déjà.
+
+### Removed
+- **Permissions individuelles retirées du formulaire utilisateur.** Les droits
+  passent par les rôles : c'est plus lisible, et un audit n'a plus qu'un endroit
+  à interroger. Le champ `permissions` de `UserForm` n'était affiché par aucune
+  vue, mais il n'était pas inerte pour autant — il **chargeait et
+  réenregistrait** les permissions directes à chaque sauvegarde. Une app qui en
+  avait accordées par seeder les voyait repasser par `syncPermissions()`, qui
+  est destructif, dès qu'on modifiait un numéro de téléphone.
+
+  `UserService` continue de les accepter pour les appels programmatiques —
+  seeder, commande, code applicatif — avec sa garde anti-escalade intacte. Ce
+  qui disparaît, c'est le chemin depuis l'interface, y compris pour une requête
+  Livewire forgée. Le test de non-régression correspondant vise désormais le
+  service plutôt que le formulaire : une garde éprouvée à travers un écran ne
+  dit rien des appelants qui ne passent pas par lui.
+
 ### Changed
 - **Refonte des pages de liste.** `list-users` et `list-roles` adoptent le
   langage visuel des back-offices maison : en-tête titre + description,

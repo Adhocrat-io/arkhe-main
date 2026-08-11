@@ -163,6 +163,10 @@ return [
             'created_at' => 'Created at',
             'actions' => 'Actions',
         ],
+        // Accessible name for each row's "⋮" button. Distinct from
+        // `columns.actions`, which titles the column: read on its own by a
+        // screen reader, "Actions" does not say which row it belongs to.
+        'row_actions' => 'Actions for this user',
         'fields' => [
             'first_name' => 'First name',
             'last_name' => 'Last name',
@@ -240,6 +244,7 @@ return [
             'guard' => 'Guard',
             'actions' => 'Actions',
         ],
+        'row_actions' => 'Actions for this permission',
         'fields' => [
             'name' => 'Name',
             'guard' => 'Guard',

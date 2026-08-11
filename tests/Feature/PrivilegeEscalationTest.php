@@ -9,6 +9,7 @@ use Arkhe\Main\Livewire\EditUser;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Services\PermissionService;
 use Arkhe\Main\Services\RoleService;
+use Arkhe\Main\Services\UserService;
 use Arkhe\Main\Support\RoleHierarchy;
 use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -171,29 +172,25 @@ it('refuses to assign a role ranked above the actor', function (): void {
     expect(User::query()->where('email', 'pirate@example.test')->exists())->toBeFalse();
 });
 
-// The form only offers assignable roles, but the guard must not depend on what
-// the view displays.
+// Direct per-user permissions left the backend: `UserForm` no longer carries
+// the field, so no screen and no forged Livewire payload can reach this path.
+// The service still accepts the key for programmatic callers — a seeder, a
+// command, host-app code — and that is where the guard has to hold, since
+// nothing upstream filters those.
+//
+// Driving the service rather than the component is the point: a guard tested
+// only through a form proves nothing about the callers that skip it.
 it('refuses direct permission assignment on a user beyond the actor', function (): void {
-    $actor = makeActorWith(['create-user', 'access-backend']);
+    $actor = makeActorWith(['update-user']);
+    $target = makeActorWith([], 'cible-test');
 
-    $component = Livewire::actingAs($actor)
-        ->test(EditUser::class)
-        ->set('userForm.first_name', 'Direct')
-        ->set('userForm.last_name', 'Test')
-        ->set('userForm.email', 'direct@example.test')
-        ->set('userForm.password', 'secret123')
-        ->set('userForm.passwordConfirmation', 'secret123')
-        ->set('userForm.permissions', ['manage-roles'])
-        ->call('save');
+    $this->actingAs($actor);
 
-    $created = User::query()->where('email', 'direct@example.test')->first();
+    expect(fn () => app(UserService::class)->update($target, ['permissions' => ['manage-roles']]))
+        ->toThrow(AuthorizationException::class);
 
-    // If the creation goes through, it must under no circumstances carry the
-    // permission the actor does not hold.
-    if ($created !== null) {
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-        expect($created->fresh()->can('manage-roles'))->toBeFalse();
-    }
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    expect($target->fresh()->can('manage-roles'))->toBeFalse();
 });
 
 // ─── Unranked roles: rank -1 is not a free pass ──────────────────────────

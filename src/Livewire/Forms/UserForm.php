@@ -46,9 +46,6 @@ class UserForm extends Form
 
     public ?string $role = null;
 
-    /** @var array<int, string> */
-    public array $permissions = [];
-
     /**
      * @return array<string, array<int, mixed>>
      */
@@ -68,8 +65,6 @@ class UserForm extends Form
             'avatar'                => ['nullable', 'image', 'max:4096'],
             'passwordConfirmation' => ['nullable', 'string'],
             'role'                  => ['nullable', 'string', 'exists:roles,name', $this->roleAssignableRule()],
-            'permissions'   => ['array'],
-            'permissions.*' => ['string', 'exists:permissions,name'],
         ];
     }
 
@@ -91,10 +86,6 @@ class UserForm extends Form
         $this->role = method_exists($user, 'getRoleNames')
             ? ($user->getRoleNames()->first() ?: null)
             : null;
-
-        $this->permissions = method_exists($user, 'getPermissionNames')
-            ? $user->getPermissionNames()->all()
-            : [];
     }
 
     /**
@@ -123,7 +114,14 @@ class UserForm extends Form
             'removeAvatar'  => $this->removeAvatar,
             'role'          => $this->role,
             'roles'         => $this->role !== null && $this->role !== '' ? [$this->role] : [],
-            'permissions'   => $this->permissions,
+            // No `permissions` key on purpose. Rights are granted through
+            // roles from the backend, so the form neither reads nor writes a
+            // user's direct permissions. It used to carry them invisibly: no
+            // screen ever rendered the field, yet every save round-tripped
+            // whatever the seeder had granted straight back through
+            // `syncPermissions()`, which is destructive. `UserService` still
+            // accepts the key for programmatic callers, guarded against
+            // escalation — see UserService::assertCanGrantPermissions().
         ];
     }
 

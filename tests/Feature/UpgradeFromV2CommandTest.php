@@ -35,7 +35,7 @@ it('appends missing V3 keys to a V2-shaped config when confirmed', function (): 
     $this->artisan('arkhe:main:upgrade-from-v2')
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 11 missing V3 keys to config/arkhe.php?',
+            'Append 12 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->assertSuccessful();
@@ -59,7 +59,7 @@ it('reshapes V2 roles and permissions into the V3 layout', function (): void {
     $this->artisan('arkhe:main:upgrade-from-v2')
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 11 missing V3 keys to config/arkhe.php?',
+            'Append 12 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->assertSuccessful();
@@ -97,7 +97,7 @@ PHP);
     $this->artisan('arkhe:main:upgrade-from-v2')
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 11 missing V3 keys to config/arkhe.php?',
+            'Append 12 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->assertSuccessful();
@@ -129,7 +129,7 @@ PHP;
 
     $this->artisan('arkhe:main:upgrade-from-v2', ['--dry-run' => true])
         ->expectsConfirmation(
-            'Append 11 missing V3 keys to config/arkhe.php?',
+            'Append 12 missing V3 keys to config/arkhe.php?',
             'no',
         )
         ->expectsOutputToContain('merge them manually')
@@ -147,7 +147,7 @@ it('does not modify the file in dry-run mode', function (): void {
     $this->artisan('arkhe:main:upgrade-from-v2', ['--dry-run' => true])
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
-            'Append 11 missing V3 keys to config/arkhe.php?',
+            'Append 12 missing V3 keys to config/arkhe.php?',
             'yes',
         )
         ->expectsOutputToContain('dry run')
@@ -229,6 +229,7 @@ return [
     'role_permissions' => ['root' => ['*']],
     'backend_permission' => 'access-backend',
     'root_permission' => 'manage-roles',
+    'permission_groups' => [],
     'strong_auth' => [
         'enforce' => env('ARKHE_STRONG_AUTH', false),
         'route'   => null,

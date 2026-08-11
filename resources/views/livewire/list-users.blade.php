@@ -143,7 +143,11 @@
 
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <flux:dropdown align="end" wire:key="dropdown-{{ $user->getKey() }}">
-                                    <flux:button icon="ellipsis-vertical"></flux:button>
+                                    <flux:button
+                                        icon="ellipsis-vertical"
+                                        :title="__('arkhe::arkhe.users.row_actions')"
+                                        :aria-label="__('arkhe::arkhe.users.row_actions')"
+                                    />
 
                                     {{-- Delete is only offered to whoever can manage the
                                          target. The `@if` stays outside the `flux:menu`

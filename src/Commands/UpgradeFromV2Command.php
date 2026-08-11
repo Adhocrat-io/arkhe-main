@@ -440,6 +440,13 @@ class UpgradeFromV2Command extends Command
             'role_permissions' => "'role_permissions' => [\n        'root' => ['*'],\n    ],",
             'backend_permission' => "'backend_permission' => 'access-backend',",
             'root_permission' => "'root_permission' => 'manage-roles',",
+            // Empty means "infer from the naming convention", which is what
+            // every app got before the key existed — so appending it changes
+            // nothing on screen. It is here because the key was documented as
+            // the way to override permission grouping while never appearing in
+            // the published config: the only way to discover it was to read
+            // UPGRADE.md.
+            'permission_groups' => "'permission_groups' => [],",
             // Appended so the key is visible in the published config, not to
             // turn anything on: `false` is the default, and absent reads the
             // same as false. Note `middleware` above keeps the V3 stack — the

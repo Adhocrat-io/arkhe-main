@@ -7,6 +7,7 @@ namespace Arkhe\Main;
 use Arkhe\Main\Commands\AddUserCommand;
 use Arkhe\Main\Commands\InstallCommand;
 use Arkhe\Main\Commands\UpgradeFromV2Command;
+use Arkhe\Main\Commands\UpgradeToV4Command;
 use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
@@ -55,7 +56,8 @@ class ArkheMainServiceProvider extends PackageServiceProvider
             ->hasMigration('add_sitemap_generated_at_to_arkhe_site_seo_table')
             ->hasCommand(InstallCommand::class)
             ->hasCommand(AddUserCommand::class)
-            ->hasCommand(UpgradeFromV2Command::class);
+            ->hasCommand(UpgradeFromV2Command::class)
+            ->hasCommand(UpgradeToV4Command::class);
     }
 
     public function packageRegistered(): void

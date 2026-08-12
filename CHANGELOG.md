@@ -12,7 +12,27 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
   new `role_permissions` entry. The rewrite is tokenizer-based, only touches
   the two top-level entries, prompts before writing and honours `--dry-run`.
 
+### Fixed
+- Form objects no longer lose properties across a Livewire round trip. Livewire
+  serialises a form into the component snapshot through `toArray()`
+  (`FormObjectSynth::dehydrate`); the four package forms overrode it to mean
+  "the fields I want to persist", so every property left out of that list came
+  back at its default value on the very next request.
+
+  Two properties were actually affected. `UserForm::$passwordConfirmation`: a
+  first submit rejected for an unrelated reason — a duplicate e-mail, say —
+  re-rendered the form with the confirmation field emptied, and every following
+  submit then failed with *"the password confirmation does not match"* although
+  the operator had touched nothing. And `RoleForm::$is_canonical`, which
+  decides which name rules apply, was dropped the same way.
+
 ### Changed
+- **Breaking (internal API).** `toArray()` on `UserForm`, `RoleForm`,
+  `PermissionForm` and `SiteSeoForm` is renamed `toPayload()`, leaving
+  `toArray()` with the inherited Livewire behaviour it must keep. Host apps
+  that call or override any of these — typically from a `ListUsers` subclass
+  registered through `arkhe.components` — must rename accordingly. Nothing else
+  changes: the payload handed to the services is identical.
 - `ArkheRolesSeeder` (and therefore `arkhe:main:install`) now fails fast with
   an actionable message when `config/arkhe.php` still uses the V2
   roles/permissions layout, instead of crashing mid-insert with an opaque

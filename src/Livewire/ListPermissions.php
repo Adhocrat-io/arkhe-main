@@ -65,7 +65,7 @@ class ListPermissions extends Component
         $this->permissionForm->id = $this->selectedPermission;
 
         $this->permissionForm->validate();
-        $payload = $this->permissionForm->toArray();
+        $payload = $this->permissionForm->toPayload();
 
         $payload = $this->beforeSave($payload);
 

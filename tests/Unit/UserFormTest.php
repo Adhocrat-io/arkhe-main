@@ -101,7 +101,7 @@ it('exposes form state as an array suitable for the service', function (): void 
     $form->password   = 'pw';
     $form->role       = 'user';
 
-    $arr = $form->toArray();
+    $arr = $form->toPayload();
 
     expect($arr['first_name'])->toBe('A');
     expect($arr['email'])->toBe('ab@x.test');
@@ -114,8 +114,8 @@ it('emits an empty roles array when no role is selected', function (): void {
     $form       = instantiateUserForm();
     $form->role = null;
 
-    expect($form->toArray()['roles'])->toBe([]);
+    expect($form->toPayload()['roles'])->toBe([]);
 
     $form->role = '';
-    expect($form->toArray()['roles'])->toBe([]);
+    expect($form->toPayload()['roles'])->toBe([]);
 });

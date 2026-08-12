@@ -83,7 +83,7 @@ class ListUsers extends Component
 
         $data = $this->userForm->validate();
         // validate() returns rule keys; pass the full form payload (incl. avatar).
-        $payload = array_merge($data, $this->userForm->toArray());
+        $payload = array_merge($data, $this->userForm->toPayload());
 
         $payload = $this->beforeSave($payload);
 

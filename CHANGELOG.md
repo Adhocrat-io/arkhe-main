@@ -4,6 +4,8 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+## [3.3.0] — 2026-08-12
+
 ### Added
 - `arkhe:main:upgrade-from-v2` now rewrites the V2 `roles` / `permissions`
   config layout into the V3 one: `roles` becomes a key => name map,

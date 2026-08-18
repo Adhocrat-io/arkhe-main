@@ -160,6 +160,15 @@ Vingt tests de non-régression couvrent ces chemins
   retient toujours la version la plus récente. Vérifié sur un PHP 8.3.33 réel,
   suite complète au vert.
 
+- **Livewire 4.0.x ne fonctionnait pas avec le paquet.** La contrainte disait
+  `^4.0`, mais un enchaînement de `call()` sur un composant y renvoie un
+  instantané nul (`HandleComponents::update()`, `$snapshot['data']` sur `null`).
+  Le job `Laravel 12 - prefer-lowest` de la matrice, seul à retenir la 4.0.0, le
+  montrait ; toutes les autres combinaisons prennent la 4.2 ou plus et passent.
+  La contrainte devient `^4.2` : le paquet ne peut pas annoncer une version avec
+  laquelle il ne marche pas. Aucune app consommatrice n'est concernée, toutes
+  sont déjà en 4.2 ou au-delà.
+
 - **Création d'utilisateur impossible depuis l'interface.** `passwordConfirmation`
   ne faisait pas partie du contrat sérialisé de `UserForm` : Livewire ne la
   restituait pas au tour suivant, si bien que la confirmation était comparée à

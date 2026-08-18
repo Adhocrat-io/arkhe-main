@@ -12,7 +12,7 @@ Bootstrap a Laravel backend with **users, roles and permissions** management, se
 | --- | --- |
 | PHP | `^8.3` |
 | Laravel | `^12.0 || ^13.0` |
-| Livewire | `^4.0` |
+| Livewire | `^4.2` |
 | Flux UI | `^2.1` (Free edition) |
 | Spatie laravel-permission | `^7.0` |
 | ralphjsmit/laravel-seo | `^1.8` |

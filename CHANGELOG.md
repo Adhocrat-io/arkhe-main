@@ -205,6 +205,12 @@ Vingt tests de non-régression couvrent ces chemins
   dit rien des appelants qui ne passent pas par lui.
 
 ### Changed
+- **N+1 sur la liste des utilisateurs.** La vue lit `getRoleNames()` sur chaque
+  ligne, donc chaque utilisateur paginé déclenchait sa propre requête Spatie sur
+  `model_has_roles` — neuf requêtes identiques pour neuf utilisateurs affichés.
+  `UserRepository::paginate()` charge désormais la relation d'avance. Le coût
+  SQL était négligeable ; c'est l'hydratation Eloquent, multipliée par le nombre
+  de lignes, qui se voyait.
 - **Refonte des pages de liste.** `list-users` et `list-roles` adoptent le
   langage visuel des back-offices maison : en-tête titre + description,
   compteurs de tête, table encadrée à lignes zébrées avec en-têtes triables

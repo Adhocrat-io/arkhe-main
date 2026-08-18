@@ -113,6 +113,29 @@ verrouiller que la zone sensible a été envisagé puis écarté — cela laissa
 liste des utilisateurs ouverte, là où l'on crée des comptes et attribue des
 rôles. Les rôles et permissions tracent déjà cette frontière là où il faut.
 
+### Si vous écrivez vos propres composants Livewire d'administration
+
+Posez le trait dessus — à faire une fois, indépendamment de l'activation :
+
+```php
+use Arkhe\Main\Concerns\RequiresStrongAuth;
+
+class MonEcranAdmin extends Component
+{
+    use RequiresStrongAuth;
+}
+```
+
+Ce n'est pas une précaution de confort. Le middleware de route ne garde que le
+premier affichage : les actions suivantes passent par le point d'entrée de
+Livewire, une autre route qui ne porte que `['web']`. Sans le trait, un
+utilisateur dont le facteur vient d'être révoqué peut rejouer un instantané
+obtenu légitimement et continuer d'agir sur vos écrans — le verrou n'aurait
+gardé que le premier GET.
+
+Les composants du paquet le portent déjà. Le trait est inerte tant que
+l'exigence est éteinte, donc l'ajouter à l'étape 2 plutôt qu'ici ne coûte rien.
+
 **Ce que voit l'utilisateur bloqué.** Une page Arkhe, à
 `/administration/strong-auth`, qui énonce l'exigence, présente clé d'accès et 2FA,
 et annonce la confirmation de mot de passe avant qu'elle ne survienne. Elle
@@ -302,6 +325,26 @@ Les anciennes méthodes partiront à la prochaine majeure. Seule exception,
 `afterCreate` sur les rôles : la création ayant quitté l'interface, il n'a plus
 d'équivalent actif — une app qui créait des rôles par ce biais doit passer par
 `RoleService::create()`.
+
+**Les permissions individuelles quittent la fiche utilisateur.** Les droits
+s'accordent par les rôles : un audit n'a plus qu'un endroit à interroger. Le
+champ `permissions` de `UserForm` disparaît — il n'était affiché par aucune vue,
+mais il n'était pas inerte pour autant : il chargeait les permissions directes
+d'un utilisateur et les réenregistrait à chaque sauvegarde, via
+`syncPermissions()` qui est destructif. Une app qui en avait accordées par
+seeder les voyait donc repasser en base dès qu'on modifiait un numéro de
+téléphone.
+
+Rien à faire si vous n'en accordiez pas. Si vous en accordiez par programme,
+`UserService` continue de les accepter, garde anti-escalade comprise :
+
+```php
+app(UserService::class)->update($user, ['permissions' => ['manage-posts']]);
+```
+
+Ce qui disparaît est le chemin depuis l'interface — y compris pour une requête
+Livewire forgée. Pour rendre ces permissions modifiables à l'écran, passez par
+un rôle dédié, ou surchargez `EditUser` et sa vue.
 
 **Permissions groupées.** La fiche d'un rôle range les permissions par
 ressource, déduites de la convention `<verbe>-<ressource>`. Pour imposer votre

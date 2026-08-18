@@ -83,12 +83,22 @@ mortes — bandeau de commentaire compris, l'édition passant par les tokens PHP
 plutôt que par une expression régulière, faute de quoi une mention de la clé
 dans un commentaire suffirait à couper le fichier au mauvais endroit.
 
-Elle **signale sans réécrire** deux choses qui appartiennent au consommateur :
-les vues publiées qui appellent une route disparue — `arkhe.roles.create` lève
-à l'affichage de la page, pas au clic — et les sous-classes dont un hook
-redéfini n'est plus appelé depuis que l'enregistrement a migré vers `EditUser` /
-`EditRole`. Ce dernier cas échoue en silence, ce qui est précisément ce qui le
-rend digne d'un rapport.
+Elle **signale sans réécrire** ce qui appartient au consommateur : les vues
+publiées appelant une route disparue — `arkhe.roles.create` lève à l'affichage
+de la page, pas au clic — les objets Form restés sur `toArray()`, et les
+sous-classes dont un hook redéfini n'est plus appelé depuis que
+l'enregistrement a migré vers `EditUser` / `EditRole`.
+
+Elle signale aussi, séparément, les vues publiées qui montrent quelque chose
+que le paquet ne veut plus dire. Le cas rencontré sur une app réelle : un
+partiel de barre latérale publié avant la fusion rôles/permissions garde une
+entrée « Permissions » à côté de « Rôles & permissions ». Rien ne casse — le
+lien redirige — mais le doublon s'installe sans que personne le remarque.
+Supprimer sa copie reprend la vue du paquet, qui se rend depuis le registre
+`ArkheNav` et reste à jour toute seule.
+
+Les cas silencieux sont précisément ceux qui méritent un rapport : une vue qui
+lève se voit tout de suite, un menu en double se contemple pendant des mois.
 
 `--dry-run` n'écrit rien, la commande est idempotente, et elle refuse de tourner
 sur une config encore en V2 en renvoyant vers `arkhe:main:upgrade-from-v2`.

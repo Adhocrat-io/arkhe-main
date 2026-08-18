@@ -70,6 +70,17 @@ class UpgradeToV4Command extends Command
     ];
 
     /**
+     * Routes that still resolve but no longer mean what a published view thinks
+     * they mean. Unlike DROPPED_ROUTES these throw nothing — they quietly show
+     * something wrong, which is harder to notice and just as worth reporting.
+     *
+     * @var array<string, string>
+     */
+    private const STALE_ROUTES = [
+        'arkhe.permissions.index' => 'permissions moved onto the roles page — this now redirects there, so the entry is a duplicate of "Roles & permissions"',
+    ];
+
+    /**
      * Hooks that still exist on the list components but are never called by the
      * package any more. An override of one of these is dead code that fails
      * silently, which is exactly why it needs reporting.
@@ -357,21 +368,41 @@ class UpgradeToV4Command extends Command
         }
 
         $hits = [];
+        $stale = [];
         foreach ($files->allFiles($dir) as $file) {
             $contents = $files->get($file->getPathname());
+            $relative = str_replace(base_path().'/', '', $file->getPathname());
+
             foreach (self::DROPPED_ROUTES as $route => $advice) {
                 if (str_contains($contents, "'{$route}'") || str_contains($contents, '"'.$route.'"')) {
-                    $hits[] = [
-                        'file' => str_replace(base_path().'/', '', $file->getPathname()),
-                        'route' => $route,
-                        'advice' => $advice,
-                    ];
+                    $hits[] = ['file' => $relative, 'route' => $route, 'advice' => $advice];
+                }
+            }
+
+            foreach (self::STALE_ROUTES as $route => $advice) {
+                if (str_contains($contents, "'{$route}'") || str_contains($contents, '"'.$route.'"')) {
+                    $stale[] = ['file' => $relative, 'route' => $route, 'advice' => $advice];
                 }
             }
         }
 
+        // Reported separately: these break nothing, so mixing them with the
+        // throwing ones would blunt the urgency of the latter.
+        if ($stale !== []) {
+            $this->newLine();
+            $this->components->warn('Published views showing something the package no longer means:');
+            foreach ($stale as $hit) {
+                $this->line("  • {$hit['file']}");
+                $this->line("      route('{$hit['route']}') — {$hit['advice']}");
+            }
+            $this->line('  Deleting your copy takes the package view back, which now renders');
+            $this->line('  from the ArkheNav registry and keeps itself current.');
+        }
+
         if ($hits === []) {
-            return 'published views — no reference to dropped routes';
+            return $stale === []
+                ? 'published views — no reference to dropped routes'
+                : 'published views — '.count($stale).' stale entry(ies), see above';
         }
 
         $this->newLine();
@@ -382,7 +413,9 @@ class UpgradeToV4Command extends Command
         }
         $this->line('  These throw RouteNotFoundException when the page renders, not when clicked.');
 
-        return 'published views — '.count($hits).' stale route reference(s), see above';
+        return 'published views — '.count($hits).' broken'
+            .($stale === [] ? '' : ' + '.count($stale).' stale')
+            .' route reference(s), see above';
     }
 
     /**

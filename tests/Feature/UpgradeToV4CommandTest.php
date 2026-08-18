@@ -172,6 +172,24 @@ it('does not rewrite the published view it reports', function (): void {
     expect($this->files->get($view))->toBe($original);
 });
 
+// Found on a real consumer: a sidebar partial published before roles and
+// permissions were merged still lists "Permissions" next to "Roles &
+// permissions". Nothing throws — the link redirects — so the duplicate just
+// sits there looking legitimate. Silence is what makes it worth reporting.
+it('reports a published view still linking to the permissions page', function (): void {
+    $this->files->put($this->configPath, fixtureV4Config());
+    $this->files->ensureDirectoryExists(resource_path('views/vendor/arkhe/partials'));
+    $this->files->put(
+        resource_path('views/vendor/arkhe/partials/sidebar-items.blade.php'),
+        '<flux:sidebar.item :href="route(\'arkhe.permissions.index\')">Permissions</flux:sidebar.item>',
+    );
+
+    $this->artisan('arkhe:main:upgrade-to-v4', ['--dry-run' => true])
+        ->expectsOutputToContain('sidebar-items.blade.php')
+        ->expectsOutputToContain('duplicate')
+        ->assertSuccessful();
+});
+
 // ─── Orphaned hook overrides ─────────────────────────────────────────────
 
 // These still compile and still run — they just never fire, because saving

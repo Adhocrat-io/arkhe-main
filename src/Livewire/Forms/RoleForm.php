@@ -74,9 +74,14 @@ class RoleForm extends Form
     }
 
     /**
+     * Payload handed to the service. See `UserForm::toPayload()` for why this
+     * must not be called `toArray()` — Livewire serialises form objects through
+     * `toArray()`, so overriding it drops every unlisted property from the
+     * component snapshot.
+     *
      * @return array<string, mixed>
      */
-    public function toArray(): array
+    public function toPayload(): array
     {
         return [
             'name'        => $this->name,

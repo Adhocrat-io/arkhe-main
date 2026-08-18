@@ -55,9 +55,18 @@ class SiteSeoForm extends Form
     }
 
     /**
+     * Payload handed to the service. See `UserForm::toPayload()` for why this
+     * must not be called `toArray()` — Livewire serialises form objects through
+     * `toArray()`, so overriding it drops every unlisted property from the
+     * component snapshot.
+     *
+     * This form happens to list all of its properties, so it was never
+     * affected; it is renamed with the others so the convention holds across
+     * the package and the next property added here cannot reintroduce the bug.
+     *
      * @return array<string, string|null>
      */
-    public function toArray(): array
+    public function toPayload(): array
     {
         return [
             'site_name'        => $this->site_name ?: null,

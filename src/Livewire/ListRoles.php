@@ -107,7 +107,7 @@ class ListRoles extends Component
         $this->roleForm->id = $this->selectedRole;
 
         $this->roleForm->validate();
-        $payload = $this->roleForm->toArray();
+        $payload = $this->roleForm->toPayload();
 
         $payload = $this->beforeSave($payload);
 

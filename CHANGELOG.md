@@ -3,10 +3,9 @@
 All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > **Note sur les tags.** Les sections `3.0.0`, `3.2.0` et `3.2.1` documentent des
-> versions qui n'ont jamais été taguées : le dernier tag publié est `3.1.2`. Leur
-> contenu est donc encore en attente de publication, et la prochaine version les
-> englobe. Les liens de comparaison en bas de page ne renvoient qu'aux tags qui
-> existent réellement.
+> versions qui n'ont jamais été taguées ; les tags réels sautent de `3.1.2` à
+> `3.3.0`. Leur contenu a été publié avec la `3.3.0`, qui les englobe. Les liens
+> de comparaison en bas de page ne renvoient qu'aux tags qui existent.
 
 ## [Unreleased]
 
@@ -298,6 +297,34 @@ Vingt tests de non-régression couvrent ces chemins
   majeure. L'entrée « Permissions » disparaît de la barre latérale, l'entrée
   « Rôles » couvrant les deux.
 
+### Fixed
+- Form objects no longer lose properties across a Livewire round trip. Livewire
+  serialises a form into the component snapshot through `toArray()`
+  (`FormObjectSynth::dehydrate`); the four package forms overrode it to mean
+  "the fields I want to persist", so every property left out of that list came
+  back at its default value on the very next request.
+
+  Two properties were actually affected. `UserForm::$passwordConfirmation`: a
+  first submit rejected for an unrelated reason — a duplicate e-mail, say —
+  re-rendered the form with the confirmation field emptied, and every following
+  submit then failed with *"the password confirmation does not match"* although
+  the operator had touched nothing. And `RoleForm::$is_canonical`, which
+  decides which name rules apply, was dropped the same way.
+
+### Changed
+- **Breaking (internal API).** `toArray()` on `UserForm`, `RoleForm`,
+  `PermissionForm` and `SiteSeoForm` is renamed `toPayload()`, leaving
+  `toArray()` with the inherited Livewire behaviour it must keep. Host apps
+  that call or override any of these — typically from a `ListUsers` subclass
+  registered through `arkhe.components` — must rename accordingly. Nothing else
+  changes: the payload handed to the services is identical.
+- `ArkheRolesSeeder` (and therefore `arkhe:main:install`) now fails fast with
+  an actionable message when `config/arkhe.php` still uses the V2
+  roles/permissions layout, instead of crashing mid-insert with an opaque
+  `Array to string conversion` SQL error.
+
+## [3.3.0] — 2026-08-12
+
 ### Added
 - `arkhe:main:upgrade-from-v2` now rewrites the V2 `roles` / `permissions`
   config layout into the V3 one: `roles` becomes a key => name map,
@@ -306,7 +333,27 @@ Vingt tests de non-régression couvrent ces chemins
   new `role_permissions` entry. The rewrite is tokenizer-based, only touches
   the two top-level entries, prompts before writing and honours `--dry-run`.
 
+### Fixed
+- Form objects no longer lose properties across a Livewire round trip. Livewire
+  serialises a form into the component snapshot through `toArray()`
+  (`FormObjectSynth::dehydrate`); the four package forms overrode it to mean
+  "the fields I want to persist", so every property left out of that list came
+  back at its default value on the very next request.
+
+  Two properties were actually affected. `UserForm::$passwordConfirmation`: a
+  first submit rejected for an unrelated reason — a duplicate e-mail, say —
+  re-rendered the form with the confirmation field emptied, and every following
+  submit then failed with *"the password confirmation does not match"* although
+  the operator had touched nothing. And `RoleForm::$is_canonical`, which
+  decides which name rules apply, was dropped the same way.
+
 ### Changed
+- **Breaking (internal API).** `toArray()` on `UserForm`, `RoleForm`,
+  `PermissionForm` and `SiteSeoForm` is renamed `toPayload()`, leaving
+  `toArray()` with the inherited Livewire behaviour it must keep. Host apps
+  that call or override any of these — typically from a `ListUsers` subclass
+  registered through `arkhe.components` — must rename accordingly. Nothing else
+  changes: the payload handed to the services is identical.
 - `ArkheRolesSeeder` (and therefore `arkhe:main:install`) now fails fast with
   an actionable message when `config/arkhe.php` still uses the V2
   roles/permissions layout, instead of crashing mid-insert with an opaque

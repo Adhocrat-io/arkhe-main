@@ -29,7 +29,7 @@ class SiteSeo extends Component
         $this->authorize('update-site-seo');
 
         $this->siteSeoForm->validate();
-        $payload = $this->siteSeoForm->toArray();
+        $payload = $this->siteSeoForm->toPayload();
 
         $payload = $this->beforeSave($payload);
 

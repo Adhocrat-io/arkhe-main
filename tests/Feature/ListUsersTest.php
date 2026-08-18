@@ -210,3 +210,54 @@ it('lets an admin edit a user at or below their rank', function (): void {
         ->assertSet('selectedUser', $peer->id)
         ->assertSet('showFormModal', true);
 });
+
+it('keeps the password confirmation across a round trip', function (): void {
+    $admin = makeUser([], 'administrateur');
+    $taken = makeUser(['email' => 'taken@example.test'], 'user');
+
+    // Livewire serialises a form object through `toArray()`. While the package
+    // overrode it to mean "fields to persist", `passwordConfirmation` never
+    // reached the snapshot and came back empty on the next request — so a first
+    // rejected submit made every following one fail on the confirmation, with
+    // the operator having touched nothing.
+    $component = Livewire::actingAs($admin)
+        ->test(ListUsers::class)
+        ->call('openCreate')
+        ->set('userForm.first_name', 'Leo')
+        ->set('userForm.last_name', 'Marchand')
+        ->set('userForm.email', $taken->email)
+        ->set('userForm.password', 'secret12345')
+        ->set('userForm.passwordConfirmation', 'secret12345');
+
+    // First submit: rejected because the e-mail is already taken.
+    $component->call('save')->assertHasErrors('userForm.email');
+
+    // Second submit, same passwords, valid e-mail. Nothing else touched.
+    $component
+        ->set('userForm.email', 'leo.marchand@example.test')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(User::query()->where('email', 'leo.marchand@example.test')->exists())->toBeTrue();
+});
+
+it('keeps a role canonical flag across a round trip', function (): void {
+    // Same class of bug on RoleForm: `is_canonical` drives which name rules
+    // apply, and was dropped from the snapshot for the same reason.
+    $admin = makeUser([], 'root');
+
+    $component = Livewire::actingAs($admin)
+        ->test(\Arkhe\Main\Livewire\ListRoles::class);
+
+    $canonical = \Spatie\Permission\Models\Role::query()->where('name', 'administrateur')->first();
+
+    if ($canonical === null) {
+        $this->markTestSkipped('No canonical role seeded.');
+    }
+
+    $component
+        ->call('openEdit', $canonical->id)
+        ->assertSet('roleForm.is_canonical', true)
+        ->set('roleForm.guard_name', 'web')
+        ->assertSet('roleForm.is_canonical', true);
+});

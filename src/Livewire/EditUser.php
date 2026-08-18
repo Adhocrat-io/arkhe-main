@@ -110,7 +110,7 @@ class EditUser extends Component
         $data = $this->userForm->validate();
         // validate() only returns the rule keys; pass the full form back to
         // carry the avatar and the roles along.
-        $payload = array_merge($data, $this->userForm->toArray());
+        $payload = array_merge($data, $this->userForm->toPayload());
 
         $payload = $this->beforeSave($payload);
 

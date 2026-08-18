@@ -89,9 +89,22 @@ class UserForm extends Form
     }
 
     /**
+     * Payload handed to `UserService`.
+     *
+     * ⚠️ Deliberately NOT named `toArray()`. Livewire serialises a form object
+     * into the component snapshot through `toArray()`
+     * (`FormObjectSynth::dehydrate`), so overriding it to mean "the fields I
+     * want to persist" silently drops every other property from the snapshot —
+     * they come back at their default value on the next round trip.
+     *
+     * That is exactly what used to happen to `passwordConfirmation`: a first
+     * rejected submit (a duplicate e-mail, say) re-rendered the form with the
+     * confirmation field emptied, and the next submit failed with "the password
+     * confirmation does not match" although the operator had touched nothing.
+     *
      * @return array<string, mixed>
      */
-    public function toArray(): array
+    public function toPayload(): array
     {
         return [
             'first_name'    => $this->first_name,

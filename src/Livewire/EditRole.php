@@ -93,7 +93,7 @@ class EditRole extends Component
         $this->roleForm->id = $this->roleId;
 
         $this->roleForm->validate();
-        $payload = $this->beforeSave($this->roleForm->toArray());
+        $payload = $this->beforeSave($this->roleForm->toPayload());
 
         $existing = $roles->find((int) $this->roleId);
         if ($existing === null) {

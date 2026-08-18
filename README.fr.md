@@ -12,7 +12,7 @@ Démarrez un back-office Laravel avec la gestion des **utilisateurs, rôles et p
 | --- | --- |
 | PHP | `^8.3` |
 | Laravel | `^12.0 || ^13.0` |
-| Livewire | `^4.0` |
+| Livewire | `^4.2` |
 | Flux UI | `^2.1` (édition Free) |
 | Spatie laravel-permission | `^7.0` |
 | ralphjsmit/laravel-seo | `^1.8` |

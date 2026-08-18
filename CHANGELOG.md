@@ -148,6 +148,18 @@ Vingt tests de non-régression couvrent ces chemins
 (`tests/Feature/PrivilegeEscalationTest.php`).
 
 ### Fixed
+- **Le paquet était devenu ininstallable en PHP 8.3.** `spatie/laravel-sitemap`
+  a relevé son plancher PHP à `^8.4` dans une version *mineure* : la contrainte
+  `^8.1` ne laissait donc plus que des versions refusant PHP 8.3, alors que le
+  paquet déclare `"php": "^8.3"`. `composer install` échouait avant même de
+  lancer les tests — les quatre jobs PHP 8.3 de la matrice tombaient sur une
+  erreur de résolution, pas sur un test.
+
+  La contrainte passe à `^8.0`, qui rouvre la porte à une version acceptant
+  `^8.2 || ^8.3 || ^8.4`. Rien ne change pour une app en PHP 8.4 : Composer y
+  retient toujours la version la plus récente. Vérifié sur un PHP 8.3.33 réel,
+  suite complète au vert.
+
 - **Création d'utilisateur impossible depuis l'interface.** `passwordConfirmation`
   ne faisait pas partie du contrat sérialisé de `UserForm` : Livewire ne la
   restituait pas au tour suivant, si bien que la confirmation était comparée à

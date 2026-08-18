@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Livewire\Forms\SiteSeoForm;
 use Arkhe\Main\Services\SiteSeoService;
+use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class SiteSeo extends Component
 {
+    use RequiresStrongAuth;
+
     public SiteSeoForm $siteSeoForm;
 
     public function mount(SiteSeoService $service): void
@@ -35,7 +39,7 @@ class SiteSeo extends Component
 
         $this->siteSeoForm->fillFromModel($row);
 
-        session()->flash('arkhe.site_seo.saved', true);
+        Flux::toast(variant: 'success', text: __('arkhe::arkhe.site_seo.saved'));
     }
 
     // ─── Extensibility hooks ──────────────────────────────────────────────

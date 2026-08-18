@@ -52,7 +52,32 @@ it('renders the cookies admin viewer for a root user', function (): void {
     Livewire::actingAs($root)
         ->test(Cookies::class)
         ->assertStatus(200)
-        ->assertSee('essentials');
+        // An actually listed cookie: this is what the screen must show to
+        // whoever comes to audit what the site drops. The session cookie takes
+        // the name the app configures, which varies; `XSRF-TOKEN` is fixed.
+        ->assertSee('XSRF-TOKEN');
+});
+
+// The registrar's durations are in minutes: "525600 min" tells an auditor
+// nothing, so we make them readable. The assertion targets the raw value that
+// must disappear, not the label — that one depends on the language.
+it('renders cookie durations in plain language', function (): void {
+    $root = makeCookieUser('root');
+
+    Livewire::actingAs($root)
+        ->test(Cookies::class)
+        ->assertSee(trans_choice('arkhe::arkhe.cookies.duration.years', 1, ['count' => 1]))
+        ->assertDontSee('525600');
+});
+
+// The registrar's descriptions are translation keys the package does not ship:
+// they used to render raw on screen.
+it('never renders an unresolved translation key', function (): void {
+    $root = makeCookieUser('root');
+
+    Livewire::actingAs($root)
+        ->test(Cookies::class)
+        ->assertDontSee('cookieConsent::');
 });
 
 it('blocks a non-root visitor from /administration/cookies via the arkhe.root middleware', function (): void {

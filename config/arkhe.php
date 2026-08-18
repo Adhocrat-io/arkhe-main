@@ -28,45 +28,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Dashboard route (opt-in)
-    |--------------------------------------------------------------------------
-    |
-    | When set, Arkhe registers a top-level dashboard at this path with the
-    | named route `arkhe.dashboard`. Leave null to keep your app's existing
-    | dashboard untouched. Typical value: `dashboard`.
-    |
-    */
-    'dashboard_route' => env('ARKHE_DASHBOARD_ROUTE'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard route name
-    |--------------------------------------------------------------------------
-    |
-    | Named route under which the dashboard is registered. Defaults to
-    | `arkhe.dashboard`. Set to `dashboard` (via ARKHE_DASHBOARD_ROUTE_NAME)
-    | so the Laravel starter kit's `route('dashboard')` after-login redirect
-    | resolves to Arkhe's dashboard without having to patch the login form.
-    |
-    */
-    'dashboard_route_name' => env('ARKHE_DASHBOARD_ROUTE_NAME', 'arkhe.dashboard'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Override Fortify's `home` redirect
-    |--------------------------------------------------------------------------
-    |
-    | When Fortify is installed and `dashboard_route` is set, Arkhe rewrites
-    | `config('fortify.home')` at boot so the post-login (and post-2FA, post
-    | password confirm) redirect lands on the Arkhe dashboard instead of the
-    | starter kit's hard-coded `/dashboard`. Disable if you want to manage
-    | Fortify's redirect yourself.
-    |
-    */
-    'override_fortify_redirect' => env('ARKHE_OVERRIDE_FORTIFY_REDIRECT', true),
-
-    /*
-    |--------------------------------------------------------------------------
     | Middleware
     |--------------------------------------------------------------------------
     |
@@ -214,6 +175,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Permission groups (role form display)
+    |--------------------------------------------------------------------------
+    |
+    | How the role edit screen groups its checkboxes. Left empty, groups are
+    | inferred from the `<verb>-<resource>` convention above: `view-user`,
+    | `create-user` and `manage-users` all land under "users", and anything
+    | that names no resource (`access-backend`) goes to "other" rather than
+    | being dropped.
+    |
+    | Set it to decide the split and the ordering yourself — useful when your
+    | permissions do not follow the convention, or when a business grouping
+    | reads better than a resource one. A group name that is itself an existing
+    | permission is shown at the head of its own group:
+    |
+    |   'permission_groups' => [
+    |       'manage-users' => ['view-user', 'create-user', 'delete-user'],
+    |       'Moderation'   => ['ban-user', 'review-comment'],
+    |   ],
+    |
+    | Only permissions that exist in the database are rendered, so a config
+    | running ahead of the seeder never produces empty checkboxes; whatever
+    | the config omits is appended at the end rather than hidden.
+    |
+    | Display only — this changes no access rule.
+    |
+    */
+    'permission_groups' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Backend access permission
     |--------------------------------------------------------------------------
     |
@@ -239,6 +230,57 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Strong authentication
+    |--------------------------------------------------------------------------
+    |
+    | Requires one strong factor before reaching the backend: a registered
+    | passkey OR a confirmed TOTP. A passkey exempts from TOTP — it is already
+    | two-factor and, being bound to the domain, phishing-resistant where a
+    | TOTP code is not.
+    |
+    | This gates access to the backend, not the sign-in itself: how users
+    | authenticate belongs to your app's Fortify pipeline. A user without a
+    | factor stays signed in and keeps the rest of the site — only the admin
+    | area closes until they enrol.
+    |
+    |   'enforce'  false  no enforcement. The default: upgrading the package
+    |                     must never lock an app out of its own backend
+    |              true   every backend page demands a strong factor
+    |
+    | All or nothing, on purpose. Guarding the sensitive area alone would leave
+    | the user list open — where accounts are created and roles handed out —
+    | which reads as prudence but mostly buys a false sense of safety. Roles and
+    | permissions already draw that line where it belongs.
+    |
+    |   'route'    route name of the page where users enrol. Left null, Arkhe
+    |              probes `security.edit` then `two-factor.show`, so current
+    |              starter kits work with no configuration at all. Set it if
+    |              your app names that page differently.
+    |
+    | Enrol before switching this on: turning it on without a factor bounces
+    | you to the explanation page on every attempt. Nothing breaks — it leads
+    | to your security page and a minute fixes it — but the other order is more
+    | comfortable.
+    |
+    | A blocked user lands on `/administration/strong-auth`, an Arkhe page that
+    | states the requirement and links on to the enrolment screen. Override it
+    | through `components.strong-auth-required` like any other page.
+    |
+    | Two degraded cases are handled rather than left to fail. If no enrolment
+    | page can be resolved, that page reports what to configure instead of
+    | linking nowhere. And if the user model exposes neither mechanism, the
+    | requirement is unsatisfiable by anyone, so it is skipped with a logged
+    | warning — blocking a backend nobody could re-enter would be worse than
+    | leaving it as it was.
+    |
+    */
+    'strong_auth' => [
+        'enforce' => env('ARKHE_STRONG_AUTH', false),
+        'route'   => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Livewire components
     |--------------------------------------------------------------------------
     |
@@ -259,9 +301,10 @@ return [
     */
     'components' => [
         'list-users'       => \Arkhe\Main\Livewire\ListUsers::class,
+        'edit-user'        => \Arkhe\Main\Livewire\EditUser::class,
         'list-roles'       => \Arkhe\Main\Livewire\ListRoles::class,
+        'edit-role'        => \Arkhe\Main\Livewire\EditRole::class,
         'list-permissions' => \Arkhe\Main\Livewire\ListPermissions::class,
-        'dashboard'        => \Arkhe\Main\Livewire\Dashboard::class,
         'site-seo'         => \Arkhe\Main\Livewire\SiteSeo::class,
         'sitemap'          => \Arkhe\Main\Livewire\Sitemap::class,
         'cookies'          => \Arkhe\Main\Livewire\Cookies::class,

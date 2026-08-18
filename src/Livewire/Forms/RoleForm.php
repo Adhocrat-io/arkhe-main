@@ -19,6 +19,11 @@ class RoleForm extends Form
     /** @var array<int, string> */
     public array $permissions = [];
 
+    /**
+     * Informational only: no authorization decision relies on it. The
+     * validation rules read the database again ({@see rules()}), and
+     * `RoleService::update()` recomputes the status on its side.
+     */
     public bool $is_canonical = false;
 
     /**
@@ -26,8 +31,13 @@ class RoleForm extends Form
      */
     public function rules(): array
     {
-        $nameRules = $this->is_canonical
-            ? [] // canonical roles cannot be renamed; field is read-only in the UI
+        // Canonical status is read back from the database, never from
+        // `$this->is_canonical`: that property is public, so the client
+        // rewrites it. Trusting it meant dropping *every* rule on the name on
+        // request — no more `required`, no more maximum length, no more
+        // uniqueness, and two roles could carry the same name.
+        $nameRules = $this->resolveIsCanonical()
+            ? [] // a canonical role is not renamed; the field is locked
             : ['required', 'string', 'max:120', Rule::unique('roles', 'name')->ignore($this->id)];
 
         return [
@@ -36,6 +46,22 @@ class RoleForm extends Form
             'permissions'   => ['array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
         ];
+    }
+
+    /**
+     * Is the role being edited canonical, according to the database and the
+     * configuration?
+     */
+    private function resolveIsCanonical(): bool
+    {
+        if ($this->id === null) {
+            return false;
+        }
+
+        $name = Role::query()->whereKey($this->id)->value('name');
+
+        return $name !== null
+            && in_array((string) $name, array_values((array) config('arkhe.roles', [])), true);
     }
 
     public function fillFromModel(Role $role, bool $isCanonical): void

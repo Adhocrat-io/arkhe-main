@@ -12,6 +12,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserRepository implements UserRepositoryInterface
 {
+    /**
+     * Columns allowed for sorting.
+     *
+     * The list also lives in `ListUsers`, and that is deliberate: `$sort` is a
+     * public parameter of the contract, which any application caller may feed
+     * from a request. It ends up in an `orderBy()`, where it is not passed as
+     * a binding — filtering it here is the last barrier.
+     *
+     * @var array<int, string>
+     */
+    private const SORTABLE_FIELDS = [
+        'first_name', 'last_name', 'email', 'created_at', 'updated_at', 'id',
+    ];
+
     public function __construct(
         private readonly ConfigRepository $config,
     ) {
@@ -23,13 +37,13 @@ class UserRepository implements UserRepositoryInterface
         string $direction = 'desc',
         int $perPage = 15,
     ): LengthAwarePaginator {
-        // Eager-load les rôles : la vue list-users itère sur
-        // `$user->getRoleNames()` (cf. resources/views/livewire/list-users.blade.php),
-        // qui lit `$user->roles`. Sans `with('roles')`, chaque user paginé
-        // déclenche une query Spatie identique sur `model_has_roles` —
-        // observé in vivo : 9 queries N+1 identiques pour 9 users affichés.
-        // Coût SQL négligeable mais surtout coût d'hydratation Eloquent
-        // multiplié par le nombre de users dans la page.
+        // Eager-load roles: the list-users view iterates over
+        // `$user->getRoleNames()` (see resources/views/livewire/list-users.blade.php),
+        // which reads `$user->roles`. Without `with('roles')`, every paginated
+        // user fires an identical Spatie query on `model_has_roles` — observed
+        // in the wild: 9 identical N+1 queries for 9 users on screen. The SQL
+        // cost is negligible; the Eloquent hydration cost, multiplied by the
+        // number of users on the page, is not.
         $query = $this->query()->with('roles');
 
         $search = trim((string) ($filters['search'] ?? ''));
@@ -50,9 +64,12 @@ class UserRepository implements UserRepositoryInterface
         }
 
         $direction = strtolower($direction) === 'asc' ? 'asc' : 'desc';
+        $sort = in_array($sort, self::SORTABLE_FIELDS, true) ? $sort : 'created_at';
 
         return $query
             ->orderBy($sort, $direction)
+            // Break ties so pagination stays stable.
+            ->orderBy('id')
             ->paginate(max(1, $perPage));
     }
 

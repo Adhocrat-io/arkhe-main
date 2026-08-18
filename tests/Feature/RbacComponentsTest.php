@@ -3,18 +3,17 @@
 declare(strict_types=1);
 
 use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
-use Arkhe\Main\Livewire\Dashboard;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
     $this->app->make(ArkheRolesSeeder::class)->run();
-    config()->set('arkhe.dashboard_route', 'dashboard');
 });
 
 function makeRbacUser(?string $role = null): User
@@ -63,6 +62,10 @@ it('searches roles by name', function (): void {
         ->assertDontSee('root', false);
 })->skip('view rendering also outputs the actor `root` role badge elsewhere; covered by repository search test');
 
+// The next three tests exercise methods deprecated in 3.3: none is reachable
+// from the interface any more, but UPGRADE.md promises apps they stay callable
+// until the next major. So they check that the promise holds, not a user
+// journey.
 it('creates a new role through the ListRoles flow', function (): void {
     $root = makeRbacUser('root');
 
@@ -120,6 +123,38 @@ it('blocks administrateur from /administration/permissions', function (): void {
         ->assertForbidden();
 });
 
+// Permissions are managed from the roles page: the old URL survives as a
+// redirect, so links in consuming apps do not break.
+it('redirects the legacy permissions page to the roles page', function (): void {
+    $root = makeRbacUser('root');
+
+    $this->actingAs($root)
+        ->get('/administration/permissions')
+        ->assertRedirect('/administration/roles');
+});
+
+it('keeps the arkhe.permissions.index route name resolvable', function (): void {
+    expect(route('arkhe.permissions.index', absolute: false))
+        ->toBe('/administration/permissions');
+});
+
+// Its counterpart: this one goes away. Roles come from `config('arkhe.roles')`
+// and the seeder, the interface no longer mints any.
+it('no longer registers a role creation route', function (): void {
+    expect(Route::has('arkhe.roles.create'))->toBeFalse();
+});
+
+it('offers neither creation nor deletion on the roles list', function (): void {
+    // A non-canonical role: without it, the absence of the "Delete" button
+    // would prove nothing, every seeded role being protected anyway.
+    Role::query()->create(['name' => 'editor', 'guard_name' => 'web']);
+
+    Livewire::actingAs(makeRbacUser('root'))
+        ->test(ListRoles::class)
+        ->assertDontSee('roles/create')
+        ->assertDontSee('confirmDelete');
+});
+
 it('creates a permission through the ListPermissions flow', function (): void {
     $root = makeRbacUser('root');
 
@@ -144,19 +179,5 @@ it('deletes a permission through the ListPermissions flow', function (): void {
         ->call('delete');
 
     expect(Permission::query()->find($p->id))->toBeNull();
-});
-
-// ─── Dashboard ────────────────────────────────────────────────────────────────
-
-it('renders the dashboard with user counts per role', function (): void {
-    $root  = makeRbacUser('root');
-    makeRbacUser('administrateur');
-    makeRbacUser('user');
-    makeRbacUser('user');
-
-    Livewire::actingAs($root)
-        ->test(Dashboard::class)
-        ->assertStatus(200)
-        ->assertSee('4'); // total users incl. root
 });
 

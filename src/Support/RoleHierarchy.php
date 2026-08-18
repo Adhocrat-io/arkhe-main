@@ -6,6 +6,7 @@ namespace Arkhe\Main\Support;
 
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Spatie\Permission\Models\Role;
 
 /**
  * Encodes a configurable role hierarchy. A user can only assign roles whose
@@ -116,6 +117,13 @@ final class RoleHierarchy
         self::$overrides = null;
     }
 
+    /**
+     * A role's rank, or -1 when it has none.
+     *
+     * Careful: -1 means "outside the hierarchy", not "harmless". A role that is
+     * absent from `config('arkhe.roles')` can carry any permission — it is
+     * {@see canAssign()} that refuses to hand it out lightly, not this rank.
+     */
     public static function rankOf(?string $roleName): int
     {
         if ($roleName === null || $roleName === '') {
@@ -123,6 +131,16 @@ final class RoleHierarchy
         }
 
         return self::ranks()[$roleName] ?? -1;
+    }
+
+    /**
+     * Is the role known to the hierarchy declared in configuration?
+     */
+    public static function isRanked(?string $roleName): bool
+    {
+        return $roleName !== null
+            && $roleName !== ''
+            && array_key_exists($roleName, self::ranks());
     }
 
     public static function highestRankOf(?Model $user): int
@@ -139,19 +157,74 @@ final class RoleHierarchy
         return $max;
     }
 
+    /**
+     * Can the actor assign this role?
+     *
+     * Two cases. A **ranked** role is compared by rank: you do not assign above
+     * yourself. A role **outside the hierarchy** (created by the app, absent
+     * from `config('arkhe.roles')`) has no rank at all — comparing it would pit
+     * -1 against -1, which opens it to anyone who holds no rank either. Yet
+     * such a role can carry any permission, `manage-roles` included.
+     *
+     * For those, we require the actor to already hold everything the role
+     * grants: you do not give away what you do not have.
+     */
     public static function canAssign(?Model $actor, ?string $roleName): bool
     {
         if ($roleName === null || $roleName === '') {
             return true;
         }
 
-        return self::rankOf($roleName) <= self::highestRankOf($actor);
+        if (self::isRanked($roleName)) {
+            return self::rankOf($roleName) <= self::highestRankOf($actor);
+        }
+
+        return self::grantsNothingBeyond($actor, $roleName);
     }
 
     /**
-     * Whether an actor is allowed to act on (delete/manage) a target user.
-     * True when the target's highest rank is less than or equal to the
-     * actor's highest rank. False if the actor is null or outranked.
+     * Does the role grant nothing the actor does not already hold?
+     *
+     * Acts as the guard for roles outside the hierarchy. An actor who carries
+     * the role himself passes outright: he gains nothing by passing it on.
+     */
+    private static function grantsNothingBeyond(?Model $actor, string $roleName): bool
+    {
+        if ($actor === null) {
+            return false;
+        }
+
+        if (method_exists($actor, 'hasRole') && $actor->hasRole($roleName)) {
+            return true;
+        }
+
+        $role = Role::query()->where('name', $roleName)->first();
+
+        // Unknown role: the `exists:roles,name` validation rule handles it.
+        if ($role === null) {
+            return true;
+        }
+
+        if (! method_exists($actor, 'can')) {
+            return false;
+        }
+
+        foreach ($role->permissions as $permission) {
+            if (! $actor->can($permission->name)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Can the actor act on (edit, delete) this user?
+     *
+     * Rank decides, but it says nothing about roles outside the hierarchy: a
+     * target carrying only those would report rank -1 and look manageable by
+     * anyone at all, even though they hand it every right. So for those roles
+     * we require the actor to already hold what they grant.
      */
     public static function canManage(?Model $actor, ?Model $target): bool
     {
@@ -159,10 +232,31 @@ final class RoleHierarchy
             return false;
         }
 
-        return self::highestRankOf($target) <= self::highestRankOf($actor);
+        if (self::highestRankOf($target) > self::highestRankOf($actor)) {
+            return false;
+        }
+
+        if (! method_exists($target, 'getRoleNames')) {
+            return true;
+        }
+
+        foreach ($target->getRoleNames() as $name) {
+            if (! self::isRanked((string) $name) && ! self::grantsNothingBeyond($actor, (string) $name)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
+     * Roles the actor can assign, meant to populate a dropdown.
+     *
+     * Lists ranked roles only: roles outside the hierarchy are not offered up
+     * front, even where {@see canAssign()} would accept them case by case. That
+     * is a deliberately cautious display choice — the guard stays the authority,
+     * and this list only mirrors it without ever reaching beyond.
+     *
      * @return array<int, string>
      */
     public static function rolesAssignableBy(?Model $actor): array

@@ -8,6 +8,7 @@ use Arkhe\Main\Support\RoleHierarchy;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
@@ -36,10 +37,14 @@ class UserForm extends Form
 
     public ?TemporaryUploadedFile $avatar = null;
 
-    public ?string $role = null;
+    /**
+     * Deferred removal of the stored picture: marked on screen, applied on
+     * save. Without it, an uploaded picture could only be replaced, never
+     * removed.
+     */
+    public bool $removeAvatar = false;
 
-    /** @var array<int, string> */
-    public array $permissions = [];
+    public ?string $role = null;
 
     /**
      * @return array<string, array<int, mixed>>
@@ -60,8 +65,6 @@ class UserForm extends Form
             'avatar'                => ['nullable', 'image', 'max:4096'],
             'passwordConfirmation' => ['nullable', 'string'],
             'role'                  => ['nullable', 'string', 'exists:roles,name', $this->roleAssignableRule()],
-            'permissions'   => ['array'],
-            'permissions.*' => ['string', 'exists:permissions,name'],
         ];
     }
 
@@ -78,14 +81,11 @@ class UserForm extends Form
         $this->civility      = $user->civility ?? null;
         $this->bio           = $user->bio ?? null;
         $this->avatar        = null;
+        $this->removeAvatar  = false;
 
         $this->role = method_exists($user, 'getRoleNames')
             ? ($user->getRoleNames()->first() ?: null)
             : null;
-
-        $this->permissions = method_exists($user, 'getPermissionNames')
-            ? $user->getPermissionNames()->all()
-            : [];
     }
 
     /**
@@ -111,14 +111,30 @@ class UserForm extends Form
             'last_name'     => $this->last_name,
             'email'         => $this->email,
             'password'      => $this->password,
+            // Serialized along with the rest: missing from here, Livewire
+            // does not put it back into the rehydrated form, and the
+            // confirmation was compared to an empty string on save.
+            'passwordConfirmation' => $this->passwordConfirmation,
             'phone'         => $this->phone,
             'date_of_birth' => $this->date_of_birth,
             'civility'      => $this->civility,
             'bio'           => $this->bio,
             'avatar'        => $this->avatar,
+            // The key carries the property's exact name: Livewire only
+            // restores on the next round-trip what `toArray()` exposes, and a
+            // snake_case alias would lose the flag between two requests — the
+            // removal would never apply.
+            'removeAvatar'  => $this->removeAvatar,
             'role'          => $this->role,
             'roles'         => $this->role !== null && $this->role !== '' ? [$this->role] : [],
-            'permissions'   => $this->permissions,
+            // No `permissions` key on purpose. Rights are granted through
+            // roles from the backend, so the form neither reads nor writes a
+            // user's direct permissions. It used to carry them invisibly: no
+            // screen ever rendered the field, yet every save round-tripped
+            // whatever the seeder had granted straight back through
+            // `syncPermissions()`, which is destructive. `UserService` still
+            // accepts the key for programmatic callers, guarded against
+            // escalation — see UserService::assertCanGrantPermissions().
         ];
     }
 
@@ -158,19 +174,42 @@ class UserForm extends Form
     }
 
     /**
-     * Closure-based replacement for Laravel's `confirmed` rule. We compare
-     * directly against $this->password_confirmation instead of relying on the
-     * validator's data dictionary — that pipeline drops the confirmation
-     * field for Form Object snapshots, which made `confirmed` fail with a
-     * matching pair.
+     * Replaces Laravel's `confirmed` rule, which does not see the
+     * confirmation in the validator's dictionary for a Form Object.
+     *
+     * The value is **captured now**, while the rules are being built, and not
+     * read from `$this` when the closure runs: Livewire resets the form's
+     * properties during `validate()`, so a late read compares the password to
+     * an empty string and rejects a pair that actually matches.
      */
     private function passwordConfirmedRule(): Closure
     {
-        return function (string $attribute, mixed $value, Closure $fail): void {
-            if ((string) $value !== (string) ($this->passwordConfirmation ?? '')) {
-                $fail(trans('validation.confirmed', ['attribute' => $attribute]));
+        $confirmation = (string) ($this->passwordConfirmation ?? '');
+
+        return function (string $attribute, mixed $value, Closure $fail) use ($confirmation): void {
+            if ((string) $value !== $confirmation) {
+                $fail(trans('validation.confirmed', ['attribute' => $this->translateAttribute($attribute)]));
             }
         };
+    }
+
+    /**
+     * Resolve an attribute name through the app's `validation.attributes`
+     * dictionary, the way Laravel does for its own rules.
+     *
+     * A closure rule bypasses that resolution: the raw name lands in the
+     * message, so a French install read "Le champ de confirmation password ne
+     * correspond pas". Falls back to the humanised name when the app declares
+     * no translation.
+     */
+    private function translateAttribute(string $attribute): string
+    {
+        $key = 'validation.attributes.'.$attribute;
+        $translated = trans($key);
+
+        return $translated === $key
+            ? str_replace('_', ' ', Str::snake($attribute))
+            : (string) $translated;
     }
 
     private function resolveUserTable(): string

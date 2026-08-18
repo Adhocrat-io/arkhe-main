@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Livewire\Forms\PermissionForm;
 use Arkhe\Main\Services\PermissionService;
@@ -11,8 +12,19 @@ use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @deprecated since 4.0 — permissions are viewed and attached from the roles
+ *             page ({@see ListRoles}), which now carries them all. The
+ *             component stays registered under the `arkhe.list-permissions`
+ *             alias (and overridable via
+ *             `config('arkhe.components.list-permissions')`) for the apps
+ *             that mount it on a route of their own; the package route
+ *             redirects to the roles. Removal in the next major.
+ */
 class ListPermissions extends Component
 {
+    use RequiresStrongAuth;
+
     use WithPagination;
 
     public PermissionForm $permissionForm;
@@ -29,6 +41,13 @@ class ListPermissions extends Component
 
     public function mount(): void
     {
+        // This component stays registered under the `arkhe.list-permissions`
+        // alias for the apps that mount it on a route of their own. It gives
+        // access to `PermissionService`, whose writes touch the RBAC
+        // foundations — so it carries the guard for the sensitive area
+        // itself, without relying on the middleware of a route we do not
+        // control.
+        $this->authorize((string) config('arkhe.root_permission', 'manage-roles'));
         $this->authorize('view-permission');
         $this->perPage = (int) config('arkhe.per_page', 15);
     }

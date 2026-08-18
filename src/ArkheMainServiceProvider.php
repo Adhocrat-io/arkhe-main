@@ -7,20 +7,24 @@ namespace Arkhe\Main;
 use Arkhe\Main\Commands\AddUserCommand;
 use Arkhe\Main\Commands\InstallCommand;
 use Arkhe\Main\Commands\UpgradeFromV2Command;
+use Arkhe\Main\Commands\UpgradeToV4Command;
 use Arkhe\Main\Contracts\PermissionRepositoryInterface;
 use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Arkhe\Main\Cookies\ArkheCookiesServiceProvider;
 use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
+use Arkhe\Main\Http\Middleware\EnsureUserHasStrongAuth;
 use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
-use Arkhe\Main\Livewire\Dashboard;
+use Arkhe\Main\Livewire\EditRole;
+use Arkhe\Main\Livewire\EditUser;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
 use Arkhe\Main\Livewire\Cookies;
 use Arkhe\Main\Livewire\SiteSeo;
 use Arkhe\Main\Livewire\Sitemap;
+use Arkhe\Main\Livewire\StrongAuthRequired;
 use Arkhe\Main\Jobs\GenerateSitemap;
 use Arkhe\Main\Repositories\PermissionRepository;
 use Arkhe\Main\Repositories\RoleRepository;
@@ -52,7 +56,8 @@ class ArkheMainServiceProvider extends PackageServiceProvider
             ->hasMigration('add_sitemap_generated_at_to_arkhe_site_seo_table')
             ->hasCommand(InstallCommand::class)
             ->hasCommand(AddUserCommand::class)
-            ->hasCommand(UpgradeFromV2Command::class);
+            ->hasCommand(UpgradeFromV2Command::class)
+            ->hasCommand(UpgradeToV4Command::class);
     }
 
     public function packageRegistered(): void
@@ -80,27 +85,46 @@ class ArkheMainServiceProvider extends PackageServiceProvider
      */
     public const COMPONENT_DEFAULTS = [
         'list-users'       => ListUsers::class,
+        'edit-user'        => EditUser::class,
         'list-roles'       => ListRoles::class,
+        'edit-role'        => EditRole::class,
         'list-permissions' => ListPermissions::class,
-        'dashboard'        => Dashboard::class,
         'site-seo'         => SiteSeo::class,
         'sitemap'          => Sitemap::class,
         'cookies'          => Cookies::class,
+        'strong-auth-required' => StrongAuthRequired::class,
     ];
 
     public function packageBooted(): void
     {
         /** @var Router $router */
         $router = $this->app->make(Router::class);
-        $router->aliasMiddleware('arkhe.backend', EnsureUserHasBackendAccess::class);
-        $router->aliasMiddleware('arkhe.root',    EnsureUserIsRoot::class);
+        $router->aliasMiddleware('arkhe.backend',     EnsureUserHasBackendAccess::class);
+        $router->aliasMiddleware('arkhe.root',        EnsureUserIsRoot::class);
+        $router->aliasMiddleware('arkhe.strong-auth', EnsureUserHasStrongAuth::class);
+
+        // Route middleware only guards the initial page load. Livewire's own
+        // update endpoint carries just `['web']`, so every subsequent action —
+        // saving a user, deleting a role — travels a path where none of the
+        // gates above would otherwise run. Livewire re-applies a middleware on
+        // those requests only if it is declared persistent.
+        //
+        // The two permission gates were never exposed by that gap because
+        // every component re-checks with `$this->authorize()` on each action.
+        // The strong-auth gate has no such per-action equivalent, so declaring
+        // it here is what makes it real rather than a speed bump on the first
+        // GET. Registered alongside the others so the whole stack behaves
+        // consistently on both paths.
+        Livewire::addPersistentMiddleware([
+            EnsureUserHasBackendAccess::class,
+            EnsureUserIsRoot::class,
+            EnsureUserHasStrongAuth::class,
+        ]);
 
         foreach (self::COMPONENT_DEFAULTS as $alias => $default) {
             $class = (string) config("arkhe.components.{$alias}", $default);
             Livewire::component("arkhe.{$alias}", $class);
         }
-
-        $this->overrideFortifyHome();
 
         $this->bootSeo();
 
@@ -133,23 +157,16 @@ class ArkheMainServiceProvider extends PackageServiceProvider
                 active: 'arkhe.users.*',
                 priority: 10,
             )
+            // Permissions are managed from the roles page: a single entry
+            // covers both (the permissions route redirects here).
             ->item(
                 key: 'roles',
                 label: static fn (): string => __('arkhe::arkhe.roles.title'),
                 icon: 'key',
                 route: 'arkhe.roles.index',
-                active: 'arkhe.roles.*',
+                active: static fn (): bool => request()->routeIs('arkhe.roles.*', 'arkhe.permissions.*'),
                 can: $rootGate,
                 priority: 20,
-            )
-            ->item(
-                key: 'permissions',
-                label: static fn (): string => __('arkhe::arkhe.permissions.title'),
-                icon: 'shield-check',
-                route: 'arkhe.permissions.index',
-                active: 'arkhe.permissions.*',
-                can: $rootGate,
-                priority: 30,
             );
 
         ArkheNav::section(
@@ -228,25 +245,6 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         });
     }
 
-    private function overrideFortifyHome(): void
-    {
-        if (! (bool) config('arkhe.override_fortify_redirect', true)) {
-            return;
-        }
-
-        $dashboard = (string) config('arkhe.dashboard_route', '');
-        if ($dashboard === '') {
-            return;
-        }
-
-        // Only act when Fortify is actually wired up — Arkhe doesn't depend on it.
-        if (! interface_exists(\Laravel\Fortify\Contracts\LoginResponse::class)) {
-            return;
-        }
-
-        $path = '/'.ltrim($dashboard, '/');
-        config(['fortify.home' => $path]);
-    }
 
     private function bootFeatures(): void
     {

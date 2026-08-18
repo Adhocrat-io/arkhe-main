@@ -49,10 +49,10 @@ final class NavItem
             return false;
         }
 
-        // Closure callback — utile quand l'activation dépend d'un contexte
-        // applicatif au-delà du `routeIs` match (par ex. la page détail
-        // d'arkhe-watcher veut activer l'item de la liste qui correspond
-        // au type de l'entry affichée).
+        // Closure callback — useful when the active state depends on
+        // application context beyond a `routeIs` match (e.g. arkhe-watcher's
+        // detail page wants to highlight the list item matching the type of
+        // the entry on screen).
         if ($patterns instanceof Closure) {
             return (bool) $patterns();
         }

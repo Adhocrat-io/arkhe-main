@@ -8,10 +8,13 @@ use Arkhe\Main\ArkheMainServiceProvider;
 use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Schema;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use RalphJSmit\Laravel\SEO\LaravelSEOServiceProvider;
 use Spatie\Permission\PermissionServiceProvider;
+use Whitecube\LaravelCookieConsent\ServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
@@ -30,8 +33,8 @@ abstract class TestCase extends Orchestra
         return [
             LivewireServiceProvider::class,
             PermissionServiceProvider::class,
-            \RalphJSmit\Laravel\SEO\LaravelSEOServiceProvider::class,
-            \Whitecube\LaravelCookieConsent\ServiceProvider::class,
+            LaravelSEOServiceProvider::class,
+            ServiceProvider::class,
             ArkheMainServiceProvider::class,
         ];
     }
@@ -42,28 +45,49 @@ abstract class TestCase extends Orchestra
         $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
 
         $app['config']->set('auth.providers.users.model', User::class);
 
         $app['config']->set('filesystems.disks.local', [
             'driver' => 'local',
-            'root'   => storage_path('framework/testing/disks/local'),
+            'root' => storage_path('framework/testing/disks/local'),
         ]);
         $app['config']->set('filesystems.disks.public', [
             'driver' => 'local',
-            'root'   => storage_path('framework/testing/disks/public'),
-            'url'    => 'http://localhost/storage',
+            'root' => storage_path('framework/testing/disks/public'),
+            'url' => 'http://localhost/storage',
         ]);
 
         $app['config']->set('arkhe.avatar_disk', 'local');
 
+        // Livewire pages confirm their actions through `Flux::toast()`, which
+        // resolves the `flux` service. Testbench does not discover Flux's
+        // provider, and adding it to getPackageProviders() would register it
+        // twice (its Blade directives then compile unbalanced components). So
+        // we simply bind the service the facade needs.
+        $app->bind('flux', fn () => new class
+        {
+            public function __call(string $method, array $arguments): void {}
+        });
+
         // A stub login route so the auth middleware can redirect anonymous
         // visitors during HTTP tests instead of throwing RouteNotFoundException.
         $app['router']->get('/login', fn () => 'login')->name('login');
+
+        // `layouts::app` is the host app's layout — a starter kit convention
+        // Testbench has no equivalent of. Pages that actually render (rather
+        // than assert a refusal) would 500 on the missing view, so point the
+        // namespace at a minimal stand-in. Registered both as a view namespace,
+        // for Livewire's `->layout()`, and as an anonymous component namespace,
+        // for views rendering into `<x-dynamic-component>`. Component
+        // resolution is wired at boot, which is why this cannot wait for a
+        // `beforeEach`.
+        $app['view']->addNamespace('layouts', __DIR__.'/Fixtures/layouts');
+        Blade::anonymousComponentNamespace(__DIR__.'/Fixtures/layouts', 'layouts');
     }
 
     protected function setUpDatabase(): void
@@ -84,8 +108,30 @@ abstract class TestCase extends Orchestra
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            // Fortify's two-factor columns. The package does not ship them —
+            // they belong to the host app — but the strong-auth gate reads
+            // them through the user model, so the stub needs somewhere to
+            // store them. Mirrors Fortify's own migration.
+            $table->text('two_factor_secret')->nullable();
+            $table->text('two_factor_recovery_codes')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+        });
+
+        // Mirror of laravel/passkeys' create_passkeys_table migration, for the
+        // same reason as above. Note `user_id`, not a polymorphic pair — the
+        // real table is keyed straight to the user.
+        Schema::create('passkeys', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->string('name');
+            $table->string('credential_id')->unique();
+            $table->json('credential');
+            $table->timestamp('last_used_at')->nullable();
+            $table->timestamps();
+
+            $table->index('user_id');
         });
 
         $this->setUpSpatiePermissionTables();

@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 return [
 
-    'dashboard' => [
-        'title' => 'Tableau de bord',
-        'total_users' => 'Utilisateurs au total',
-    ],
-
     'access' => [
         'title' => 'Accès',
     ],
@@ -23,36 +18,70 @@ return [
 
     'cookies' => [
         'title' => 'Cookies (RGPD)',
-        'intro' => 'Liste des cookies enregistrés via whitecube/laravel-cookie-consent. Ajouter ou retirer des cookies se fait dans le code (sous-classer Whitecube\\LaravelCookieConsent\\CookiesServiceProvider). Arkhe enregistre par défaut les cookies essentiels Laravel (session, CSRF).',
+        'intro' => 'Ce que le site dépose sur le navigateur de ses visiteurs. Ajouter ou retirer un cookie se fait dans le code, en sous-classant CookiesServiceProvider.',
+        'read_only' => 'Lecture seule',
         'fields' => [
             'name' => 'Nom',
             'duration' => 'Durée',
             'description' => 'Description',
         ],
-        'session' => 'Session',
-        'minutes' => 'min',
-        'empty_category' => 'Aucun cookie enregistré dans cette catégorie.',
+        'session' => 'Le temps de la session',
+        // Durées rendues lisibles : « 525600 min » ne dit rien à qui vient
+        // auditer, « 1 an » se comprend d'un coup.
+        'duration' => [
+            'years' => '{1}1 an|[2,*]:count ans',
+            'months' => '{1}1 mois|[2,*]:count mois',
+            'days' => '{1}1 jour|[2,*]:count jours',
+            'hours' => '{1}1 heure|[2,*]:count heures',
+            'minutes' => '{1}1 minute|[2,*]:count minutes',
+        ],
+        'count' => '{0}aucun cookie|{1}1 cookie|[2,*]:count cookies',
+        'empty_category' => 'Aucun cookie dans cette catégorie.',
+        'empty' => 'Aucun cookie enregistré.',
     ],
 
     'sitemap' => [
         'title' => 'Sitemap',
-        'intro' => "Le sitemap est régénéré automatiquement selon la planification ci-dessous. Utilisez « Régénérer maintenant » pour lancer un job immédiat (mis en file via la queue de l'application).",
+        'intro' => 'Le fichier qui liste vos pages aux moteurs de recherche. Il se régénère seul, et à la demande.',
         'regenerate' => 'Régénérer maintenant',
-        'dispatched' => 'Job de régénération envoyé sur la queue. Le sitemap sera mis à jour sous peu.',
-        'disabled' => 'La génération automatique est désactivée (ARKHE_SITEMAP_ENABLED=false). Le bouton ci-dessus reste fonctionnel.',
+        'dispatched' => 'Régénération lancée. Le sitemap sera à jour sous peu.',
+        'disabled' => 'La génération automatique est désactivée (ARKHE_SITEMAP_ENABLED=false). Le bouton « Régénérer maintenant » reste utilisable.',
         'never_generated' => 'Jamais généré.',
+        'status' => [
+            'scheduled' => 'Régénération automatique',
+            'manual' => 'Manuel seulement',
+        ],
+        'sections' => [
+            'state' => 'État',
+            'state_hint' => 'Où en est le fichier publié.',
+            'settings' => 'Réglages',
+            'settings_hint' => 'Définis dans config/arkhe.php et le fichier .env : cet écran les donne à lire, pas à modifier.',
+        ],
         'fields' => [
-            'url' => 'URL crawlée',
+            'url' => 'URL parcourue',
             'path' => 'Fichier de sortie',
-            'schedule' => 'Planification (cron)',
+            'schedule' => 'Planification',
             'last_generated' => 'Dernière génération',
+        ],
+        'hints' => [
+            'url' => 'Le point de départ du parcours.',
+            'path' => 'Où le fichier est écrit.',
+            'schedule' => 'Au format cron.',
         ],
     ],
 
     'site_seo' => [
         'title' => 'SEO',
-        'intro' => 'Réglages SEO appliqués à toutes les pages du site. Ces valeurs servent de défauts : un modèle qui définit son propre SEO (via le trait HasArkheSeo) les remplace.',
+        'intro' => 'Ces valeurs s’appliquent à toutes les pages du site, sauf là où un modèle définit son propre SEO — le trait HasArkheSeo les remplace alors.',
         'saved' => 'Réglages SEO enregistrés.',
+        'sections' => [
+            'identity' => 'Identité du site',
+            'identity_hint' => 'Ce qui nomme et décrit le site dans les résultats de recherche.',
+            'sharing' => 'Partage',
+            'sharing_hint' => 'Ce qu’affichent les réseaux sociaux et l’onglet du navigateur.',
+            'indexing' => 'Indexation',
+            'indexing_hint' => 'Ce que les moteurs de recherche ont le droit de faire.',
+        ],
         'fields' => [
             'site_name' => 'Nom du site',
             'title_suffix' => 'Suffixe de titre',
@@ -64,26 +93,69 @@ return [
             'favicon' => 'Favicon',
         ],
         'hints' => [
-            'site_name' => 'Utilisé dans les balises OpenGraph.',
-            'title_suffix' => 'Concaténé après chaque <title> (ex. "| Acme").',
-            'description' => "Utilisé quand la page n'en définit pas une explicitement.",
-            'image' => 'Chemin (ex. /images/og.png) ou URL absolue. Utilisé en fallback pour les balises OG/Twitter.',
-            'robots' => 'Par défaut : max-snippet:-1, max-image-preview:large, max-video-preview:-1.',
+            'site_name' => 'Le nom qui accompagne chaque partage.',
+            'title_suffix' => 'Ajouté après chaque titre de page.',
+            'description' => 'Reprise quand la page n’en donne pas la sienne.',
+            'author' => 'Affiché comme auteur par défaut des pages.',
+            'image' => 'Chemin ou URL absolue, reprise à défaut d’image propre à la page.',
             'twitter_username' => 'Sans le @.',
+            'favicon' => 'L’icône de l’onglet, par exemple « /favicon.ico ».',
+            'robots' => 'Ce que les moteurs peuvent indexer.',
+            'robots_tooltip' => 'Laissé vide, Arkhe applique « max-snippet:-1, max-image-preview:large, max-video-preview:-1 » — l’indexation la plus large. « noindex, nofollow » retire le site entier des résultats de recherche.',
         ],
     ],
 
     'users' => [
         'title' => 'Utilisateurs',
+        'description' => 'Gérer les comptes du back-office et les rôles qu’ils portent.',
         'create' => 'Créer un utilisateur',
+        'create_hint' => 'Le compte est actif dès sa création : le mot de passe choisi ici permet de se connecter.',
         'edit' => "Modifier l'utilisateur",
+        'edit_hint' => 'Les modifications prennent effet immédiatement.',
+        'sections' => [
+            'identity' => 'Identité',
+            'avatar' => 'Photo',
+            'security' => 'Sécurité',
+            'access' => 'Accès',
+        ],
+        // Chaque champ porte la sienne : dans une grille à deux colonnes, un
+        // champ décrit à côté d'un champ nu pousse son contrôle vers le bas.
+        // Une ligne rendue maximum — au-delà, le déséquilibre revient.
+        'hints' => [
+            'first_name' => 'Le prénom usuel, tel qu’il s’affichera à l’écran.',
+            'last_name' => 'Sert au tri et à la recherche dans la liste.',
+            'email' => 'Sert aussi d’identifiant de connexion.',
+            'phone' => 'Format libre, indicatif compris.',
+            'civility' => 'Deux mots au plus, par exemple « Madame ».',
+            'date_of_birth' => 'Jamais affichée publiquement.',
+            'bio' => 'Quelques lignes de présentation, 5 000 caractères au plus.',
+            'avatar' => 'Image carrée de préférence, 4 Mo maximum.',
+            'password' => 'Huit caractères au minimum.',
+            'password_confirmation' => 'Doit correspondre exactement au champ précédent.',
+            'password_edit' => 'Laissez les deux champs vides pour conserver le mot de passe actuel.',
+            'role' => 'Ce que l’utilisateur pourra faire dans le back-office.',
+            'role_tooltip' => 'Un rôle porte un jeu de permissions. Vous ne pouvez attribuer que les rôles de rang inférieur ou égal au vôtre — attribuer plus haut reviendrait à vous donner des droits que vous n’avez pas.',
+        ],
         'empty' => 'Aucun utilisateur pour le moment.',
+        'empty_hint' => 'Créez votre premier utilisateur pour commencer.',
+        'empty_filtered' => 'Aucun utilisateur ne correspond à ces filtres.',
         'cannot_manage' => 'Vous ne pouvez pas modifier un utilisateur avec un rôle supérieur au vôtre.',
-        'search_placeholder' => 'Rechercher par nom ou email…',
-        'filter_by_role' => 'Filtrer par rôle',
-        'all_roles' => 'Tous les rôles',
+        'search_placeholder' => 'Nom ou email…',
+        'filter_by_role' => 'Rôle',
+        'all_roles' => 'Tous',
+        'no_role' => 'Sans rôle',
         'delete_title' => "Supprimer l'utilisateur",
         'delete_confirm' => 'Cette action est définitive. Voulez-vous vraiment supprimer cet utilisateur ?',
+        'delete_intro' => 'Le compte de :name va être définitivement supprimé. Cette action est irréversible.',
+        'deleted' => 'Utilisateur supprimé.',
+        'created' => 'Utilisateur créé.',
+        'updated' => 'Utilisateur mis à jour.',
+        'stats' => [
+            'total' => 'Au total',
+            'verified' => 'Vérifiés',
+            'unverified' => 'Non vérifiés',
+            'without_role' => 'Sans rôle',
+        ],
         'columns' => [
             'name' => 'Nom',
             'email' => 'Email',
@@ -91,12 +163,15 @@ return [
             'created_at' => 'Créé le',
             'actions' => 'Actions',
         ],
+        // Accessible name for each row's "⋮" button. Distinct from
+        // `columns.actions`, which titles the column: read on its own by a
+        // screen reader, "Actions" does not say which row it belongs to.
+        'row_actions' => 'Actions pour cet utilisateur',
         'fields' => [
             'first_name' => 'Prénom',
             'last_name' => 'Nom',
             'email' => 'Email',
             'password' => 'Mot de passe',
-            'password_hint' => '(laisser vide pour ne pas modifier)',
             'password_confirmation' => 'Confirmation du mot de passe',
             'phone' => 'Téléphone',
             'date_of_birth' => 'Date de naissance',
@@ -110,17 +185,41 @@ return [
         'label' => 'Rôle',
         'placeholder' => 'Sélectionner un rôle…',
         'none' => 'Aucun',
-        'title' => 'Rôles',
-        'create' => 'Créer un rôle',
+        'title' => 'Rôles & permissions',
+        'description' => 'Permissions attachées à chaque rôle. Les rôles sont définis par la configuration de l’application : ils s’ajoutent et se retirent depuis le code, pas depuis cet écran.',
         'edit' => 'Modifier le rôle',
-        'empty' => 'Aucun rôle.',
-        'search_placeholder' => 'Rechercher par nom…',
-        'canonical' => 'canonique',
+        'edit_hint' => 'Cochez ce que ce rôle autorise. Les utilisateurs qui le portent gagnent ou perdent ces droits immédiatement.',
+        'canonical_badge' => 'Rôle système',
+        'sections' => [
+            'identity' => 'Identité',
+            'permissions' => 'Permissions',
+        ],
+        'hints' => [
+            'name' => 'Sert d’identifiant : le code et la configuration s’y réfèrent.',
+            'guard' => 'Le garde d’authentification concerné. « web » dans la quasi-totalité des cas.',
+            'permissions' => 'Rangées par ressource. La permission « manage-… » est le raccourci qui couvre toute la ressource.',
+        ],
+        'empty' => 'Aucun rôle trouvé.',
+        'empty_hint' => 'Les rôles sont déclarés dans config/arkhe.php, puis créés par le seeder.',
+        'empty_filtered' => 'Aucun rôle ne correspond à cette recherche.',
+        'search_placeholder' => 'Nom du rôle…',
         'canonical_hint' => 'Ce rôle est canonique à Arkhe : son nom est immuable, mais ses permissions sont modifiables.',
-        'delete_title' => 'Supprimer ce rôle',
-        'delete_confirm' => 'Les utilisateurs portant ce rôle le perdront. Continuer ?',
+        'updated' => 'Rôle mis à jour.',
+
+        // Ces trois messages ne servent plus qu'aux méthodes dépréciées de
+        // ListRoles (création et suppression, retirées de l'interface en 3.3).
+        // Ils partiront avec elles à la prochaine majeure.
+        'created' => 'Rôle créé.',
+        'deleted' => 'Rôle supprimé.',
+        'delete_canonical_refused' => 'Ce rôle est canonique à Arkhe : il ne peut pas être supprimé.',
+        'permissions_count' => '{0}Aucune permission|{1}:count permission|[2,*]:count permissions',
+        'stats' => [
+            'roles' => 'Rôles',
+            'permissions' => 'Permissions',
+        ],
         'columns' => [
-            'name' => 'Nom',
+            'name' => 'Libellé',
+            'identifier' => 'Identifiant',
             'guard' => 'Guard',
             'permissions' => 'Permissions',
             'actions' => 'Actions',
@@ -145,10 +244,35 @@ return [
             'guard' => 'Guard',
             'actions' => 'Actions',
         ],
+        'row_actions' => 'Actions pour cette permission',
         'fields' => [
             'name' => 'Nom',
             'guard' => 'Guard',
         ],
+        // Libellés des groupes sur la fiche d'un rôle. Une clé absente retombe
+        // sur le nom de la ressource, remis en minuscules et sans tirets.
+        'groups' => [
+            'users' => 'Utilisateurs',
+            'roles' => 'Rôles',
+            'permissions' => 'Permissions',
+            'site-seos' => 'SEO',
+            'sitemaps' => 'Sitemap',
+            'cookies' => 'Cookies',
+            'other' => 'Autres',
+        ],
+    ],
+
+    // Zone de téléversement d'image (x-arkhe::image-upload).
+    'image' => [
+        'browse' => 'Cliquez pour choisir une image',
+        'or_drop' => 'ou déposez-la ici.',
+        'uploading' => 'Téléversement…',
+        'pending' => 'Nouvelle image, enregistrée avec le formulaire.',
+        'current' => 'Image actuelle.',
+        'discard' => 'Abandonner cette image',
+        'remove' => 'Retirer l’image',
+        'marked_for_removal' => 'Image retirée à l’enregistrement.',
+        'cancel_removal' => 'Annuler le retrait',
     ],
 
     'actions' => [
@@ -157,12 +281,51 @@ return [
         'edit' => 'Modifier',
         'delete' => 'Supprimer',
         'reset' => 'Réinitialiser',
+        'confirm' => 'Confirmer',
+        'in_progress' => 'En cours…',
+        'search' => 'Recherche',
+        'back' => 'Retour',
+        'back_to_list' => 'Retour à la liste',
+        'check_all' => 'Tout cocher',
+        'uncheck_all' => 'Tout décocher',
     ],
 
     'validation' => [
         'email_unique' => 'Cet email est déjà utilisé.',
         'password_min' => 'Le mot de passe doit contenir au moins :min caractères.',
         'role_above_rank' => 'Vous ne pouvez pas attribuer un rôle supérieur au vôtre.',
+    ],
+
+    // The strong-authentication gate (`arkhe.strong-auth` middleware). These
+    // are the package's first refusal strings — every other 403 it raises
+    // renders the framework's default page.
+    'strong_auth' => [
+        'required' => 'Cette zone demande une clé d’accès ou une double authentification. Enrôlez-en une pour continuer — c’est l’affaire d’une minute.',
+        'no_route' => 'L’authentification forte est exigée, mais Arkhe n’a pas trouvé la page où l’activer. Faites pointer `arkhe.strong_auth.route` vers votre route de réglages de sécurité, ou remettez `arkhe.strong_auth.enforce` à false.',
+
+        // The interstitial shown before handing off to the host app's security
+        // page. It exists so the requirement gets stated somewhere the user is
+        // guaranteed to read it.
+        'page' => [
+            'title'           => 'Une protection supplémentaire est requise',
+            'intro'           => 'L’accès à l’administration demande un second facteur. Activez-en un, et vous ne reverrez plus cet écran.',
+            'options_title'   => 'Deux façons de faire',
+            'passkey_title'   => 'Clé d’accès — recommandé',
+            'passkey_body'    => 'Votre empreinte, votre visage ou le code de votre appareil. Rien à retenir, rien à recopier, et elle ne fonctionne que sur le vrai site : un site imitant le vôtre ne peut pas s’en servir.',
+            'totp_title'      => 'Double authentification',
+            'totp_body'       => 'Un code à six chiffres renouvelé toutes les trente secondes, dans une application d’authentification. Si vous avez déjà une clé d’accès, celle-ci suffit.',
+            'steps_title'     => 'Ce qui vous attend',
+            // Arkhe does not own the security page and cannot highlight
+            // anything on it, so the journey is described before it starts —
+            // in the order the user will meet each step.
+            'steps'           => [
+                'password' => 'Votre mot de passe vous sera redemandé. C’est normal : il protège vos réglages de sécurité.',
+                'find'     => 'Sur la page qui suit, cherchez la section « Clés d’accès » ou « Double authentification ».',
+                'follow'   => 'Laissez-vous guider, puis revenez à l’administration. L’accès sera ouvert.',
+            ],
+            'cta'             => 'Activer ma protection',
+            'no_route_title'  => 'Page d’activation introuvable',
+        ],
     ],
 
     'install' => [

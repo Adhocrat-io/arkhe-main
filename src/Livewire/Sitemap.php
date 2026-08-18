@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire;
 
+use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Jobs\GenerateSitemap;
 use Arkhe\Main\Services\SitemapService;
+use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class Sitemap extends Component
 {
+    use RequiresStrongAuth;
+
     public function mount(): void
     {
         $this->authorize('view-sitemap');
@@ -28,7 +32,7 @@ class Sitemap extends Component
 
         GenerateSitemap::dispatch();
 
-        session()->flash('arkhe.sitemap.dispatched', true);
+        Flux::toast(variant: 'success', text: __('arkhe::arkhe.sitemap.dispatched'));
     }
 
     public function render(

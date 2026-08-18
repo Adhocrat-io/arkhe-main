@@ -82,9 +82,14 @@ class UserService
             $user->password = $this->hasher->make((string) $data['password']);
         }
 
+        // A new file wins over a requested removal: we do not delete what we
+        // have just replaced.
         if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
             $this->deleteAvatar($user->avatar_path ?? null);
             $user->avatar_path = $this->storeAvatar($data['avatar']);
+        } elseif (! empty($data['removeAvatar'])) {
+            $this->deleteAvatar($user->avatar_path ?? null);
+            $user->avatar_path = null;
         }
 
         $user->save();
@@ -162,7 +167,53 @@ class UserService
         }
 
         if (array_key_exists('permissions', $data) && is_array($data['permissions'])) {
+            $this->assertCanGrantPermissions($user, $data['permissions']);
             $user->syncPermissions($data['permissions']);
+        }
+    }
+
+    /**
+     * You only grant a permission you hold yourself.
+     *
+     * Rank already protected the roles, but nothing guarded permissions
+     * assigned directly: `create-user` was enough to build an account carrying
+     * `manage-roles`, then log into it. The hierarchy was bypassed through the
+     * door next to it.
+     *
+     * Only the delta is checked: removing a permission you do not hold stays
+     * allowed, and re-saving an account without touching it asks for nothing.
+     *
+     * @param  array<int, string>  $permissions
+     *
+     * @throws AuthorizationException
+     */
+    private function assertCanGrantPermissions(Model $user, array $permissions): void
+    {
+        /** @var Model|null $actor */
+        $actor = $this->auth->guard()->user();
+
+        if ($actor === null) {
+            if (app()->runningInConsole()) {
+                return;
+            }
+
+            throw new AuthorizationException('Cannot change permissions without an authenticated actor.');
+        }
+
+        if (method_exists($actor, 'hasRole') && $actor->hasRole((string) $this->config->get('arkhe.roles.root'))) {
+            return;
+        }
+
+        $current = method_exists($user, 'getDirectPermissions')
+            ? $user->getDirectPermissions()->pluck('name')->all()
+            : [];
+
+        foreach (array_diff($permissions, $current) as $permission) {
+            if (! method_exists($actor, 'can') || ! $actor->can($permission)) {
+                throw new AuthorizationException(
+                    "You are not allowed to grant the permission [{$permission}]."
+                );
+            }
         }
     }
 

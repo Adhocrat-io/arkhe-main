@@ -42,8 +42,7 @@ it('appends missing V3 keys to a V2-shaped config when confirmed', function (): 
 
     $patched = $this->files->get($this->configPath);
 
-    expect($patched)->toContain("'dashboard_route'")
-        ->toContain("'role_permissions'")
+    expect($patched)->toContain("'role_permissions'")
         ->toContain("'backend_permission' => 'access-backend'")
         ->toContain("'components'")
         ->toContain('// ── V3 additions');
@@ -144,7 +143,7 @@ it('does not modify the file in dry-run mode', function (): void {
     $this->files->put($this->configPath, $original);
 
     // Even in dry-run, a confirmed reshape removes role_permissions from the
-    // keys to append (13 → 12): the reshape itself will create it.
+    // keys to append (11 → 10): the reshape itself will create it.
     $this->artisan('arkhe:main:upgrade-from-v2', ['--dry-run' => true])
         ->expectsConfirmation('Rewrite roles/permissions into the V3 layout?', 'yes')
         ->expectsConfirmation(
@@ -230,6 +229,11 @@ return [
     'role_permissions' => ['root' => ['*']],
     'backend_permission' => 'access-backend',
     'root_permission' => 'manage-roles',
+    'permission_groups' => [],
+    'strong_auth' => [
+        'enforce' => env('ARKHE_STRONG_AUTH', false),
+        'route'   => null,
+    ],
     'components' => [],
     'features' => ['cookie_consent' => false, 'seo' => false],
     'role_hierarchy' => [],

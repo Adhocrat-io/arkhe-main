@@ -11,16 +11,39 @@ use Spatie\Permission\Models\Role;
 
 class RoleRepository implements RoleRepositoryInterface
 {
-    public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
-    {
-        $query = Role::query()->with('permissions');
+    /**
+     * Columns allowed for sorting: the name comes from the URL and ends up in
+     * an `orderBy`. `permissions_count` sorts on the aggregate, not on a
+     * column of the table.
+     *
+     * @var array<int, string>
+     */
+    private const SORTABLE_FIELDS = ['name', 'guard_name', 'permissions_count'];
+
+    public function paginate(
+        array $filters = [],
+        int $perPage = 15,
+        string $sort = 'name',
+        string $direction = 'asc',
+    ): LengthAwarePaginator {
+        // The list only shows the permission *count* now: count it in SQL
+        // rather than hydrating the full collection for every role (root
+        // carries as many as exist).
+        $query = Role::query()->withCount('permissions');
 
         $search = trim((string) ($filters['search'] ?? ''));
         if ($search !== '') {
             $query->where('name', 'like', '%'.$search.'%');
         }
 
-        return $query->orderBy('name')->paginate(max(1, $perPage));
+        $sort = in_array($sort, self::SORTABLE_FIELDS, true) ? $sort : 'name';
+        $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
+
+        return $query
+            ->orderBy($sort, $direction)
+            // Break ties so pagination stays stable.
+            ->orderBy('id')
+            ->paginate(max(1, $perPage));
     }
 
     public function find(int $id): ?Role

@@ -131,6 +131,52 @@ it('replaces and deletes the old avatar on a new upload', function (): void {
     Storage::disk('local')->assertExists($secondPath);
 });
 
+it('removes the avatar when the removal flag is set', function (): void {
+    loginAs('root');
+    $alice = makeServiceUser();
+    $svc = app(UserService::class);
+
+    $svc->update($alice, ['avatar' => UploadedFile::fake()->image('me.jpg')]);
+    $path = $alice->fresh()->avatar_path;
+
+    $svc->update($alice->fresh(), ['removeAvatar' => true]);
+
+    expect($alice->fresh()->avatar_path)->toBeNull();
+    Storage::disk('local')->assertMissing($path);
+});
+
+// Uploading a picture while a removal is marked must keep the picture: we do
+// not delete what we have just replaced.
+it('keeps a freshly uploaded avatar over a pending removal', function (): void {
+    loginAs('root');
+    $alice = makeServiceUser();
+    $svc = app(UserService::class);
+
+    $svc->update($alice, ['avatar' => UploadedFile::fake()->image('first.jpg')]);
+
+    $svc->update($alice->fresh(), [
+        'avatar' => UploadedFile::fake()->image('second.jpg'),
+        'removeAvatar' => true,
+    ]);
+
+    expect($alice->fresh()->avatar_path)->not->toBeNull();
+    Storage::disk('local')->assertExists($alice->fresh()->avatar_path);
+});
+
+it('leaves the avatar untouched when the flag is absent', function (): void {
+    loginAs('root');
+    $alice = makeServiceUser();
+    $svc = app(UserService::class);
+
+    $svc->update($alice, ['avatar' => UploadedFile::fake()->image('me.jpg')]);
+    $path = $alice->fresh()->avatar_path;
+
+    $svc->update($alice->fresh(), ['first_name' => 'Renommee']);
+
+    expect($alice->fresh()->avatar_path)->toBe($path);
+    Storage::disk('local')->assertExists($path);
+});
+
 it('deletes the user, removes the avatar and dispatches UserDeleted', function (): void {
     Event::fake([UserDeleted::class]);
     loginAs('root');

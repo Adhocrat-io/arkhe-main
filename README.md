@@ -1,5 +1,7 @@
 # adhocrat-io/arkhe-main
 
+*Read this in [French / Français](README.fr.md).*
+
 Bootstrap a Laravel backend with **users, roles and permissions** management, served by **Livewire 4** and **Flux UI Free**. Ships first-class SEO, sitemap and cookie-consent integrations on top.
 
 > First module of the `adhocrat-io/arkhe-*` namespace.
@@ -108,6 +110,124 @@ By default: `GET /administration/users` (the prefix is configurable).
 
 Access is granted to users carrying either the `root` or `administrateur` role; everyone else gets a `403` via the `arkhe.backend` middleware.
 
+## Strong authentication
+
+Arkhe can require a strong second factor — a registered **passkey** or a **confirmed TOTP** — before anyone reaches the backend. A passkey exempts from TOTP: it is already two-factor (device possession plus biometric or PIN) and, being bound to the domain by the browser, phishing-resistant where a TOTP code is not.
+
+This gates **access to the backend, not sign-in**. How users authenticate belongs to your app's Fortify pipeline, which the package does not touch — a user without a factor stays signed in and keeps the rest of the site; only `/administration/*` closes until they enrol. Fortify offers no equivalent: it provides two-factor authentication but never compels it, and ships no middleware at all.
+
+### Turning it on
+
+Disabled by default, so upgrading the package never locks an app out of its own backend. Four steps, in this order — the order matters, and step 3 is the one people skip.
+
+**1. Check your app can satisfy it.** Enforcement needs a user model exposing at least one of the two probe methods below. With Fortify's `TwoFactorAuthenticatable` and/or `laravel/passkeys` on your `User`, you are set. Without either, the flag has no effect (see [When it cannot be satisfied](#when-it-cannot-be-satisfied)).
+
+```bash
+php artisan tinker --execute="\$u = App\Models\User::first();
+  var_dump(method_exists(\$u, 'hasEnabledTwoFactorAuthentication'));
+  var_dump(method_exists(\$u, 'hasPasskeysEnabled'));"
+```
+
+**2. Extend the gate to your own admin pages.** Arkhe guards its own routes; your dashboard is yours. See [Extending it to your own routes](#extending-it-to-your-own-routes) — the alias is inert until step 4, so this is safe to do first.
+
+**3. Enrol yourself before switching it on.** Go to your security settings and register a passkey (or confirm a TOTP) *now*, while the backend is still open. Skipping this is not fatal — the interstitial always routes you to the enrolment page — but doing it first spares you the detour on every attempt.
+
+**4. Switch it on.**
+
+```dotenv
+ARKHE_STRONG_AUTH=true
+```
+
+```bash
+php artisan config:clear
+```
+
+Verify it took effect — this must print `true`:
+
+```bash
+php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled());"
+```
+
+It is all or nothing: either the backend requires a strong factor or it does not. Guarding only the sensitive area was considered and dropped — it left the user list open, where accounts are created and roles handed out, which reads as prudence while buying little. Roles and permissions already draw that line where it belongs.
+
+Anything unrecognised reads as disabled rather than as "protect everything", so a typo fails towards a working backend rather than towards a lockout.
+
+The published config, should you want to set it there instead of in `.env`:
+
+```php
+// config/arkhe.php
+'strong_auth' => [
+    'enforce' => env('ARKHE_STRONG_AUTH', false),
+    'route'   => null,   // enrolment page; auto-detected when null
+],
+```
+
+> **Config published before this release?** The key will simply be absent, which reads as `false`. The middleware itself is wired into the package's own routes rather than into `arkhe.middleware`, so it reaches you even with a frozen published stack.
+
+### What counts as a strong factor
+
+Detection probes the user model for two methods, never for traits or vendor classes, so neither `laravel/fortify` nor `laravel/passkeys` becomes a dependency:
+
+| Method | Comes from | Cost |
+| --- | --- | --- |
+| `hasEnabledTwoFactorAuthentication()` | Fortify's `TwoFactorAuthenticatable` | attribute read, no query |
+| `hasPasskeysEnabled()` | `laravel/passkeys` | one `exists()` query |
+
+Either one satisfies the requirement. Two-factor is probed first because it is free, so the passkey query only runs for users who have no TOTP. The verdict is deliberately not cached: a revoked factor must stop working immediately, and under Octane a memoized verdict would outlive the request that produced it. A TOTP secret that was generated but never confirmed does **not** count.
+
+### When it cannot be satisfied
+
+Two degraded states are handled rather than left to fail:
+
+- **No enrolment page resolves.** Arkhe probes `security.edit` then `two-factor.show`. Profile pages are deliberately excluded — in current starter kits they carry no 2FA or passkey controls, so sending someone there would strand them where nothing can be enabled. When nothing resolves, the interstitial drops its call to action and reports which config key to set, rather than linking into the void.
+- **The user model exposes neither method.** No user could ever satisfy the requirement, so it is skipped with a logged warning. Failing closed would brick the backend with no way back in, since the config is only reachable with server access — and this state means the flag was set on an app with no 2FA support, which is a misconfiguration rather than an intent.
+
+### Extending it to your own routes
+
+Arkhe guards its own pages. Your dashboard, and anything else you consider part of the admin area, belongs to your app — so the gate is exposed as a reusable middleware alias you apply where you want it:
+
+```php
+// routes/web.php
+Route::middleware(['auth', 'verified', 'arkhe.strong-auth'])->group(function () {
+    Route::view('dashboard', 'dashboard')->name('dashboard');
+});
+```
+
+The dashboard is worth protecting: it is the way into the admin area, and leaving it open only postpones the block to the first click. The alias is inert while `arkhe.strong_auth.enforce` is `false`, so adding it costs nothing until you switch enforcement on.
+
+Place it after `auth`, which resolves the user it reads. There is nothing else to configure — the alias takes no parameter.
+
+### Why route middleware alone is not enough
+
+Livewire's update endpoint is a separate route carrying only `['web']`, so every action after the initial page render — saving a user, deleting a role — travels a path where route middleware does not run. A gate wired only on `/administration/*` would guard the first GET and nothing else: anyone holding a snapshot from an earlier legitimate page load could keep acting on the backend.
+
+Arkhe closes that on both halves. The three gates are declared persistent (`Livewire::addPersistentMiddleware()`), so Livewire re-applies them on component requests; and backend components carry `RequiresStrongAuth`, which re-asserts the requirement server-side on every request through Livewire's `booted()` hook. The second half matters because persistent middleware still keys off the client-supplied snapshot path — a gate whose only enforcement can be influenced by the payload it polices is not a gate.
+
+If you build your own backend Livewire components, apply the trait to them too:
+
+```php
+use Arkhe\Main\Concerns\RequiresStrongAuth;
+
+class MyAdminPage extends Component
+{
+    use RequiresStrongAuth;
+}
+```
+
+### What a blocked user sees
+
+They land on an Arkhe page at `/administration/strong-auth` that names the requirement, describes both options, and walks through what comes next — including the password prompt, which most starter kits put in front of their security page. Only then does it hand off.
+
+The interstitial exists because handing off directly did not work: the security page belongs to your app and usually sits behind `password.confirm`, and that intermediate hop consumes any flashed message. Users met a password prompt and a settings screen with nothing saying what was expected of them.
+
+The page sits **outside** the guarded route group, since a gate that redirects to a page it also guards is an infinite loop. It stays registered even when enforcement is off, so a stale link finds a page rather than a 404. Override it like any other Arkhe page:
+
+```php
+'components' => [
+    'strong-auth-required' => App\Livewire\MyStrongAuthNotice::class,
+],
+```
+
 ## Coexisting with a custom admin (Livewire starter kit)
 
 Arkhe is designed to **plug into** your existing admin shell rather than replace it. Two integration points:
@@ -122,34 +242,19 @@ In `config/arkhe.php`:
 
 Arkhe pages will render inside your existing chrome (sidebar, topbar, your CSS).
 
-### 2. Take over the dashboard route (opt-in)
+### 2. Keep your own dashboard
 
-Comment out the dashboard route in your `routes/web.php` and set the path:
+Arkhe ships no dashboard. The backend's landing page belongs to your app — the
+starter kits provide one, ready for the figures that matter to you, and the
+package has no business replacing it with its own user counters. Those live
+where they belong: at the top of the users list.
 
-```dotenv
-ARKHE_DASHBOARD_ROUTE=administration/dashboard
-```
-
-Arkhe mounts a minimal users-by-role dashboard at the path you choose. Keep the env var unset and your own dashboard remains untouched.
-
-**Login redirect.** The Laravel starter kits redirect to `route('dashboard', absolute: false)` after authentication. Two ways to point that at Arkhe:
-
-- **A — re-use the `dashboard` route name** (zero patch on your starter):
-
-  ```dotenv
-  ARKHE_DASHBOARD_ROUTE=administration/dashboard
-  ARKHE_DASHBOARD_ROUTE_NAME=dashboard
-  ```
-
-  `route('dashboard')` now resolves to `/administration/dashboard`, the after-login redirect just works.
-
-- **B — keep `arkhe.dashboard` and patch the starter's login**: open the login Livewire/Volt component and replace `route('dashboard', absolute: false)` with `route('arkhe.dashboard', absolute: false)`. Pick this when another part of your app still needs `dashboard` to mean something else.
-
-> **Fortify users** (Laravel 12 Livewire starter kit included): the starter's login form posts to Fortify, which redirects to the literal value of `config('fortify.home')` after auth — not via the named `dashboard` route. Arkhe detects Fortify automatically and rewrites that value to your `ARKHE_DASHBOARD_ROUTE` at boot, so neither A nor B is needed for the form submission to land on the right page. Set `ARKHE_OVERRIDE_FORTIFY_REDIRECT=false` to opt out.
+Nothing to configure. `route('dashboard')` keeps pointing wherever your app
+says it does, and the after-login redirect is untouched.
 
 ### 3. Inject Arkhe entries into your sidebar
 
-Include the bundled partial at the top level of your `<flux:sidebar.nav>` — it emits its own Dashboard item plus the registry-driven groups ("Accès", "Réglages", and any group contributed by a satellite package), so it sits alongside your own groups rather than nested inside one:
+Include the bundled partial at the top level of your `<flux:sidebar.nav>` — it emits the registry-driven groups ("Accès", "Réglages", and any group contributed by a satellite package), so it sits alongside your own groups rather than nested inside one:
 
 ```blade
 <flux:sidebar.nav>
@@ -287,6 +392,33 @@ The four canonical Arkhe keys — `root`, `administrator`, `user`, `guest` — m
 - ✅ insert new roles between them,
 - ✅ change the **value** (the actual role name stored in DB), e.g. `'user' => 'membre'`,
 - ❌ rename or remove the four canonical **keys**.
+
+## Permissions
+
+Permissions are edited from a role's page — there is no separate permissions screen. `/administration/permissions` still resolves, redirecting to the roles list, so links in consumer apps do not break.
+
+Rights are granted **through roles**. A user's own permissions are not editable from the backend: it keeps a single place to look when auditing who can do what. `UserService` still accepts a `permissions` key for programmatic callers — a seeder, a command, your own code — guarded against privilege escalation.
+
+### Grouping the checkboxes — `permission_groups`
+
+A role's page can carry several dozen checkboxes, so they are grouped by resource. Groups are inferred from the `<verb>-<resource>` convention: `view-user`, `create-user` and `manage-users` all land under "users". Anything naming no resource (`access-backend`) goes to "other" rather than being dropped.
+
+To decide the split and the ordering yourself — useful when your permissions do not follow the convention, or when a business grouping reads better:
+
+```php
+// config/arkhe.php
+'permission_groups' => [
+    // A group name that is itself a permission shows at the head of its own group.
+    'manage-users' => ['view-user', 'create-user', 'update-user', 'delete-user'],
+
+    // Or a plain label.
+    'Content'      => ['view-article', 'publish-article'],
+],
+```
+
+Only permissions that exist in the database are rendered, so a config running ahead of the seeder never produces empty checkboxes. Whatever the config omits is appended at the end rather than hidden. This is display only — it changes no access rule.
+
+Group labels are translatable under `arkhe::arkhe.permissions.groups`; a missing key falls back to the resource name.
 
 ## Styling — Tailwind / Flux
 
@@ -506,7 +638,7 @@ Seven layered ways to customise Arkhe without forking it — pick the lightest o
 | --- | --- | --- |
 | 1 | **Events** — `UserCreated`, `UserUpdated`, `UserDeleted` (see [Events](#events)) | You need a side-effect (newsletter sync, audit log, webhook) that does NOT need access to the Livewire component state. |
 | 2 | **Lifecycle hooks** on the Livewire pages — `beforeSave(array): array`, `afterCreate(Model, array)`, `afterUpdate(Model, array)`, `beforeDelete(Model)` | The side-effect needs UI context — form payload, flash messages, redirects. Override in a subclass (see lever 3). |
-| 3 | **Rebindable Livewire components** via `config('arkhe.components')` | You want to subclass `ListUsers` / `ListRoles` / `ListPermissions` / `Dashboard` / `SiteSeo` / `Sitemap` / `Cookies` to add `wire:click` targets or extra fields. The route map auto-resolves to your class. |
+| 3 | **Rebindable Livewire components** via `config('arkhe.components')` | You want to subclass any of the nine bundled pages — `ListUsers`, `EditUser`, `ListRoles`, `EditRole`, `ListPermissions`, `SiteSeo`, `Sitemap`, `Cookies`, `StrongAuthRequired` — to add `wire:click` targets or extra fields. The route map auto-resolves to your class. |
 | 4 | **`RoleHierarchy::register()`** (runtime) or `config('arkhe.roles')` (static) | You ship a new role from a package or a host module — see [Role hierarchy](#role-hierarchy--authorization). |
 | 5 | **Custom permissions** via `config('arkhe.permissions')` + `config('arkhe.role_permissions')`, re-seed with `ArkheRolesSeeder` | You add domain permissions (`manage-posts`, `publish-article`, …) that should live next to Arkhe's bundled set. |
 | 6 | **`ArkheNav` navigation registry** — add an item to the shared `settings` section or declare your own group (see [Branch a package onto the shared menu](#4-branch-a-package-onto-the-shared-menu--arkhenav)) | A package needs to contribute sidebar entries that show up in the common backend menu, gated by permission, with no Blade patching. |
@@ -547,9 +679,9 @@ Things that may surprise you. None are blockers — most are deliberate trade-of
 | **Sidebar patch** | Step 8 of `arkhe:main:install` only patches a file matching `*sidebar*.blade.php` that contains `<flux:sidebar.nav>`. No match → silently skipped (the bundled layout uses a `<flux:header>` dropdown, so a sidebar is not strictly required). If your app has multiple sidebar candidates, the installer refuses to choose and you must `@include('arkhe::partials.sidebar-items')` manually. |
 | **Tailwind v3** | Step 9 only auto-patches Tailwind v4 (`@import "tailwindcss"` in `resources/css/app.css`). Tailwind v3 setups get a printed snippet for `tailwind.config.js` — patching JS would be too brittle. |
 | **User model patch** | Step 10 refuses to inject `HasBackendProfile` if the model already imports `Spatie\Permission\Traits\HasRoles` (it would conflict — `HasBackendProfile` already wraps `HasRoles`). Remove the explicit `use HasRoles;` first, or add `use HasBackendProfile;` by hand. |
-| **`/administration/dashboard`** | Not registered by default — set `ARKHE_DASHBOARD_ROUTE=administration/dashboard` to opt in. Useful when you want Arkhe's users-by-role widget to replace the starter kit's empty `/dashboard`. |
 | **Layout chrome** | The bundled `arkhe::layouts.app` ships with a Flux header (brand + profile dropdown) but no sidebar, navigation menu, or footer. It's deliberately minimal — to keep its real chrome, override the layout config. |
-| **Fortify redirect rewrite** | When Fortify is detected and `arkhe.dashboard_route` is set, Arkhe rewrites `config('fortify.home')` at boot. Set `ARKHE_OVERRIDE_FORTIFY_REDIRECT=false` to opt out. |
+| **Dark-mode flash** | Some Laravel starter kits hard-code `class="dark"` on the `<html>` tag of their layouts. The page then paints dark before `@fluxAppearance` applies the visitor's real theme — a brief flash, most visible on list pages where the table is the heaviest thing to paint. Not an Arkhe behaviour, but you will see it on Arkhe screens: drop the attribute from every file under `resources/views/layouts/`, auth layouts included, and keep only `lang`. |
+| **Strong-auth hand-off** | Arkhe explains the block on its own page, then links out to your security settings — it cannot highlight the right panel once the user is there, since that page belongs to your app. The walkthrough names what to look for instead. If your security page is unusual, override the interstitial (see above) to point at the exact section. |
 | **`spatie/laravel-permission` cache** | The seeder calls `Permission::create()` directly. After re-running it (e.g. to add new permissions), clear the permission cache — `php artisan permission:cache-reset` — or restart your queue workers. |
 | **Sitemap on `sync` queue** | The "Regenerate now" button dispatches `GenerateSitemap` onto the host app's default queue. With the `sync` driver it runs inline; with a real driver, make sure a worker is up — otherwise the page reports "queued" with no visible progress. |
 
@@ -566,6 +698,48 @@ php artisan arkhe:main:install   # re-run, answer "no" to steps already done
 
 If you'd rather skip the prompts, the manual snippets in the [Styling](#styling--tailwind--flux) and [Wiring up your User model](#wiring-up-your-user-model) sections give you the exact lines to add.
 
+### From V3 to V4
+
+Two breaking changes — the dashboard left the package, and `toArray()` became
+`toPayload()` on the four Form objects (shipped in 3.3.0, but an app jumping
+3.1 → 4.0 never reads those notes). No PHP you wrote against `Arkhe\Main\…`
+needs touching otherwise; a dedicated command handles the rest:
+
+```bash
+composer update adhocrat-io/arkhe-main:^4.0
+php artisan arkhe:main:upgrade-to-v4 --dry-run   # preview
+php artisan arkhe:main:upgrade-to-v4             # apply
+```
+
+It removes the three config keys the dashboard removal left dead
+(`dashboard_route`, `dashboard_route_name`, `override_fortify_redirect`), banner
+comment included. Then it **reports without rewriting** what belongs to you:
+published views calling a route the package no longer registers (those throw on
+render, not on click), Form subclasses still on `toArray()`, and subclasses
+whose overridden hooks are never called any more, saving having moved to
+`EditUser` / `EditRole`. The last two fail silently, which is exactly why they
+are worth naming.
+
+If you subclass a Form object, rename the method — the payload handed to the
+services is identical:
+
+```php
+class MyUserForm extends \Arkhe\Main\Livewire\Forms\UserForm
+{
+    public function toPayload(): array   // was toArray()
+    {
+        return array_merge(parent::toPayload(), ['team_id' => $this->teamId]);
+    }
+}
+```
+
+`toArray()` keeps the Livewire meaning it must have: it is what serialises the
+form into the component snapshot, so overriding it to mean "the fields I
+persist" silently drops every other property between two requests.
+
+Coming from `^1` or `^2`? Run `arkhe:main:upgrade-from-v2` first — this command
+refuses a V2-shaped config and says so.
+
 ### From V2 to V3
 
 V3 keeps the V2 public surface — namespace `Arkhe\Main`, service provider, config prefix — so no global search-replace is required. A dedicated Artisan command handles the config migration:
@@ -578,7 +752,7 @@ php artisan arkhe:main:upgrade-from-v2             # apply
 
 What it does:
 
-- Appends V3-only keys to your published `config/arkhe.php` (`dashboard_route`, `role_permissions`, `components`, `backend_permission`, `root_permission`, `features`) without touching existing V2 entries.
+- Appends V3-only keys to your published `config/arkhe.php` (`role_permissions`, `components`, `backend_permission`, `root_permission`, `features`) without touching existing V2 entries.
 - Rewrites legacy Livewire aliases inside `resources/views/` (e.g. `arkhe.main.livewire.admin.users.users-list` → `arkhe.list-users`).
 - Runs the V3 permission seeder so the new 16 default permissions and their role mappings land in your DB.
 

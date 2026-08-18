@@ -2,14 +2,19 @@
 
 This document tracks breaking and behavioural changes between major versions of `adhocrat-io/arkhe-main`.
 
-## Vers la 4.0 — depuis la 3.1.2
+## Vers la 4.0 — depuis la 3.3
 
-Le dernier tag publié est `3.1.2` : les sections `3.2.0` et `3.2.1` du CHANGELOG
-n'ont jamais été taguées, la 4.0 les englobe donc. Une app en `^3.0` ne monte
-pas toute seule — il faut passer la contrainte à `^4.0` délibérément.
+Une app en `^3.0` ne monte pas toute seule : il faut passer la contrainte à
+`^4.0` délibérément. C'est le but d'une majeure.
 
-**Une seule rupture**, le retrait du tableau de bord (voir plus bas). Tout le
-reste est additif ou interne. La marche à suivre, dans l'ordre :
+**Deux ruptures**, l'une visible, l'autre pas :
+
+1. Le tableau de bord quitte le paquet (section dédiée plus bas) ;
+2. `toArray()` devient `toPayload()` sur les quatre objets Form — livré en 3.3.0
+   mais répété ici, car une app qui saute directement de la 3.1 à la 4.0 ne
+   passera pas par les notes de la 3.3.
+
+Tout le reste est additif ou interne. La marche à suivre, dans l'ordre :
 
 ```bash
 composer update adhocrat-io/arkhe-main:^4.0
@@ -210,6 +215,39 @@ pas une obligation.
 **Aucune configuration n'est rendue obligatoire par ces correctifs.** Rien à
 modifier avant de déployer ; le repli par rôle du middleware d'accès reste en
 place à l'identique, pour ne priver personne d'accès à la montée de version.
+
+## Vers la 4.0 — `toArray()` devient `toPayload()` sur les Form (rupture)
+
+Livré en 3.3.0. Répété ici parce qu'une app qui monte de la 3.1 à la 4.0 ne lira
+pas les notes de la 3.3.
+
+Les quatre objets Form — `UserForm`, `RoleForm`, `PermissionForm`, `SiteSeoForm`
+— surchargeaient `toArray()` pour signifier « les champs que je veux
+enregistrer ». Or Livewire s'en sert pour sérialiser le formulaire dans
+l'instantané du composant : toute propriété absente de cette liste revenait à sa
+valeur par défaut à la requête suivante. C'est ce qui vidait
+`passwordConfirmation` après un premier envoi refusé, puis faisait échouer tous
+les suivants sur « la confirmation ne correspond pas » alors que l'opérateur
+n'avait rien touché.
+
+La méthode s'appelle désormais `toPayload()`, et `toArray()` retrouve le
+comportement Livewire qu'elle doit garder.
+
+**Si vous surchargez ou appelez l'une de ces méthodes** — typiquement depuis une
+sous-classe de `ListUsers` enregistrée via `arkhe.components` — renommez :
+
+```php
+class MonUserForm extends \Arkhe\Main\Livewire\Forms\UserForm
+{
+    public function toPayload(): array   // était toArray()
+    {
+        return array_merge(parent::toPayload(), ['service_id' => $this->serviceId]);
+    }
+}
+```
+
+`arkhe:main:upgrade-to-v4` signale les fichiers concernés. La charge remise aux
+services est identique : seul le nom change.
 
 ## Vers la 4.0 — le tableau de bord quitte le paquet (rupture)
 

@@ -94,6 +94,7 @@ class UpgradeToV4Command extends Command
         $report = array_filter([
             $this->dropDeadKeys($files, $dryRun),
             $this->reportStaleViews($files),
+            $this->reportFormToArray($files),
             $this->reportMovedHooks($files),
             $this->reportDroppedEnvVars($files),
         ]);
@@ -382,6 +383,57 @@ class UpgradeToV4Command extends Command
         $this->line('  These throw RouteNotFoundException when the page renders, not when clicked.');
 
         return 'published views — '.count($hits).' stale route reference(s), see above';
+    }
+
+    /**
+     * Form subclasses still overriding or calling `toArray()`.
+     *
+     * Shipped in 3.3.0, repeated here because an app jumping 3.1 → 4.0 never
+     * reads the 3.3 notes. The rename matters more than it looks: Livewire uses
+     * `toArray()` to serialise a form into the component snapshot, so an
+     * override meaning "the fields I persist" silently drops every other
+     * property from the snapshot — they come back at their default on the next
+     * request. An override left in place keeps that bug alive.
+     */
+    private function reportFormToArray(Filesystem $files): string
+    {
+        $dir = app_path();
+
+        if (! $files->isDirectory($dir)) {
+            return '';
+        }
+
+        $hits = [];
+        foreach ($files->allFiles($dir) as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $contents = $files->get($file->getPathname());
+
+            $extendsForm = (bool) preg_match(
+                '/extends\s+\\\\?(?:Arkhe\\\\Main\\\\Livewire\\\\Forms\\\\)?(UserForm|RoleForm|PermissionForm|SiteSeoForm)\b/',
+                $contents,
+            );
+            $callsForm = (bool) preg_match('/(?:userForm|roleForm|permissionForm|siteSeoForm)->toArray\(\)/', $contents);
+
+            if (($extendsForm && preg_match('/function\s+toArray\s*\(/', $contents)) || $callsForm) {
+                $hits[] = str_replace(base_path().'/', '', $file->getPathname());
+            }
+        }
+
+        if ($hits === []) {
+            return 'form objects — no stale toArray() found';
+        }
+
+        $this->newLine();
+        $this->components->warn('Form objects still using toArray():');
+        foreach ($hits as $file) {
+            $this->line("  • {$file}");
+        }
+        $this->line('  Rename to toPayload() — toArray() now keeps its Livewire meaning.');
+
+        return 'form objects — '.count($hits).' file(s) to rename, see above';
     }
 
     /**

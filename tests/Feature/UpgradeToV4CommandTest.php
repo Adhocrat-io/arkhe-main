@@ -221,6 +221,78 @@ it('ignores a subclass that overrides nothing moved', function (): void {
         ->assertSuccessful();
 });
 
+// ─── Form objects still on toArray() ─────────────────────────────────────
+
+// Shipped in 3.3.0, but an app jumping 3.1 → 4.0 never reads those notes. An
+// override left in place keeps the serialisation bug alive rather than merely
+// being out of date.
+it('reports a Form subclass still overriding toArray', function (): void {
+    $this->files->put($this->configPath, fixtureV4Config());
+    $this->files->ensureDirectoryExists($this->appDir);
+    $this->files->put($this->appDir.'/MonUserForm.php', <<<'PHP'
+        <?php
+
+        namespace App\Livewire;
+
+        class MonUserForm extends \Arkhe\Main\Livewire\Forms\UserForm
+        {
+            public function toArray(): array
+            {
+                return array_merge(parent::toArray(), ['service_id' => 1]);
+            }
+        }
+        PHP);
+
+    $this->artisan('arkhe:main:upgrade-to-v4', ['--dry-run' => true])
+        ->expectsOutputToContain('MonUserForm.php')
+        ->expectsOutputToContain('toPayload()')
+        ->assertSuccessful();
+});
+
+it('reports a component still calling toArray on a form', function (): void {
+    $this->files->put($this->configPath, fixtureV4Config());
+    $this->files->ensureDirectoryExists($this->appDir);
+    $this->files->put($this->appDir.'/AppEditUser.php', <<<'PHP'
+        <?php
+
+        namespace App\Livewire;
+
+        class AppEditUser extends \Arkhe\Main\Livewire\EditUser
+        {
+            public function save(): void
+            {
+                $payload = $this->userForm->toArray();
+            }
+        }
+        PHP);
+
+    $this->artisan('arkhe:main:upgrade-to-v4', ['--dry-run' => true])
+        ->expectsOutputToContain('AppEditUser.php')
+        ->assertSuccessful();
+});
+
+it('says nothing when the forms are already renamed', function (): void {
+    $this->files->put($this->configPath, fixtureV4Config());
+    $this->files->ensureDirectoryExists($this->appDir);
+    $this->files->put($this->appDir.'/MonUserForm.php', <<<'PHP'
+        <?php
+
+        namespace App\Livewire;
+
+        class MonUserForm extends \Arkhe\Main\Livewire\Forms\UserForm
+        {
+            public function toPayload(): array
+            {
+                return array_merge(parent::toPayload(), ['service_id' => 1]);
+            }
+        }
+        PHP);
+
+    $this->artisan('arkhe:main:upgrade-to-v4', ['--dry-run' => true])
+        ->expectsOutputToContain('no stale toArray()')
+        ->assertSuccessful();
+});
+
 /**
  * A published V3 config, shaped like the real one: each dashboard key sits
  * under the banner comment the package shipped, with live neighbours on either

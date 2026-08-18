@@ -18,26 +18,35 @@ suppression d'API, donc une majeure.
 
 Le choix a une conséquence pratique qui compte autant que la règle : les
 consommateurs contraints en `^3.0` **ne montent pas** en 4.0.0. Publier ces
-changements en 3.3.0 les aurait fait basculer automatiquement, sans qu'ils
+changements en mineure les aurait fait basculer automatiquement, sans qu'ils
 touchent une ligne. La majeure est ce qui rend la montée volontaire.
+
+> La 3.3.0, sortie depuis, illustre la limite de l'exercice : elle contient une
+> rupture d'API interne (`toArray()` → `toPayload()`) tout en restant mineure,
+> au motif que ces méthodes n'étaient qu'un détail d'implémentation. Défendable,
+> mais cela veut dire qu'une app en `^3.0` l'a prise sans le décider. Le retrait
+> du tableau de bord n'est pas de cette nature : il supprime une route et trois
+> clés de configuration que des apps ont réellement posées.
 
 ## État des tags — à lire avant de taguer
 
 ```
 v1.0.0  v2.0.0  v2.0.1 … v2.0.5  v3.1.0   ← préfixe `v`
-3.1.1   3.1.2                             ← sans préfixe
+3.1.1   3.1.2   3.3.0                     ← sans préfixe
 ```
 
-Deux anomalies héritées, à connaître pour ne pas s'y perdre :
+**La 3.3.0 est sortie le 2026-08-12**, publiée depuis `main` pendant que cette
+branche avançait. Elle contient le correctif de sérialisation des objets Form,
+le reshape de config par `upgrade-from-v2` et le garde-fou du seeder. Elle est
+fusionnée ici — voir la section « Fusion de la 3.3.0 » plus bas.
 
-1. **Le préfixe `v` a été abandonné en cours de route.** Composer accepte les
-   deux, mais le mélange nuit à la lecture. **Décider pour 4.0.0** — la
-   tendance récente (`3.1.1`, `3.1.2`) est sans préfixe.
-2. **`3.0.0`, `3.2.0` et `3.2.1` sont documentées dans le CHANGELOG mais n'ont
-   jamais été taguées.** Le dernier tag réel est `3.1.2` (2026-06-11). Les 27
-   commits ci-dessous couvrent donc *aussi* ce qui avait été annoncé sous
-   3.2.x. Soit on tague rétroactivement, soit on l'assume : le CHANGELOG garde
-   ses sections `[3.2.0]` / `[3.2.1]`, et 4.0.0 les englobe.
+Deux points à connaître :
+
+1. **Le préfixe `v` est abandonné.** La question est tranchée par les faits : la
+   3.3.0 a été taguée sans préfixe. La 4.0.0 suivra — `4.0.0`, pas `v4.0.0`.
+2. **`3.0.0`, `3.2.0` et `3.2.1` n'ont jamais été taguées.** Les tags sautent de
+   `3.1.2` à `3.3.0` : leur contenu a été publié avec la 3.3.0, qui les englobe.
+   Le CHANGELOG garde ses sections et le signale en tête.
 
 La version ne se met **nulle part dans le code** : pas de clé `version` dans
 `composer.json` (Packagist la déduit du tag, et une clé manuelle finit toujours
@@ -97,10 +106,13 @@ retrait différé (`61fa55e`).
 
 ## À trancher avant de taguer
 
-### 1. Les dépréciés portaient un numéro qui n'existera pas — corrigé
+### 1. Les dépréciés portaient le mauvais numéro — corrigé
 
-Les neuf `@deprecated` disaient **`since 3.3`**, version qui ne sera jamais
-publiée puisqu'on passe de 3.2.x à 4.0.0. Repris en `since 4.0` :
+Les neuf `@deprecated` disaient **`since 3.3`**. Repris en `since 4.0`, et le
+choix reste juste maintenant que la 3.3.0 est sortie : **le tag `3.3.0` ne
+contient aucune de ces dépréciations** — vérifié avec
+`git show 3.3.0:src/Livewire/ListUsers.php`. Elles sont nées sur cette branche
+et arriveront donc chez les consommateurs avec la 4.0.
 
 ```
 src/Livewire/ListUsers.php        openCreate(), openEdit(), save()
@@ -146,21 +158,42 @@ Deux points relevés en passant, **non marqués** et donc faciles à manquer :
   consommateur. Le service est bien testé et reste l'API programmatique
   légitime : à garder, mais à décider sciemment.
 
-### 3. Le préfixe de tag
+## Fusion de la 3.3.0 — ce qu'elle a appris
 
-`4.0.0` ou `v4.0.0` — trancher, puis s'y tenir.
+`origin/main` avait trois commits d'avance quand la branche a été rapprochée.
+Git a fusionné les huit fichiers communs **sans conflit textuel**, et c'est
+précisément ce qui rend le cas instructif : deux défauts sont passés au travers.
+
+**Le rôle n'était plus attribué à la création.** La 3.3.0 renomme `toArray()` en
+`toPayload()` sur les quatre objets Form et met à jour les composants
+appelants — ceux qui existaient alors. `EditUser` et `EditRole` sont nés sur
+cette branche : ils appelaient encore `toArray()`, qui renvoie désormais la
+sérialisation Livewire brute au lieu de la charge destinée au service. Trouvé
+par la suite de tests, pas par la fusion.
+
+**Le CHANGELOG mélangeait deux versions.** Nos entrées `[Unreleased]` et la
+section `[3.3.0]` ont fusionné : tout le travail V4 se retrouvait présenté comme
+livré en 3.3.0. Section rétablie à l'identique, contenu rendu à `[Unreleased]`,
+sans dupliquer les deux entrées qui appartiennent vraiment à la 3.3.0.
+
+**Conséquence pour la montée des apps** : la rupture `toArray()` → `toPayload()`
+concerne toute app qui surcharge un objet Form. Elle est sortie en 3.3.0, mais
+une app qui saute de la 3.1 à la 4.0 ne lira jamais ces notes-là — UPGRADE la
+répète donc dans le parcours V4, et `upgrade-to-v4` détecte les fichiers
+concernés.
 
 ## Prérequis au tag
 
-- [x] suite verte — 292 tests, 674 assertions, 2 ignorés
+- [x] suite verte — 309 tests, 734 assertions, 2 ignorés
 - [x] CHANGELOG à jour dans `[Unreleased]`
-- [x] UPGRADE.md documente le retrait du tableau de bord
+- [x] UPGRADE.md documente les **deux** ruptures (tableau de bord, `toPayload`)
 - [x] vérifié sur le banc `test-arkhe` (Fortify + passkeys réels)
 - [x] reprendre les `@deprecated since 3.3` → `since 4.0`
+- [x] fusionner `origin/main` (3.3.0)
+- [x] préfixe de tag — tranché par les faits : sans `v`
+- [x] commande `arkhe:main:upgrade-to-v4`
 - [ ] renommer `[Unreleased]` en `[4.0.0] — <date>`
-- [ ] trancher le préfixe de tag
 - [ ] décider du sort des dépréciés (§2)
-- [x] commande `arkhe:main:upgrade-to-v4` (voir plus bas)
 - [ ] relire le README de bout en bout — il a beaucoup bougé
 
 ## La commande de montée de version — écrite

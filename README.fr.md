@@ -696,9 +696,11 @@ Si vous préférez éviter les questions, les extraits manuels des sections [Hab
 
 ### De la V3 à la V4
 
-Une seule rupture — le tableau de bord quitte le paquet — plus une refonte du
-back-office. Aucun code PHP écrit contre `Arkhe\Main\…` n'est à toucher ; une
-commande dédiée s'occupe du reste :
+Deux ruptures — le tableau de bord quitte le paquet, et `toArray()` devient
+`toPayload()` sur les quatre objets Form (livré en 3.3.0, mais une app qui saute
+de la 3.1 à la 4.0 ne lira jamais ces notes-là). À part cela, aucun code PHP
+écrit contre `Arkhe\Main\…` n'est à toucher ; une commande dédiée s'occupe du
+reste :
 
 ```bash
 composer update adhocrat-io/arkhe-main:^4.0
@@ -708,12 +710,31 @@ php artisan arkhe:main:upgrade-to-v4             # appliquer
 
 Elle retire les trois clés que le retrait du tableau de bord laisse mortes
 (`dashboard_route`, `dashboard_route_name`, `override_fortify_redirect`),
-bandeau de commentaire compris. Puis elle **signale sans réécrire** deux choses
-qui vous appartiennent : les vues publiées appelant une route que le paquet
-n'enregistre plus — celles-là lèvent à l'affichage, pas au clic — et les
-sous-classes dont un hook redéfini n'est plus jamais appelé, l'enregistrement
-ayant migré vers `EditUser` / `EditRole`. Ce second cas échoue en silence, ce
-qui est précisément pourquoi il mérite d'être nommé.
+bandeau de commentaire compris. Puis elle **signale sans réécrire** ce qui vous
+appartient : les vues publiées appelant une route que le paquet n'enregistre
+plus (celles-là lèvent à l'affichage, pas au clic), les sous-classes de Form
+restées sur `toArray()`, et les sous-classes dont un hook redéfini n'est plus
+jamais appelé, l'enregistrement ayant migré vers `EditUser` / `EditRole`. Les
+deux derniers cas échouent en silence, ce qui est précisément pourquoi ils
+méritent d'être nommés.
+
+Si vous surchargez un objet Form, renommez la méthode — la charge remise aux
+services est identique :
+
+```php
+class MonUserForm extends \Arkhe\Main\Livewire\Forms\UserForm
+{
+    public function toPayload(): array   // était toArray()
+    {
+        return array_merge(parent::toPayload(), ['team_id' => $this->teamId]);
+    }
+}
+```
+
+`toArray()` retrouve le sens que Livewire lui donne : c'est elle qui sérialise
+le formulaire dans l'instantané du composant. La surcharger pour signifier « les
+champs que je persiste » faisait disparaître toutes les autres propriétés d'une
+requête à l'autre.
 
 Vous venez d'une `^1` ou `^2` ? Lancez `arkhe:main:upgrade-from-v2` d'abord —
 cette commande refuse une config en V2 et vous le dit.

@@ -700,9 +700,10 @@ If you'd rather skip the prompts, the manual snippets in the [Styling](#styling-
 
 ### From V3 to V4
 
-One breaking change — the dashboard left the package — plus a backend reshape.
-No PHP you wrote against `Arkhe\Main\…` needs touching; a dedicated command
-handles the rest:
+Two breaking changes — the dashboard left the package, and `toArray()` became
+`toPayload()` on the four Form objects (shipped in 3.3.0, but an app jumping
+3.1 → 4.0 never reads those notes). No PHP you wrote against `Arkhe\Main\…`
+needs touching otherwise; a dedicated command handles the rest:
 
 ```bash
 composer update adhocrat-io/arkhe-main:^4.0
@@ -712,11 +713,29 @@ php artisan arkhe:main:upgrade-to-v4             # apply
 
 It removes the three config keys the dashboard removal left dead
 (`dashboard_route`, `dashboard_route_name`, `override_fortify_redirect`), banner
-comment included. Then it **reports without rewriting** two things that belong
-to you: published views calling a route the package no longer registers — those
-throw on render, not on click — and subclasses whose overridden hooks are never
-called any more, saving having moved to `EditUser` / `EditRole`. That second one
-fails silently, which is exactly why it is worth naming.
+comment included. Then it **reports without rewriting** what belongs to you:
+published views calling a route the package no longer registers (those throw on
+render, not on click), Form subclasses still on `toArray()`, and subclasses
+whose overridden hooks are never called any more, saving having moved to
+`EditUser` / `EditRole`. The last two fail silently, which is exactly why they
+are worth naming.
+
+If you subclass a Form object, rename the method — the payload handed to the
+services is identical:
+
+```php
+class MyUserForm extends \Arkhe\Main\Livewire\Forms\UserForm
+{
+    public function toPayload(): array   // was toArray()
+    {
+        return array_merge(parent::toPayload(), ['team_id' => $this->teamId]);
+    }
+}
+```
+
+`toArray()` keeps the Livewire meaning it must have: it is what serialises the
+form into the component snapshot, so overriding it to mean "the fields I
+persist" silently drops every other property between two requests.
 
 Coming from `^1` or `^2`? Run `arkhe:main:upgrade-from-v2` first — this command
 refuses a V2-shaped config and says so.

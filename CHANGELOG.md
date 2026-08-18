@@ -9,6 +9,8 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+## [4.0.0] — 2026-08-18
+
 ### Added
 
 **Authentification forte du back-office.** Un facteur fort — clé d'accès ou 2FA
@@ -580,6 +582,8 @@ the Livewire 4 page rewrites, and the lifecycle-hook extensibility layer.
 - Pest 4 test suite covering install command, ListUsers CRUD/auth/search/sort, and `HasBackendProfile`.
 - GitHub Actions matrix: PHP 8.3/8.4 × Laravel 12/13 × prefer-lowest/prefer-stable, with an optional dev-master job.
 
-[Unreleased]: https://github.com/adhocrat-io/arkhe-main/compare/3.1.2...HEAD
+[Unreleased]: https://github.com/adhocrat-io/arkhe-main/compare/4.0.0...HEAD
+[4.0.0]: https://github.com/adhocrat-io/arkhe-main/compare/3.3.0...4.0.0
+[3.3.0]: https://github.com/adhocrat-io/arkhe-main/compare/3.1.2...3.3.0
 [3.1.0]: https://github.com/adhocrat-io/arkhe-main/compare/v2.0.5...v3.1.0
 [2.0.0]: https://github.com/adhocrat-io/arkhe-main/releases/tag/v2.0.0

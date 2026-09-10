@@ -153,6 +153,7 @@ abstract class TestCase extends Orchestra
         // the schema under test IS the schema an application gets — no
         // hand-mirrored copy to drift.
         (require __DIR__.'/../database/migrations/create_arkhe_email_domains_table.php.stub')->up();
+        (require __DIR__.'/../database/migrations/create_arkhe_email_bounces_table.php.stub')->up();
 
         Schema::create('arkhe_site_seo', function (Blueprint $table): void {
             $table->id();

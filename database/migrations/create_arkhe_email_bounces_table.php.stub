@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $table = (string) config('arkhe-email.tables.bounces', 'arkhe_email_bounces');
+
+        if (Schema::hasTable($table)) {
+            return;
+        }
+
+        Schema::create($table, function (Blueprint $table): void {
+            $table->id();
+            // 320 = 64 (local part) + 1 + 255 (domain), the RFC ceiling.
+            $table->string('email', 320)->index();
+            $table->string('type', 20);
+            $table->string('provider', 50);
+            $table->string('reason', 255)->nullable();
+            $table->timestamp('bounced_at');
+            // Rehabilitation (§ 8.4): a cleared row stops counting without
+            // being erased — the history stays auditable.
+            $table->timestamp('cleared_at')->nullable();
+            $table->timestamp('created_at')->nullable();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists((string) config('arkhe-email.tables.bounces', 'arkhe_email_bounces'));
+    }
+};

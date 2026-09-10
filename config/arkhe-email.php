@@ -187,7 +187,10 @@ return [
         'providers' => [
             'mailgun' => ['enabled' => false, 'signing_key' => env('MAILGUN_WEBHOOK_KEY')],
             'postmark' => ['enabled' => false, 'token' => env('POSTMARK_WEBHOOK_TOKEN')],
-            'ses' => ['enabled' => false],
+            // SNS signature checking would need the signing certificate
+            // fetched over the network (NFR-01 forbids it); the guard is a
+            // shared token carried in the webhook URL instead.
+            'ses' => ['enabled' => false, 'token' => env('SES_WEBHOOK_TOKEN')],
             'brevo' => ['enabled' => false, 'secret' => env('BREVO_WEBHOOK_SECRET')],
         ],
     ],

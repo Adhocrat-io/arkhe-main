@@ -21,5 +21,17 @@ abstract class EmailEnabledTestCase extends TestCase
         /** @var Application $app */
         $app['config']->set('arkhe-email.enabled', true);
         $app['config']->set('arkhe-email.mode', 'suggest');
+
+        // Mail lands in the in-memory array transport so the suppression
+        // listeners run against real MessageSending/MessageSent events —
+        // Mail::fake() would bypass exactly what these tests assert.
+        $app['config']->set('mail.default', 'array');
+        $app['config']->set('mail.from.address', 'noreply@example.test');
+        $app['config']->set('mail.from.name', 'Tests');
+
+        // Two webhook providers on, two off: the routes are themselves
+        // conditional and the 404 of a disabled provider is part of the spec.
+        $app['config']->set('arkhe-email.bounces.providers.mailgun', ['enabled' => true, 'signing_key' => 'mg-test-key']);
+        $app['config']->set('arkhe-email.bounces.providers.postmark', ['enabled' => true, 'token' => 'pm-test-token']);
     }
 }

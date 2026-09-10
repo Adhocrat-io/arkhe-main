@@ -7,11 +7,21 @@ namespace Arkhe\Main\Email;
 use Arkhe\Main\ArkheMainServiceProvider;
 use Arkhe\Main\Email\Console\ExportEmailDomainsCommand;
 use Arkhe\Main\Email\Console\ImportEmailDomainsCommand;
+use Arkhe\Main\Email\Console\RecordBounceCommand;
 use Arkhe\Main\Email\Console\SeedEmailDomainsCommand;
+use Arkhe\Main\Email\Contracts\EmailBounceRepository;
 use Arkhe\Main\Email\Contracts\EmailDomainRepository;
+use Arkhe\Main\Email\Listeners\ClearBouncesOnAddressChange;
+use Arkhe\Main\Email\Listeners\PreventSendingToSuppressedAddress;
+use Arkhe\Main\Email\Listeners\RecordSuccessfulDelivery;
+use Arkhe\Main\Email\Repositories\EloquentEmailBounceRepository;
 use Arkhe\Main\Email\Repositories\EloquentEmailDomainRepository;
 use Arkhe\Main\Email\Services\EmailVerificationService;
 use Arkhe\Main\Email\Support\EmailModule;
+use Arkhe\Main\Events\UserUpdated;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Mail\Events\MessageSent;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -31,12 +41,14 @@ class ArkheEmailServiceProvider extends ServiceProvider
         $this->app->singleton(EmailVerificationService::class);
 
         $this->app->bind(EmailDomainRepository::class, EloquentEmailDomainRepository::class);
+        $this->app->bind(EmailBounceRepository::class, EloquentEmailBounceRepository::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SeedEmailDomainsCommand::class,
                 ExportEmailDomainsCommand::class,
                 ImportEmailDomainsCommand::class,
+                RecordBounceCommand::class,
             ]);
         }
     }
@@ -48,6 +60,15 @@ class ArkheEmailServiceProvider extends ServiceProvider
         }
 
         $this->registerLogChannel();
+
+        // Registered by Arkhe, never by the application (FR-AI-03): the
+        // bounce loop must not depend on every app remembering to wire it.
+        // Config remains the only way to soften it (`enforce_on = []`).
+        Event::listen(MessageSending::class, PreventSendingToSuppressedAddress::class);
+        Event::listen(MessageSent::class, RecordSuccessfulDelivery::class);
+        Event::listen(UserUpdated::class, ClearBouncesOnAddressChange::class);
+
+        $this->loadRoutesFrom(dirname(__DIR__, 2).'/routes/arkhe-email-webhooks.php');
     }
 
     /**

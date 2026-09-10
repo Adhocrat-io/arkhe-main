@@ -9,6 +9,7 @@ use Arkhe\Main\Email\Console\ExportEmailDomainsCommand;
 use Arkhe\Main\Email\Console\ImportEmailDomainsCommand;
 use Arkhe\Main\Email\Console\RecordBounceCommand;
 use Arkhe\Main\Email\Console\SeedEmailDomainsCommand;
+use Arkhe\Main\Email\Contracts\DnsResolver;
 use Arkhe\Main\Email\Contracts\EmailBounceRepository;
 use Arkhe\Main\Email\Contracts\EmailDomainRepository;
 use Arkhe\Main\Email\Listeners\ClearBouncesOnAddressChange;
@@ -18,6 +19,7 @@ use Arkhe\Main\Email\Repositories\EloquentEmailBounceRepository;
 use Arkhe\Main\Email\Repositories\EloquentEmailDomainRepository;
 use Arkhe\Main\Email\Services\EmailVerificationService;
 use Arkhe\Main\Email\Support\EmailModule;
+use Arkhe\Main\Email\Support\NativeDnsResolver;
 use Arkhe\Main\Events\UserUpdated;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Mail\Events\MessageSent;
@@ -42,6 +44,7 @@ class ArkheEmailServiceProvider extends ServiceProvider
 
         $this->app->bind(EmailDomainRepository::class, EloquentEmailDomainRepository::class);
         $this->app->bind(EmailBounceRepository::class, EloquentEmailBounceRepository::class);
+        $this->app->bind(DnsResolver::class, NativeDnsResolver::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([

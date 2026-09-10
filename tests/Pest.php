@@ -15,3 +15,4 @@ uses(EmailEnabledTestCase::class)->in(__DIR__.'/FeatureEmailEnabled');
 // Several fake verifiers / mailables share one file, so PSR-4 cannot find them.
 require_once __DIR__.'/Stubs/Email/FakeVerifiers.php';
 require_once __DIR__.'/Stubs/Email/Mailables.php';
+require_once __DIR__.'/Stubs/Email/Forms.php';

@@ -5,9 +5,27 @@ declare(strict_types=1);
 namespace Arkhe\Main\Email;
 
 use Arkhe\Main\ArkheMainServiceProvider;
+use Arkhe\Main\Doctor\Checks\Email\AdminRoutesCheck;
+use Arkhe\Main\Doctor\Checks\Email\AiSyncCheck;
+use Arkhe\Main\Doctor\Checks\Email\ConfigCheck;
+use Arkhe\Main\Doctor\Checks\Email\ExternalVerifierCheck;
+use Arkhe\Main\Doctor\Checks\Email\FormRequestsCheck;
+use Arkhe\Main\Doctor\Checks\Email\LegacyDomainListCheck;
+use Arkhe\Main\Doctor\Checks\Email\ListenersCheck;
+use Arkhe\Main\Doctor\Checks\Email\LivewireFormsCheck;
+use Arkhe\Main\Doctor\Checks\Email\MigrationsCheck;
+use Arkhe\Main\Doctor\Checks\Email\ModeCheck;
+use Arkhe\Main\Doctor\Checks\Email\MxOptInCheck;
+use Arkhe\Main\Doctor\Checks\Email\RawMailCheck;
+use Arkhe\Main\Doctor\Checks\Email\SeedCheck;
+use Arkhe\Main\Doctor\Checks\Email\TableCollisionCheck;
+use Arkhe\Main\Doctor\Checks\Email\WebhooksCheck;
 use Arkhe\Main\Email\Console\ExportEmailDomainsCommand;
 use Arkhe\Main\Email\Console\ImportEmailDomainsCommand;
+use Arkhe\Main\Email\Console\InstallEmailCommand;
+use Arkhe\Main\Email\Console\MakeEmailFormCommand;
 use Arkhe\Main\Email\Console\RecordBounceCommand;
+use Arkhe\Main\Email\Console\ReportCommand;
 use Arkhe\Main\Email\Console\SeedEmailDomainsCommand;
 use Arkhe\Main\Email\Contracts\DnsResolver;
 use Arkhe\Main\Email\Contracts\EmailBounceRepository;
@@ -52,8 +70,32 @@ class ArkheEmailServiceProvider extends ServiceProvider
                 ExportEmailDomainsCommand::class,
                 ImportEmailDomainsCommand::class,
                 RecordBounceCommand::class,
+                InstallEmailCommand::class,
+                MakeEmailFormCommand::class,
+                ReportCommand::class,
             ]);
         }
+
+        // Contributed to `arkhe:doctor` unconditionally: each check
+        // self-skips while the module is disabled, so the doctor gives the
+        // same shaped report before, during and after activation.
+        $this->app->tag([
+            ConfigCheck::class,
+            MigrationsCheck::class,
+            SeedCheck::class,
+            ListenersCheck::class,
+            FormRequestsCheck::class,
+            LivewireFormsCheck::class,
+            RawMailCheck::class,
+            ExternalVerifierCheck::class,
+            AdminRoutesCheck::class,
+            WebhooksCheck::class,
+            MxOptInCheck::class,
+            ModeCheck::class,
+            LegacyDomainListCheck::class,
+            TableCollisionCheck::class,
+            AiSyncCheck::class,
+        ], 'arkhe.doctor.checks');
     }
 
     public function boot(): void

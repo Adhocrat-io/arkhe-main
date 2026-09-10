@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Livewire\Forms;
 
+use App\Models\User;
+use Arkhe\Main\Livewire\ArkheForm;
 use Arkhe\Main\Support\RoleHierarchy;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
@@ -11,9 +13,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
-use Livewire\Form;
 
-class UserForm extends Form
+// ArkheForm rather than Livewire\Form: the package eats its own email
+// verification — when a host app enables the module, the user editor's
+// email field goes through the same pipeline as any application form.
+class UserForm extends ArkheForm
 {
     public ?int $id = null;
 
@@ -54,34 +58,34 @@ class UserForm extends Form
         $userTable = $this->resolveUserTable();
 
         return [
-            'first_name'    => ['required', 'string', 'max:120'],
-            'last_name'     => ['required', 'string', 'max:120'],
-            'email'         => ['required', 'email', 'max:255', Rule::unique($userTable, 'email')->ignore($this->id)],
-            'password'      => $this->passwordRules(),
-            'phone'         => ['nullable', 'string', 'max:32'],
+            'first_name' => ['required', 'string', 'max:120'],
+            'last_name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:255', Rule::unique($userTable, 'email')->ignore($this->id)],
+            'password' => $this->passwordRules(),
+            'phone' => ['nullable', 'string', 'max:32'],
             'date_of_birth' => ['nullable', 'date'],
-            'civility'      => ['nullable', 'string', 'max:32'],
-            'bio'           => ['nullable', 'string', 'max:5000'],
-            'avatar'                => ['nullable', 'image', 'max:4096'],
+            'civility' => ['nullable', 'string', 'max:32'],
+            'bio' => ['nullable', 'string', 'max:5000'],
+            'avatar' => ['nullable', 'image', 'max:4096'],
             'passwordConfirmation' => ['nullable', 'string'],
-            'role'                  => ['nullable', 'string', 'exists:roles,name', $this->roleAssignableRule()],
+            'role' => ['nullable', 'string', 'exists:roles,name', $this->roleAssignableRule()],
         ];
     }
 
     public function fillFromModel(Model $user): void
     {
-        $this->id            = (int) $user->getKey();
-        $this->first_name    = (string) ($user->first_name ?? '');
-        $this->last_name     = (string) ($user->last_name ?? '');
-        $this->email                = (string) ($user->email ?? '');
-        $this->password             = '';
+        $this->id = (int) $user->getKey();
+        $this->first_name = (string) ($user->first_name ?? '');
+        $this->last_name = (string) ($user->last_name ?? '');
+        $this->email = (string) ($user->email ?? '');
+        $this->password = '';
         $this->passwordConfirmation = '';
-        $this->phone         = $user->phone ?? null;
+        $this->phone = $user->phone ?? null;
         $this->date_of_birth = $user->date_of_birth?->format('Y-m-d') ?? ($user->date_of_birth ?: null);
-        $this->civility      = $user->civility ?? null;
-        $this->bio           = $user->bio ?? null;
-        $this->avatar        = null;
-        $this->removeAvatar  = false;
+        $this->civility = $user->civility ?? null;
+        $this->bio = $user->bio ?? null;
+        $this->avatar = null;
+        $this->removeAvatar = false;
 
         $this->role = method_exists($user, 'getRoleNames')
             ? ($user->getRoleNames()->first() ?: null)
@@ -107,26 +111,26 @@ class UserForm extends Form
     public function toPayload(): array
     {
         return [
-            'first_name'    => $this->first_name,
-            'last_name'     => $this->last_name,
-            'email'         => $this->email,
-            'password'      => $this->password,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'email' => $this->email,
+            'password' => $this->password,
             // Serialized along with the rest: missing from here, Livewire
             // does not put it back into the rehydrated form, and the
             // confirmation was compared to an empty string on save.
             'passwordConfirmation' => $this->passwordConfirmation,
-            'phone'         => $this->phone,
+            'phone' => $this->phone,
             'date_of_birth' => $this->date_of_birth,
-            'civility'      => $this->civility,
-            'bio'           => $this->bio,
-            'avatar'        => $this->avatar,
+            'civility' => $this->civility,
+            'bio' => $this->bio,
+            'avatar' => $this->avatar,
             // The key carries the property's exact name: Livewire only
             // restores on the next round-trip what `toArray()` exposes, and a
             // snake_case alias would lose the flag between two requests — the
             // removal would never apply.
-            'removeAvatar'  => $this->removeAvatar,
-            'role'          => $this->role,
-            'roles'         => $this->role !== null && $this->role !== '' ? [$this->role] : [],
+            'removeAvatar' => $this->removeAvatar,
+            'role' => $this->role,
+            'roles' => $this->role !== null && $this->role !== '' ? [$this->role] : [],
             // No `permissions` key on purpose. Rights are granted through
             // roles from the backend, so the form neither reads nor writes a
             // user's direct permissions. It used to carry them invisibly: no
@@ -215,12 +219,12 @@ class UserForm extends Form
     private function resolveUserTable(): string
     {
         $configured = config('arkhe.user_model');
-        $class      = is_string($configured) && $configured !== ''
+        $class = is_string($configured) && $configured !== ''
             ? $configured
-            : (string) config('auth.providers.users.model', \App\Models\User::class);
+            : (string) config('auth.providers.users.model', User::class);
 
         /** @var Model $instance */
-        $instance = new $class();
+        $instance = new $class;
 
         return $instance->getTable();
     }

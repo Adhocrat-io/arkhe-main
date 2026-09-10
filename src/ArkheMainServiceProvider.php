@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main;
 
+use Arkhe\Main\Ai\Console\SyncAiCommand;
 use Arkhe\Main\Commands\AddUserCommand;
 use Arkhe\Main\Commands\InstallCommand;
 use Arkhe\Main\Commands\UpgradeFromV2Command;
@@ -13,6 +14,7 @@ use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Arkhe\Main\Cookies\ArkheCookiesServiceProvider;
+use Arkhe\Main\Doctor\DoctorCommand;
 use Arkhe\Main\Email\ArkheEmailServiceProvider;
 use Arkhe\Main\Email\Livewire\EmailDomains;
 use Arkhe\Main\Email\Support\EmailModule;
@@ -65,7 +67,12 @@ class ArkheMainServiceProvider extends PackageServiceProvider
             ->hasCommand(InstallCommand::class)
             ->hasCommand(AddUserCommand::class)
             ->hasCommand(UpgradeFromV2Command::class)
-            ->hasCommand(UpgradeToV4Command::class);
+            ->hasCommand(UpgradeToV4Command::class)
+            // Transversal to every Arkhè module (FRD § 13.3/13.4): the
+            // doctor and the assistant-file sync exist regardless of which
+            // modules are active — checks are contributed by tag.
+            ->hasCommand(DoctorCommand::class)
+            ->hasCommand(SyncAiCommand::class);
     }
 
     public function packageRegistered(): void

@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Requests;
+
+use Arkhe\Main\Foundation\ArkheFormRequest;
+
+class {{ class }} extends ArkheFormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * ArkheFormRequest ajoute la vérification de délivrabilité à tout
+     * attribut portant la règle `email` — rien d'autre à câbler.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    public function rules(): array
+    {
+        return [
+{{ nameRules }}            'email' => ['required', 'email:rfc,strict', 'max:320'],
+        ];
+    }
+}

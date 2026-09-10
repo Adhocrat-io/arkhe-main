@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Forms;
+
+use Arkhe\Main\Livewire\ArkheForm;
+
+class {{ class }} extends ArkheForm
+{
+{{ nameProperties }}    public string $email = '';
+
+    /**
+     * ArkheForm ajoute la vérification de délivrabilité à tout attribut
+     * portant la règle `email` — rien d'autre à câbler.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    public function rules(): array
+    {
+        return [
+{{ nameRules }}            'email' => ['required', 'email:rfc,strict', 'max:320'],
+        ];
+    }
+}

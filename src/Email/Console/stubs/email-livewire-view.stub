@@ -1,0 +1,9 @@
+<div class="mx-auto max-w-md space-y-6">
+{{ nameInputs }}    <div>
+        <flux:input wire:model.blur="form.email" type="email" :label="__('Email')" />
+        {{-- La suggestion « vouliez-vous dire… ? » du module e-mail Arkhè. --}}
+        <x-arkhe::email-suggestion :form="$form" />
+    </div>
+
+    <flux:button variant="primary" wire:click="save">{{ __('Envoyer') }}</flux:button>
+</div>

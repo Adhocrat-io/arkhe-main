@@ -197,6 +197,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Doctor
+    |--------------------------------------------------------------------------
+    |
+    | Domains of third-party verification services `arkhe:doctor` refuses
+    | to find anywhere in app/ or config/ — the § 1 confidentiality
+    | constraint, made mechanical (check `email.external_verifier`).
+    |
+    */
+    'doctor' => [
+        'external_verifier_domains' => [
+            'emailable.com',
+            'api.usebouncer.com',
+            'usebouncer.com',
+            'zerobounce.net',
+            'neverbounce.com',
+            'kickbox.com',
+            'api.mailgun.net/v4/address/validate',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Export
     |--------------------------------------------------------------------------
     |

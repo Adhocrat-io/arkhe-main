@@ -307,24 +307,24 @@ return [
         // page. It exists so the requirement gets stated somewhere the user is
         // guaranteed to read it.
         'page' => [
-            'title'           => 'Une protection supplémentaire est requise',
-            'intro'           => 'L’accès à l’administration demande un second facteur. Activez-en un, et vous ne reverrez plus cet écran.',
-            'options_title'   => 'Deux façons de faire',
-            'passkey_title'   => 'Clé d’accès — recommandé',
-            'passkey_body'    => 'Votre empreinte, votre visage ou le code de votre appareil. Rien à retenir, rien à recopier, et elle ne fonctionne que sur le vrai site : un site imitant le vôtre ne peut pas s’en servir.',
-            'totp_title'      => 'Double authentification',
-            'totp_body'       => 'Un code à six chiffres renouvelé toutes les trente secondes, dans une application d’authentification. Si vous avez déjà une clé d’accès, celle-ci suffit.',
-            'steps_title'     => 'Ce qui vous attend',
+            'title' => 'Une protection supplémentaire est requise',
+            'intro' => 'L’accès à l’administration demande un second facteur. Activez-en un, et vous ne reverrez plus cet écran.',
+            'options_title' => 'Deux façons de faire',
+            'passkey_title' => 'Clé d’accès — recommandé',
+            'passkey_body' => 'Votre empreinte, votre visage ou le code de votre appareil. Rien à retenir, rien à recopier, et elle ne fonctionne que sur le vrai site : un site imitant le vôtre ne peut pas s’en servir.',
+            'totp_title' => 'Double authentification',
+            'totp_body' => 'Un code à six chiffres renouvelé toutes les trente secondes, dans une application d’authentification. Si vous avez déjà une clé d’accès, celle-ci suffit.',
+            'steps_title' => 'Ce qui vous attend',
             // Arkhe does not own the security page and cannot highlight
             // anything on it, so the journey is described before it starts —
             // in the order the user will meet each step.
-            'steps'           => [
+            'steps' => [
                 'password' => 'Votre mot de passe vous sera redemandé. C’est normal : il protège vos réglages de sécurité.',
-                'find'     => 'Sur la page qui suit, cherchez la section « Clés d’accès » ou « Double authentification ».',
-                'follow'   => 'Laissez-vous guider, puis revenez à l’administration. L’accès sera ouvert.',
+                'find' => 'Sur la page qui suit, cherchez la section « Clés d’accès » ou « Double authentification ».',
+                'follow' => 'Laissez-vous guider, puis revenez à l’administration. L’accès sera ouvert.',
             ],
-            'cta'             => 'Activer ma protection',
-            'no_route_title'  => 'Page d’activation introuvable',
+            'cta' => 'Activer ma protection',
+            'no_route_title' => 'Page d’activation introuvable',
         ],
     ],
 
@@ -357,6 +357,16 @@ return [
         'patch_css_already' => 'app.css déjà à jour : :file (directive @source déjà présente).',
         'patch_css_failed' => 'Patch automatique de app.css impossible : :reason',
         'patch_css_v3_manual' => "Aucun fichier app.css avec `@import 'tailwindcss'` détecté.\nSi vous utilisez Tailwind v3, ajoutez `vendor/adhocrat-io/arkhe-main/resources/views/**/*.blade.php` à la clé `content` de tailwind.config.js.\nSi vous utilisez Tailwind v4, ajoutez la ligne suivante à votre app.css :\n    :snippet",
+    ],
+
+    'email' => [
+        'undeliverable' => 'Cette adresse ne peut pas recevoir d’e-mail.',
+        'did_you_mean' => 'Vouliez-vous dire :suggestion ?',
+        'suggestion' => [
+            'question' => 'Vouliez-vous dire :suggestion ?',
+            'accept' => 'Oui, corriger',
+            'keep' => 'Non, garder mon adresse',
+        ],
     ],
 
 ];

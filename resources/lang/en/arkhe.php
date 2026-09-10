@@ -307,24 +307,24 @@ return [
         // page. It exists so the requirement gets stated somewhere the user is
         // guaranteed to read it.
         'page' => [
-            'title'           => 'Extra protection required',
-            'intro'           => 'Reaching the admin area takes a second factor. Set one up and you will not see this screen again.',
-            'options_title'   => 'Two ways to do it',
-            'passkey_title'   => 'Passkey — recommended',
-            'passkey_body'    => 'Your fingerprint, your face or your device PIN. Nothing to remember, nothing to retype, and it only works on the real site: a lookalike cannot use it.',
-            'totp_title'      => 'Two-factor authentication',
-            'totp_body'       => 'A six-digit code that changes every thirty seconds, from an authenticator app. If you already have a passkey, that one is enough.',
-            'steps_title'     => 'What happens next',
+            'title' => 'Extra protection required',
+            'intro' => 'Reaching the admin area takes a second factor. Set one up and you will not see this screen again.',
+            'options_title' => 'Two ways to do it',
+            'passkey_title' => 'Passkey — recommended',
+            'passkey_body' => 'Your fingerprint, your face or your device PIN. Nothing to remember, nothing to retype, and it only works on the real site: a lookalike cannot use it.',
+            'totp_title' => 'Two-factor authentication',
+            'totp_body' => 'A six-digit code that changes every thirty seconds, from an authenticator app. If you already have a passkey, that one is enough.',
+            'steps_title' => 'What happens next',
             // Arkhe does not own the security page and cannot highlight
             // anything on it, so the journey is described before it starts —
             // in the order the user will meet each step.
-            'steps'           => [
+            'steps' => [
                 'password' => 'You will be asked for your password again. That is expected: it guards your security settings.',
-                'find'     => 'On the next page, look for the "Passkeys" or "Two-factor authentication" section.',
-                'follow'   => 'Follow the prompts, then head back to the admin area. You will be let straight through.',
+                'find' => 'On the next page, look for the "Passkeys" or "Two-factor authentication" section.',
+                'follow' => 'Follow the prompts, then head back to the admin area. You will be let straight through.',
             ],
-            'cta'             => 'Set up my protection',
-            'no_route_title'  => 'Enrolment page not found',
+            'cta' => 'Set up my protection',
+            'no_route_title' => 'Enrolment page not found',
         ],
     ],
 
@@ -357,6 +357,16 @@ return [
         'patch_css_already' => 'app.css already up to date: :file (@source directive already present).',
         'patch_css_failed' => 'Automatic app.css patch failed: :reason',
         'patch_css_v3_manual' => "No app.css with `@import 'tailwindcss'` detected.\nIf you use Tailwind v3, add `vendor/adhocrat-io/arkhe-main/resources/views/**/*.blade.php` to the `content` key of tailwind.config.js.\nIf you use Tailwind v4, add this line to your app.css:\n    :snippet",
+    ],
+
+    'email' => [
+        'undeliverable' => 'This address cannot receive email.',
+        'did_you_mean' => 'Did you mean :suggestion?',
+        'suggestion' => [
+            'question' => 'Did you mean :suggestion?',
+            'accept' => 'Yes, fix it',
+            'keep' => 'No, keep my address',
+        ],
     ],
 
 ];

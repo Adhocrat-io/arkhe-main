@@ -13,19 +13,20 @@ use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Arkhe\Main\Cookies\ArkheCookiesServiceProvider;
+use Arkhe\Main\Email\ArkheEmailServiceProvider;
 use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
 use Arkhe\Main\Http\Middleware\EnsureUserHasStrongAuth;
 use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
+use Arkhe\Main\Jobs\GenerateSitemap;
+use Arkhe\Main\Livewire\Cookies;
 use Arkhe\Main\Livewire\EditRole;
 use Arkhe\Main\Livewire\EditUser;
 use Arkhe\Main\Livewire\ListPermissions;
 use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
-use Arkhe\Main\Livewire\Cookies;
-use Arkhe\Main\Livewire\SiteSeo;
 use Arkhe\Main\Livewire\Sitemap;
+use Arkhe\Main\Livewire\SiteSeo;
 use Arkhe\Main\Livewire\StrongAuthRequired;
-use Arkhe\Main\Jobs\GenerateSitemap;
 use Arkhe\Main\Repositories\PermissionRepository;
 use Arkhe\Main\Repositories\RoleRepository;
 use Arkhe\Main\Repositories\SiteSeoRepository;
@@ -37,9 +38,12 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Routing\Router;
 use Livewire\Livewire;
 use RalphJSmit\Laravel\SEO\SEOManager;
+use RalphJSmit\Laravel\SEO\SEOServiceProvider;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
+use Spatie\CookieConsent\CookieConsentServiceProvider;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Whitecube\LaravelCookieConsent\CookiesServiceProvider;
 
 class ArkheMainServiceProvider extends PackageServiceProvider
 {
@@ -47,7 +51,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('arkhe')
-            ->hasConfigFile('arkhe')
+            ->hasConfigFile(['arkhe', 'arkhe-email'])
             ->hasViews('arkhe')
             ->hasTranslations()
             ->hasRoute('arkhe')
@@ -62,6 +66,12 @@ class ArkheMainServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        // The email-deliverability module lives in its own provider, always
+        // registered and self-gating on `arkhe-email.enabled` — so its
+        // console commands (activation included) exist while everything
+        // runtime stays inert until an app opts in (FRD § 14.1).
+        $this->app->register(ArkheEmailServiceProvider::class);
+
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
@@ -71,7 +81,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         // session + CSRF) get listed automatically. Consumers can publish
         // their own via vendor:publish --tag=laravel-cookie-consent-service-provider
         // for app-specific cookies — both providers coexist.
-        if (Features::hasCookieConsent() && class_exists(\Whitecube\LaravelCookieConsent\CookiesServiceProvider::class)) {
+        if (Features::hasCookieConsent() && class_exists(CookiesServiceProvider::class)) {
             $this->app->register(ArkheCookiesServiceProvider::class);
         }
     }
@@ -84,14 +94,14 @@ class ArkheMainServiceProvider extends PackageServiceProvider
      * @var array<string, class-string>
      */
     public const COMPONENT_DEFAULTS = [
-        'list-users'       => ListUsers::class,
-        'edit-user'        => EditUser::class,
-        'list-roles'       => ListRoles::class,
-        'edit-role'        => EditRole::class,
+        'list-users' => ListUsers::class,
+        'edit-user' => EditUser::class,
+        'list-roles' => ListRoles::class,
+        'edit-role' => EditRole::class,
         'list-permissions' => ListPermissions::class,
-        'site-seo'         => SiteSeo::class,
-        'sitemap'          => Sitemap::class,
-        'cookies'          => Cookies::class,
+        'site-seo' => SiteSeo::class,
+        'sitemap' => Sitemap::class,
+        'cookies' => Cookies::class,
         'strong-auth-required' => StrongAuthRequired::class,
     ];
 
@@ -99,8 +109,8 @@ class ArkheMainServiceProvider extends PackageServiceProvider
     {
         /** @var Router $router */
         $router = $this->app->make(Router::class);
-        $router->aliasMiddleware('arkhe.backend',     EnsureUserHasBackendAccess::class);
-        $router->aliasMiddleware('arkhe.root',        EnsureUserIsRoot::class);
+        $router->aliasMiddleware('arkhe.backend', EnsureUserHasBackendAccess::class);
+        $router->aliasMiddleware('arkhe.root', EnsureUserIsRoot::class);
         $router->aliasMiddleware('arkhe.strong-auth', EnsureUserHasStrongAuth::class);
 
         // Route middleware only guards the initial page load. Livewire's own
@@ -245,14 +255,13 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         });
     }
 
-
     private function bootFeatures(): void
     {
-        if (Features::hasCookieConsent() && class_exists(\Spatie\CookieConsent\CookieConsentServiceProvider::class)) {
+        if (Features::hasCookieConsent() && class_exists(CookieConsentServiceProvider::class)) {
             // Phase 2: cookie consent wire-up.
         }
 
-        if (Features::hasSeo() && class_exists(\RalphJSmit\Laravel\SEO\SEOServiceProvider::class)) {
+        if (Features::hasSeo() && class_exists(SEOServiceProvider::class)) {
             // Phase 2: SEO wire-up.
         }
     }

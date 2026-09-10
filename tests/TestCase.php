@@ -64,6 +64,11 @@ abstract class TestCase extends Orchestra
 
         $app['config']->set('arkhe.avatar_disk', 'local');
 
+        // The email domain repository caches its lookups; the array store
+        // keeps each test hermetic (nothing survives the request, nothing
+        // lands on disk).
+        $app['config']->set('cache.default', 'array');
+
         // Strong auth enforces by default (5.0), and most of this suite walks
         // the backend with factorless users to assert something unrelated.
         // Stand it down here so those tests keep meaning what they say; the
@@ -143,6 +148,11 @@ abstract class TestCase extends Orchestra
         });
 
         $this->setUpSpatiePermissionTables();
+
+        // The email module's tables come from the real migration stubs, so
+        // the schema under test IS the schema an application gets — no
+        // hand-mirrored copy to drift.
+        (require __DIR__.'/../database/migrations/create_arkhe_email_domains_table.php.stub')->up();
 
         Schema::create('arkhe_site_seo', function (Blueprint $table): void {
             $table->id();

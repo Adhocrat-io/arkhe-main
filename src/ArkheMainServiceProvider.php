@@ -58,6 +58,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
             ->hasMigration('add_arkhe_profile_columns_to_users_table')
             ->hasMigration('create_arkhe_site_seo_table')
             ->hasMigration('add_sitemap_generated_at_to_arkhe_site_seo_table')
+            ->hasMigration('create_arkhe_email_domains_table')
             ->hasCommand(InstallCommand::class)
             ->hasCommand(AddUserCommand::class)
             ->hasCommand(UpgradeFromV2Command::class)

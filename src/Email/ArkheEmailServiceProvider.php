@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Arkhe\Main\Email;
 
 use Arkhe\Main\ArkheMainServiceProvider;
+use Arkhe\Main\Email\Console\SeedEmailDomainsCommand;
+use Arkhe\Main\Email\Contracts\EmailDomainRepository;
+use Arkhe\Main\Email\Repositories\EloquentEmailDomainRepository;
 use Arkhe\Main\Email\Services\EmailVerificationService;
 use Arkhe\Main\Email\Support\EmailModule;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +27,14 @@ class ArkheEmailServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(EmailVerificationService::class);
+
+        $this->app->bind(EmailDomainRepository::class, EloquentEmailDomainRepository::class);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                SeedEmailDomainsCommand::class,
+            ]);
+        }
     }
 
     public function boot(): void

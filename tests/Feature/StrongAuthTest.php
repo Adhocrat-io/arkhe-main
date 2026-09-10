@@ -83,31 +83,48 @@ it('appends the gate to the configured stack without displacing it', function ()
     ]);
 });
 
-// ─── Disabled by default ─────────────────────────────────────────────────
+// ─── Enforced by default, opt-out via env ────────────────────────────────
 
-it('lets a user with no strong factor reach the backend by default', function (): void {
+// The suite baseline (TestCase) stands enforcement down so unrelated tests can
+// walk the backend with factorless users. Remove that override and the shipped
+// default takes over: the gate closes with nothing configured at all.
+it('enforces by default when nothing is configured', function (): void {
+    config()->set('arkhe.strong_auth', []);
+
+    $this->actingAs(makeStrongAuthUser('administrateur'))
+        ->get('/administration/users')
+        ->assertRedirect(route('arkhe.strong-auth.required'));
+});
+
+// `ARKHE_STRONG_AUTH=false` is the escape hatch — an explicit "no" reopens the
+// backend to factorless users. This block doubles as the baseline the rest of
+// the suite relies on.
+it('lets a user with no strong factor through once stood down', function (mixed $value): void {
+    config()->set('arkhe.strong_auth.enforce', $value);
+
     $this->actingAs(makeStrongAuthUser('administrateur'))
         ->get('/administration/users')
         ->assertOk();
-});
+})->with([false, 'false', 'off', 'no', '0', 0]);
 
-// The default has to hold for the sensitive area too, since that group carries
+// The opt-out has to hold for the sensitive area too, since that group carries
 // an extra middleware and could plausibly diverge.
-it('leaves the sensitive area open by default too', function (): void {
+it('reopens the sensitive area as well', function (): void {
     $this->actingAs(makeStrongAuthUser('root'))
         ->get('/administration/roles')
         ->assertOk();
 });
 
-// A typo in .env must never be what locks a team out of its own backend, so
-// anything unrecognised reads as disabled rather than as "protect everything".
-it('treats an unrecognised enforce value as disabled', function (mixed $value): void {
+// Only an explicit "no" stands the gate down: a typo must not be what silently
+// drops a security requirement. The wrong spelling costs a visible detour
+// through the interstitial, which names the fix — the safer failure by far.
+it('keeps enforcing on an unrecognised enforce value', function (mixed $value): void {
     config()->set('arkhe.strong_auth.enforce', $value);
 
     $this->actingAs(makeStrongAuthUser('root'))
         ->get('/administration/roles')
-        ->assertOk();
-})->with(['backend', 'root', 'maybe', 'off', '', 0]);
+        ->assertRedirect(route('arkhe.strong-auth.required'));
+})->with(['backend', 'root', 'maybe', '']);
 
 // ─── Enforcing ───────────────────────────────────────────────────────────
 

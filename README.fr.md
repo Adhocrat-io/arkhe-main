@@ -112,15 +112,15 @@ L'accès est ouvert aux utilisateurs portant le rôle `root` ou `administrateur`
 
 ## Authentification forte
 
-Arkhè peut exiger un second facteur fort — une **clé d'accès** enregistrée ou une **2FA confirmée** — avant d'atteindre le back-office. Une clé d'accès dispense de la 2FA : elle est déjà à deux facteurs (possession de l'appareil, plus biométrie ou code), et le navigateur la lie au domaine, ce qui la rend résistante au hameçonnage là où un code TOTP ne l'est pas.
+Arkhè exige un second facteur fort — une **clé d'accès** enregistrée ou une **2FA confirmée** — avant d'atteindre le back-office. C'est **imposé par défaut** ; une app peut s'y soustraire, mais la sécurité se désactive, elle ne s'active pas. Une clé d'accès dispense de la 2FA : elle est déjà à deux facteurs (possession de l'appareil, plus biométrie ou code), et le navigateur la lie au domaine, ce qui la rend résistante au hameçonnage là où un code TOTP ne l'est pas.
 
 Le verrou porte sur l'**accès au back-office, pas sur la connexion**. La façon dont les utilisateurs s'authentifient appartient au pipeline Fortify de votre app, auquel le paquet ne touche pas — un compte sans facteur reste connecté et garde le reste du site ; seul `/administration/*` se ferme jusqu'à son enrôlement. Fortify ne propose rien d'équivalent : il fournit la double authentification mais ne l'impose jamais, et n'embarque aucun middleware.
 
-### L'activer
+### Imposée par défaut
 
-Désactivée par défaut, pour qu'une montée de version ne prive jamais une app de son propre back-office. Quatre étapes, dans cet ordre — l'ordre compte, et c'est l'étape 3 qu'on saute le plus souvent.
+L'exigence est **active d'origine** : une installation neuve (et une montée en 5.x) demande un facteur fort sur chaque page du back-office, sans rien configurer. Rien ne se bloque pour autant — un compte sans facteur reste connecté, garde le reste du site, et arrive sur un écran d'explication qui le guide vers l'enrôlement en une minute. Trois choses valent tout de même d'être faites, dans cet ordre — c'est l'étape 3 qu'on saute le plus souvent.
 
-**1. Vérifiez que votre app peut y répondre.** L'exigence suppose un modèle utilisateur exposant au moins l'une des deux méthodes de sonde ci-dessous. Avec `TwoFactorAuthenticatable` de Fortify et/ou `laravel/passkeys` sur votre `User`, tout est en place. Sans l'un ni l'autre, le drapeau reste sans effet (voir [Quand l'exigence ne peut pas être satisfaite](#quand-lexigence-ne-peut-pas-être-satisfaite)).
+**1. Vérifiez que votre app peut y répondre.** L'exigence suppose un modèle utilisateur exposant au moins l'une des deux méthodes de sonde ci-dessous. Avec `TwoFactorAuthenticatable` de Fortify et/ou `laravel/passkeys` sur votre `User`, tout est en place. Sans l'un ni l'autre, l'exigence s'ignore d'elle-même avec un avertissement en journal plutôt que d'enfermer tout le monde dehors (voir [Quand l'exigence ne peut pas être satisfaite](#quand-lexigence-ne-peut-pas-être-satisfaite)).
 
 ```bash
 php artisan tinker --execute="\$u = App\Models\User::first();
@@ -128,21 +128,11 @@ php artisan tinker --execute="\$u = App\Models\User::first();
   var_dump(method_exists(\$u, 'hasPasskeysEnabled'));"
 ```
 
-**2. Étendez le verrou à vos propres pages d'administration.** Arkhè garde ses routes ; votre tableau de bord est le vôtre. Voir [L'étendre à vos propres routes](#létendre-à-vos-propres-routes) — l'alias reste inerte jusqu'à l'étape 4, cette étape est donc sans risque.
+**2. Étendez le verrou à vos propres pages d'administration.** Arkhè garde ses routes ; votre tableau de bord est le vôtre. Voir [L'étendre à vos propres routes](#létendre-à-vos-propres-routes) — l'alias suit le même drapeau : il impose et se retire en même temps que les pages d'Arkhè.
 
-**3. Enrôlez-vous avant d'activer.** Rendez-vous dans vos réglages de sécurité et enregistrez une clé d'accès (ou confirmez une 2FA) *maintenant*, pendant que le back-office est encore ouvert. L'oublier n'est pas fatal — l'écran d'explication mène toujours à la page d'enrôlement — mais le faire d'abord vous épargne le détour à chaque tentative.
+**3. Enrôlez-vous.** Rendez-vous dans vos réglages de sécurité et enregistrez une clé d'accès (ou confirmez une 2FA) *maintenant*. L'oublier n'est pas fatal — l'écran d'explication mène toujours à la page d'enrôlement — mais le faire d'abord vous épargne le détour à chaque tentative.
 
-**4. Activez.**
-
-```dotenv
-ARKHE_STRONG_AUTH=true
-```
-
-```bash
-php artisan config:clear
-```
-
-Vérifiez la prise en compte — ceci doit afficher `true` :
+Vérifiez ce que l'app a résolu — imposée affiche `true` :
 
 ```bash
 php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled());"
@@ -150,19 +140,31 @@ php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled())
 
 C'est tout ou rien : soit le back-office exige un facteur fort, soit il ne l'exige pas. Ne protéger que la zone sensible a été envisagé puis abandonné — cela laissait ouverte la liste des utilisateurs, là où l'on crée des comptes et attribue des rôles, ce qui a l'air prudent tout en protégeant peu. Les rôles et permissions tracent déjà cette frontière là où il faut.
 
-Toute valeur non reconnue se lit comme désactivé plutôt que comme « tout protéger » : une faute de frappe échoue vers un back-office qui marche, pas vers un enfermement.
+### S'y soustraire
+
+L'exigence peut être levée pour les apps qui jugent que leur back-office ne justifie pas de second facteur :
+
+```dotenv
+ARKHE_STRONG_AUTH=false
+```
+
+```bash
+php artisan config:clear
+```
+
+Seul un « non » explicite (`false`, `0`, `off`, `no`) la désactive ; toute valeur non reconnue continue d'imposer. Une faute de frappe coûte donc un détour visible par l'écran d'explication — qui nomme le correctif — plutôt que la chute silencieuse d'un verrou de sécurité.
 
 La config publiée, si vous préférez la régler là plutôt que dans `.env` :
 
 ```php
 // config/arkhe.php
 'strong_auth' => [
-    'enforce' => env('ARKHE_STRONG_AUTH', false),
+    'enforce' => env('ARKHE_STRONG_AUTH', true),
     'route'   => null,   // page d'enrôlement ; détectée automatiquement si null
 ],
 ```
 
-> **Config publiée avant cette version ?** La clé sera simplement absente, ce qui se lit comme `false`. Le middleware est branché sur les routes propres au paquet plutôt que sur `arkhe.middleware`, il vous parvient donc même avec une pile publiée figée.
+> **Config publiée avant la 5.0 ?** Votre `config/arkhe.php` sur disque porte l'ancien défaut — `env('ARKHE_STRONG_AUTH', false)` — et un fichier publié l'emporte toujours sur celui du paquet : l'exigence reste donc levée chez vous tant que vous ne passez pas ce `false` à `true` (ou ne posez pas `ARKHE_STRONG_AUTH=true`, qui atteint les deux formes). Si la clé est entièrement absente, le défaut du paquet s'applique et le back-office **est** verrouillé. Le middleware est branché sur les routes propres au paquet plutôt que sur `arkhe.middleware`, il vous parvient donc même avec une pile publiée figée.
 
 ### Ce qui compte comme facteur fort
 
@@ -193,7 +195,7 @@ Route::middleware(['auth', 'verified', 'arkhe.strong-auth'])->group(function () 
 });
 ```
 
-Le tableau de bord mérite d'être protégé : c'est l'entrée de l'administration, et le laisser ouvert ne fait que repousser le blocage au premier clic. L'alias est inerte tant que `arkhe.strong_auth.enforce` vaut `false`, l'ajouter ne coûte donc rien avant l'activation.
+Le tableau de bord mérite d'être protégé : c'est l'entrée de l'administration, et le laisser ouvert ne fait que repousser le blocage au premier clic. L'alias suit `arkhe.strong_auth.enforce` : il impose par défaut et devient inerte quand l'app s'y soustrait, en même temps que les pages d'Arkhè.
 
 Placez-le après `auth`, qui résout l'utilisateur qu'il lit. Il n'y a rien d'autre à configurer — l'alias ne prend aucun paramètre.
 

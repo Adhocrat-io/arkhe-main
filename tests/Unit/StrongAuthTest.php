@@ -20,27 +20,37 @@ function registerNamedRoute(string $name, string $uri): void
 
 // ─── enabled() ───────────────────────────────────────────────────────────
 
-// Laravel's env parser turns `ARKHE_STRONG_AUTH=true` into a real boolean, but
+// The shipped default, read the way a fresh install would — straight from the
+// config file, bypassing the suite's baseline override in TestCase. This is
+// the headline requirement: 2FA is mandatory unless the app opts out.
+it('ships with enforcement on', function (): void {
+    $config = require dirname(__DIR__, 2).'/config/arkhe.php';
+
+    expect($config['strong_auth']['enforce'])->toBeTrue();
+});
+
+// Laravel's env parser turns `ARKHE_STRONG_AUTH=false` into a real boolean, but
 // a published config or a quoted .env value arrives as a string. Both spellings
 // have to mean the same thing.
-it('enables on any spelling of yes', function (mixed $value): void {
+it('stands down on any spelling of no', function (mixed $value): void {
+    config()->set('arkhe.strong_auth.enforce', $value);
+
+    expect(StrongAuth::enabled())->toBeFalse();
+})->with([false, 0, '0', 'false', 'FALSE', ' false ', 'off', 'no']);
+
+// Enforcement is the default, so only an explicit "no" may drop it. A typo
+// dropping a security gate would be silent; a typo keeping it up is loudly
+// visible and the interstitial is a minute from resolved.
+it('keeps enforcing on anything else', function (mixed $value): void {
     config()->set('arkhe.strong_auth.enforce', $value);
 
     expect(StrongAuth::enabled())->toBeTrue();
-})->with([true, '1', 'true', 'TRUE', ' true ', 'on', 'yes']);
+})->with([true, null, 1, '1', 'true', 'on', 'yes', '', 'backend', 'root', 'maybe']);
 
-// Anything unrecognised stays off rather than enforcing something nobody chose:
-// a typo must never be what locks a team out of its own backend.
-it('stays disabled on anything else', function (mixed $value): void {
-    config()->set('arkhe.strong_auth.enforce', $value);
-
-    expect(StrongAuth::enabled())->toBeFalse();
-})->with([false, null, 0, '0', 'false', 'off', 'no', '', 'backend', 'root', 'maybe']);
-
-it('is disabled when the key is absent entirely', function (): void {
+it('enforces when the key is absent entirely', function (): void {
     config()->set('arkhe.strong_auth', null);
 
-    expect(StrongAuth::enabled())->toBeFalse();
+    expect(StrongAuth::enabled())->toBeTrue();
 });
 
 // ─── isSupportedBy() ─────────────────────────────────────────────────────

@@ -112,15 +112,15 @@ Access is granted to users carrying either the `root` or `administrateur` role; 
 
 ## Strong authentication
 
-Arkhe can require a strong second factor — a registered **passkey** or a **confirmed TOTP** — before anyone reaches the backend. A passkey exempts from TOTP: it is already two-factor (device possession plus biometric or PIN) and, being bound to the domain by the browser, phishing-resistant where a TOTP code is not.
+Arkhe requires a strong second factor — a registered **passkey** or a **confirmed TOTP** — before anyone reaches the backend. This is **enforced by default**; an app can opt out, but security is opt-out, not opt-in. A passkey exempts from TOTP: it is already two-factor (device possession plus biometric or PIN) and, being bound to the domain by the browser, phishing-resistant where a TOTP code is not.
 
 This gates **access to the backend, not sign-in**. How users authenticate belongs to your app's Fortify pipeline, which the package does not touch — a user without a factor stays signed in and keeps the rest of the site; only `/administration/*` closes until they enrol. Fortify offers no equivalent: it provides two-factor authentication but never compels it, and ships no middleware at all.
 
-### Turning it on
+### Enforced by default
 
-Disabled by default, so upgrading the package never locks an app out of its own backend. Four steps, in this order — the order matters, and step 3 is the one people skip.
+Enforcement ships **on**: a fresh install (and an upgrade to 5.x) demands a strong factor on every backend page with nothing configured at all. Nothing bricks — a factorless user stays signed in, keeps the rest of the site, and lands on an interstitial that walks them through enrolment in a minute. Still, three things are worth doing in this order — step 3 is the one people skip.
 
-**1. Check your app can satisfy it.** Enforcement needs a user model exposing at least one of the two probe methods below. With Fortify's `TwoFactorAuthenticatable` and/or `laravel/passkeys` on your `User`, you are set. Without either, the flag has no effect (see [When it cannot be satisfied](#when-it-cannot-be-satisfied)).
+**1. Check your app can satisfy it.** Enforcement needs a user model exposing at least one of the two probe methods below. With Fortify's `TwoFactorAuthenticatable` and/or `laravel/passkeys` on your `User`, you are set. Without either, enforcement skips itself with a logged warning rather than locking everyone out (see [When it cannot be satisfied](#when-it-cannot-be-satisfied)).
 
 ```bash
 php artisan tinker --execute="\$u = App\Models\User::first();
@@ -128,21 +128,11 @@ php artisan tinker --execute="\$u = App\Models\User::first();
   var_dump(method_exists(\$u, 'hasPasskeysEnabled'));"
 ```
 
-**2. Extend the gate to your own admin pages.** Arkhe guards its own routes; your dashboard is yours. See [Extending it to your own routes](#extending-it-to-your-own-routes) — the alias is inert until step 4, so this is safe to do first.
+**2. Extend the gate to your own admin pages.** Arkhe guards its own routes; your dashboard is yours. See [Extending it to your own routes](#extending-it-to-your-own-routes) — the alias follows the same flag, so it enforces and stands down together with Arkhe's own pages.
 
-**3. Enrol yourself before switching it on.** Go to your security settings and register a passkey (or confirm a TOTP) *now*, while the backend is still open. Skipping this is not fatal — the interstitial always routes you to the enrolment page — but doing it first spares you the detour on every attempt.
+**3. Enrol yourself.** Go to your security settings and register a passkey (or confirm a TOTP) *now*. Skipping this is not fatal — the interstitial always routes you to the enrolment page — but doing it first spares you the detour on every attempt.
 
-**4. Switch it on.**
-
-```dotenv
-ARKHE_STRONG_AUTH=true
-```
-
-```bash
-php artisan config:clear
-```
-
-Verify it took effect — this must print `true`:
+Verify what the app resolved — enforced prints `true`:
 
 ```bash
 php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled());"
@@ -150,19 +140,31 @@ php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled())
 
 It is all or nothing: either the backend requires a strong factor or it does not. Guarding only the sensitive area was considered and dropped — it left the user list open, where accounts are created and roles handed out, which reads as prudence while buying little. Roles and permissions already draw that line where it belongs.
 
-Anything unrecognised reads as disabled rather than as "protect everything", so a typo fails towards a working backend rather than towards a lockout.
+### Opting out
+
+The requirement can be stood down for apps that decide their backend does not warrant a second factor:
+
+```dotenv
+ARKHE_STRONG_AUTH=false
+```
+
+```bash
+php artisan config:clear
+```
+
+Only an explicit "no" (`false`, `0`, `off`, `no`) disables it; anything unrecognised keeps enforcing. A typo therefore costs a visible detour through the interstitial — which names the fix — rather than silently dropping a security gate.
 
 The published config, should you want to set it there instead of in `.env`:
 
 ```php
 // config/arkhe.php
 'strong_auth' => [
-    'enforce' => env('ARKHE_STRONG_AUTH', false),
+    'enforce' => env('ARKHE_STRONG_AUTH', true),
     'route'   => null,   // enrolment page; auto-detected when null
 ],
 ```
 
-> **Config published before this release?** The key will simply be absent, which reads as `false`. The middleware itself is wired into the package's own routes rather than into `arkhe.middleware`, so it reaches you even with a frozen published stack.
+> **Config published before 5.0?** Your `config/arkhe.php` on disk carries the old default — `env('ARKHE_STRONG_AUTH', false)` — and a published file always wins over the package's, so enforcement stays off for you until you flip that `false` to `true` (or set `ARKHE_STRONG_AUTH=true`, which reaches both shapes). If the key is absent entirely, the package default applies and the backend **is** enforced. The middleware itself is wired into the package's own routes rather than into `arkhe.middleware`, so it reaches you even with a frozen published stack.
 
 ### What counts as a strong factor
 
@@ -193,7 +195,7 @@ Route::middleware(['auth', 'verified', 'arkhe.strong-auth'])->group(function () 
 });
 ```
 
-The dashboard is worth protecting: it is the way into the admin area, and leaving it open only postpones the block to the first click. The alias is inert while `arkhe.strong_auth.enforce` is `false`, so adding it costs nothing until you switch enforcement on.
+The dashboard is worth protecting: it is the way into the admin area, and leaving it open only postpones the block to the first click. The alias follows `arkhe.strong_auth.enforce`: it enforces by default and goes inert when the app opts out, together with Arkhe's own pages.
 
 Place it after `auth`, which resolves the user it reads. There is nothing else to configure — the alias takes no parameter.
 

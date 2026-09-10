@@ -64,6 +64,14 @@ abstract class TestCase extends Orchestra
 
         $app['config']->set('arkhe.avatar_disk', 'local');
 
+        // Strong auth enforces by default (5.0), and most of this suite walks
+        // the backend with factorless users to assert something unrelated.
+        // Stand it down here so those tests keep meaning what they say; the
+        // StrongAuth tests re-enable it explicitly, remove this override to
+        // exercise the default, and pin the shipped value by reading
+        // config/arkhe.php directly.
+        $app['config']->set('arkhe.strong_auth.enforce', false);
+
         // Livewire pages confirm their actions through `Flux::toast()`, which
         // resolves the `flux` service. Testbench does not discover Flux's
         // provider, and adding it to getPackageProviders() would register it

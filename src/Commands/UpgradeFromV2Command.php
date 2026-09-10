@@ -447,12 +447,13 @@ class UpgradeFromV2Command extends Command
             // the published config: the only way to discover it was to read
             // UPGRADE.md.
             'permission_groups' => "'permission_groups' => [],",
-            // Appended so the key is visible in the published config, not to
-            // turn anything on: `false` is the default, and absent reads the
-            // same as false. Note `middleware` above keeps the V3 stack — the
-            // strong-auth middleware is wired in routes/arkhe.php instead, so
-            // that apps with a frozen published config still receive it.
-            'strong_auth' => "'strong_auth' => [\n        'enforce' => env('ARKHE_STRONG_AUTH', false),\n        'route'   => null,\n    ],",
+            // The default enforces (5.0): an upgraded app must land on the
+            // same footing as a fresh install, so the appended key carries
+            // `true` and `ARKHE_STRONG_AUTH=false` is the opt-out. Note
+            // `middleware` above keeps the V3 stack — the strong-auth
+            // middleware is wired in routes/arkhe.php instead, so that apps
+            // with a frozen published config still receive it.
+            'strong_auth' => "'strong_auth' => [\n        'enforce' => env('ARKHE_STRONG_AUTH', true),\n        'route'   => null,\n    ],",
             'components' => "'components' => [\n        'list-users'       => \\Arkhe\\Main\\Livewire\\ListUsers::class,\n        'list-roles'       => \\Arkhe\\Main\\Livewire\\ListRoles::class,\n        'list-permissions' => \\Arkhe\\Main\\Livewire\\ListPermissions::class,\n    ],",
             'features' => "'features' => [\n        'cookie_consent' => false,\n        'seo' => false,\n    ],",
         ];

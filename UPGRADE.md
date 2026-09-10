@@ -2,6 +2,66 @@
 
 This document tracks breaking and behavioural changes between major versions of `adhocrat-io/arkhe-main`.
 
+## Vers la 5.0 — l'authentification forte devient le défaut (rupture)
+
+En 4.x, l'exigence d'un facteur fort (clé d'accès ou 2FA confirmée) existait
+mais restait **désactivée** tant qu'on ne posait pas `ARKHE_STRONG_AUTH=true`.
+En 5.0, le rapport s'inverse : **la 2FA est obligatoire par défaut**, et c'est
+la désactivation qui se déclare. La sécurité se désactive, elle ne s'active
+pas.
+
+```php
+// config/arkhe.php — nouveau défaut
+'strong_auth' => [
+    'enforce' => env('ARKHE_STRONG_AUTH', true),
+    'route'   => null,
+],
+```
+
+**Ce qui se passe à la montée de version, selon votre situation :**
+
+- **Config non publiée (ou clé `strong_auth` absente).** Le défaut du paquet
+  s'applique : dès le déploiement, chaque page du back-office exige un facteur
+  fort. Personne n'est enfermé — un compte sans facteur reste connecté et
+  arrive sur l'écran d'explication (`/administration/strong-auth`), qui le
+  mène à l'enrôlement. Enrôlez-vous *avant* de déployer pour vous épargner le
+  détour.
+
+- **Config publiée en 4.x.** Votre fichier porte
+  `'enforce' => env('ARKHE_STRONG_AUTH', false)` et un fichier publié
+  l'emporte sur celui du paquet : rien ne change chez vous tant que vous ne
+  passez pas ce défaut à `true`. Faites-le — c'est le sens de cette majeure —
+  ou posez `ARKHE_STRONG_AUTH=true`, qui atteint les deux formes.
+
+- **Vous refusez l'exigence.** Posez explicitement :
+
+  ```dotenv
+  ARKHE_STRONG_AUTH=false
+  ```
+
+  Seul un « non » explicite (`false`, `0`, `off`, `no`) désactive ; toute
+  valeur non reconnue continue d'imposer. En 4.x c'était l'inverse — une
+  valeur inconnue se lisait comme désactivé. Le sens de l'erreur a changé
+  avec le défaut : une faute de frappe coûte désormais un détour visible par
+  l'écran d'explication, jamais la chute silencieuse du verrou.
+
+- **App sans aucun support 2FA** (le modèle utilisateur n'expose ni
+  `hasEnabledTwoFactorAuthentication()` ni `hasPasskeysEnabled()`). Rien ne se
+  ferme : l'exigence, insatisfaisable, s'ignore d'elle-même avec un
+  avertissement en journal à chaque requête du back-office. Installez
+  `laravel/fortify` (2FA) ou `laravel/passkeys`, ou assumez l'opt-out
+  explicite pour faire taire l'avertissement.
+
+Vérifiez ce que l'app a résolu — imposée affiche `true` :
+
+```bash
+php artisan config:clear
+php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled());"
+```
+
+Le reste du mécanisme est inchangé (voir la section 4.0 ci-dessous : sondes,
+page d'explication, middleware persistant, trait `RequiresStrongAuth`).
+
 ## Vers la 4.0 — depuis la 3.3
 
 Une app en `^3.0` ne monte pas toute seule : il faut passer la contrainte à

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+use Arkhe\Main\Livewire\Cookies;
+use Arkhe\Main\Livewire\EditRole;
+use Arkhe\Main\Livewire\EditUser;
+use Arkhe\Main\Livewire\ListPermissions;
+use Arkhe\Main\Livewire\ListRoles;
+use Arkhe\Main\Livewire\ListUsers;
+use Arkhe\Main\Livewire\Sitemap;
+use Arkhe\Main\Livewire\SiteSeo;
 
 return [
 
@@ -23,7 +31,7 @@ return [
     'admin' => [
         'prefix' => env('ARKHE_ADMIN_PREFIX', env('ARKHE_ROUTE_PREFIX', 'administration')),
         'layout' => env('ARKHE_ADMIN_LAYOUT', 'layouts::app'),
-        'roles'  => ['root', 'administrator'],
+        'roles' => ['root', 'administrator'],
     ],
 
     /*
@@ -169,7 +177,7 @@ return [
             'delete-user',
         ],
 
-        'user'  => [],
+        'user' => [],
         'guest' => [],
     ],
 
@@ -243,9 +251,17 @@ return [
     | factor stays signed in and keeps the rest of the site — only the admin
     | area closes until they enrol.
     |
-    |   'enforce'  false  no enforcement. The default: upgrading the package
-    |                     must never lock an app out of its own backend
-    |              true   every backend page demands a strong factor
+    |   'enforce'  true   the default: every backend page demands a strong
+    |                     factor. Security is opt-out, not opt-in.
+    |              false  no enforcement. ARKHE_STRONG_AUTH=false is the
+    |                     escape hatch for apps that decide the backend does
+    |                     not warrant a second factor.
+    |
+    | Only an explicit "no" (`false`, `0`, `off`, `no`) stands the requirement
+    | down; anything unrecognised keeps enforcing. A typo may cost a detour
+    | through the enrolment page — it must never silently drop a security gate.
+    | Nothing bricks either way: a blocked user lands on the interstitial,
+    | which walks them through enrolment in a minute.
     |
     | All or nothing, on purpose. Guarding the sensitive area alone would leave
     | the user list open — where accounts are created and roles handed out —
@@ -256,11 +272,6 @@ return [
     |              probes `security.edit` then `two-factor.show`, so current
     |              starter kits work with no configuration at all. Set it if
     |              your app names that page differently.
-    |
-    | Enrol before switching this on: turning it on without a factor bounces
-    | you to the explanation page on every attempt. Nothing breaks — it leads
-    | to your security page and a minute fixes it — but the other order is more
-    | comfortable.
     |
     | A blocked user lands on `/administration/strong-auth`, an Arkhe page that
     | states the requirement and links on to the enrolment screen. Override it
@@ -275,8 +286,8 @@ return [
     |
     */
     'strong_auth' => [
-        'enforce' => env('ARKHE_STRONG_AUTH', false),
-        'route'   => null,
+        'enforce' => env('ARKHE_STRONG_AUTH', true),
+        'route' => null,
     ],
 
     /*
@@ -300,14 +311,14 @@ return [
     |
     */
     'components' => [
-        'list-users'       => \Arkhe\Main\Livewire\ListUsers::class,
-        'edit-user'        => \Arkhe\Main\Livewire\EditUser::class,
-        'list-roles'       => \Arkhe\Main\Livewire\ListRoles::class,
-        'edit-role'        => \Arkhe\Main\Livewire\EditRole::class,
-        'list-permissions' => \Arkhe\Main\Livewire\ListPermissions::class,
-        'site-seo'         => \Arkhe\Main\Livewire\SiteSeo::class,
-        'sitemap'          => \Arkhe\Main\Livewire\Sitemap::class,
-        'cookies'          => \Arkhe\Main\Livewire\Cookies::class,
+        'list-users' => ListUsers::class,
+        'edit-user' => EditUser::class,
+        'list-roles' => ListRoles::class,
+        'edit-role' => EditRole::class,
+        'list-permissions' => ListPermissions::class,
+        'site-seo' => SiteSeo::class,
+        'sitemap' => Sitemap::class,
+        'cookies' => Cookies::class,
     ],
 
     /*
@@ -336,9 +347,9 @@ return [
     |
     */
     'sitemap' => [
-        'enabled'  => env('ARKHE_SITEMAP_ENABLED', true),
-        'url'      => env('ARKHE_SITEMAP_URL'),       // defaults to config('app.url')
-        'path'     => env('ARKHE_SITEMAP_PATH'),      // defaults to public_path('sitemap.xml')
+        'enabled' => env('ARKHE_SITEMAP_ENABLED', true),
+        'url' => env('ARKHE_SITEMAP_URL'),       // defaults to config('app.url')
+        'path' => env('ARKHE_SITEMAP_PATH'),      // defaults to public_path('sitemap.xml')
         'schedule' => env('ARKHE_SITEMAP_SCHEDULE', '0 3 * * *'),
     ],
 

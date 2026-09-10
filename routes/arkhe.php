@@ -43,8 +43,8 @@ Route::middleware(['web', 'auth'])
 // Appended to the configured stack rather than declared in the `arkhe.middleware`
 // default: an app that published its config before this release carries a frozen
 // `['web', 'auth', 'arkhe.backend']` on disk, and a new package default would
-// never reach it. Appended here, it reaches everyone — and it stays inert until
-// `arkhe.strong_auth.enforce` is switched on, which it is not by default.
+// never reach it. Appended here, it reaches everyone — and it enforces by
+// default (5.0); `ARKHE_STRONG_AUTH=false` is what stands it down.
 //
 // It goes last, and in the same array: a second chained `->middleware()` call
 // REPLACES the group's stack instead of extending it, which would silently drop
@@ -73,8 +73,8 @@ Route::middleware($middleware)
             // the seeder, because code refers to them by name (middleware,
             // `isArkheRoot()`). The edit page is for tuning their permissions,
             // not for minting new ones.
-            Route::get('/roles',             $component('list-roles', ListRoles::class))->name('roles.index');
-            Route::get('/roles/{role}/edit', $component('edit-role',  EditRole::class))->name('roles.edit');
+            Route::get('/roles', $component('list-roles', ListRoles::class))->name('roles.index');
+            Route::get('/roles/{role}/edit', $component('edit-role', EditRole::class))->name('roles.edit');
 
             // Permissions have been managed from the roles page since 4.0: the
             // route survives as a redirect so consumer apps calling
@@ -83,8 +83,8 @@ Route::middleware($middleware)
             Route::redirect('/permissions', '/'.trim((string) config('arkhe.admin.prefix', 'administration'), '/').'/roles')
                 ->name('permissions.index');
 
-            Route::get('/seo',         $component('site-seo',   SiteSeo::class))->name('site-seo.edit');
-            Route::get('/sitemap',     $component('sitemap',    Sitemap::class))->name('sitemap.edit');
-            Route::get('/cookies',     $component('cookies',    Cookies::class))->name('cookies.index');
+            Route::get('/seo', $component('site-seo', SiteSeo::class))->name('site-seo.edit');
+            Route::get('/sitemap', $component('sitemap', Sitemap::class))->name('sitemap.edit');
+            Route::get('/cookies', $component('cookies', Cookies::class))->name('cookies.index');
         });
     });

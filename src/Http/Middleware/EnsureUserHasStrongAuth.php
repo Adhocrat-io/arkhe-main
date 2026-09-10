@@ -32,7 +32,10 @@ use Symfony\Component\HttpFoundation\Response;
  * handed out. Roles and permissions already draw that line, and drawing a
  * second, weaker one here only bought a false sense of safety.
  *
- * Off by default, so a version bump never locks an app out of its own backend.
+ * On by default since 5.0 — security is opt-out, not opt-in. The escape hatch
+ * is `ARKHE_STRONG_AUTH=false`, and enforcement never bricks anyone: a blocked
+ * user lands on the interstitial and enrols in a minute, while an app whose
+ * user model has no mechanism at all is skipped below with a logged warning.
  *
  * Wired directly in routes/arkhe.php rather than through
  * `config('arkhe.middleware')`: apps that published their config before this

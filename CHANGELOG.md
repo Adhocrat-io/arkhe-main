@@ -9,6 +9,28 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+### Changed
+
+**L'authentification forte devient le défaut (rupture).** En 4.x, l'exigence
+d'un facteur fort — clé d'accès ou 2FA confirmée — existait mais restait
+désactivée tant qu'on ne posait pas `ARKHE_STRONG_AUTH=true`. Le rapport
+s'inverse : `arkhe.strong_auth.enforce` vaut désormais `true` et c'est la
+désactivation qui se déclare, via `ARKHE_STRONG_AUTH=false`. La sécurité se
+désactive, elle ne s'active pas.
+
+La lecture des valeurs s'inverse avec le défaut : seul un « non » explicite
+(`false`, `0`, `off`, `no`) lève l'exigence, et toute valeur non reconnue
+continue d'imposer — une faute de frappe coûte un détour visible par l'écran
+d'explication, jamais la chute silencieuse du verrou. Rien n'enferme personne :
+un compte sans facteur reste connecté et l'écran d'explication le mène à
+l'enrôlement ; une app sans aucun support 2FA est ignorée avec un
+avertissement en journal, comme avant.
+
+Une config publiée en 4.x porte l'ancien défaut (`false`) et l'emporte sur
+celui du paquet : voir UPGRADE.md pour adopter le nouveau. La commande
+`arkhe:main:upgrade-from-v2` insère désormais la clé avec le défaut `true`,
+pour qu'une app migrée parte du même pied qu'une installation neuve.
+
 ## [4.0.0] — 2026-08-18
 
 ### Added

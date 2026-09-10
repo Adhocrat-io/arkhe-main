@@ -155,24 +155,34 @@ final class StrongAuth
      * a backend protected is not half the risk, and roles and permissions
      * already draw that line properly.
      *
-     * Accepts anything Laravel's env parser might hand us — `true` from a bare
-     * `ARKHE_STRONG_AUTH=true`, or the strings people write meaning yes. Only
-     * an explicit truthy value enables it: an unrecognised one stays off rather
-     * than locking a team out of its own backend over a typo.
+     * On by default: security is opt-out, not opt-in. Accepts anything
+     * Laravel's env parser might hand us — `false` from a bare
+     * `ARKHE_STRONG_AUTH=false`, or the strings people write meaning no. Only
+     * an explicit "no" stands the requirement down: an unrecognised value
+     * keeps enforcing, because a typo dropping a security gate would be
+     * silent, whereas a typo keeping it up is loudly visible — the interstitial
+     * says what happened and enrolment is a minute away. Nothing bricks: an
+     * app whose user model has no mechanism at all is skipped by the
+     * middleware, so the fail-open path for the truly unsatisfiable remains.
      */
     public static function enabled(): bool
     {
-        $configured = config('arkhe.strong_auth.enforce', false);
+        $configured = config('arkhe.strong_auth.enforce', true);
 
         if (is_bool($configured)) {
             return $configured;
         }
 
-        if (! is_string($configured)) {
-            return false;
+        if (is_int($configured)) {
+            return $configured !== 0;
         }
 
-        return in_array(strtolower(trim($configured)), ['1', 'true', 'on', 'yes'], true);
+        if (! is_string($configured)) {
+            // null or anything odd means "not configured" — the default wins.
+            return true;
+        }
+
+        return ! in_array(strtolower(trim($configured)), ['0', 'false', 'off', 'no'], true);
     }
 
     private static function hasTwoFactor(object $user): bool

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Arkhe\Main\Email;
 
 use Arkhe\Main\ArkheMainServiceProvider;
+use Arkhe\Main\Email\Console\ExportEmailDomainsCommand;
+use Arkhe\Main\Email\Console\ImportEmailDomainsCommand;
 use Arkhe\Main\Email\Console\SeedEmailDomainsCommand;
 use Arkhe\Main\Email\Contracts\EmailDomainRepository;
 use Arkhe\Main\Email\Repositories\EloquentEmailDomainRepository;
@@ -33,6 +35,8 @@ class ArkheEmailServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 SeedEmailDomainsCommand::class,
+                ExportEmailDomainsCommand::class,
+                ImportEmailDomainsCommand::class,
             ]);
         }
     }

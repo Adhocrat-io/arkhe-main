@@ -8,6 +8,7 @@ use Arkhe\Main\Email\Contracts\EmailDomainRepository;
 use Arkhe\Main\Email\DTOs\DomainEntry;
 use Arkhe\Main\Email\DTOs\DomainListDocument;
 use Arkhe\Main\Email\Enums\DomainSource;
+use Arkhe\Main\Email\Support\SeedFile;
 use Illuminate\Console\Command;
 use InvalidArgumentException;
 
@@ -25,9 +26,9 @@ class SeedEmailDomainsCommand extends Command
 
     protected $description = 'Load the shipped email domain list (never overwrites non-seed rows)';
 
-    public function handle(EmailDomainRepository $domains): int
+    public function handle(EmailDomainRepository $domains, SeedFile $seed): int
     {
-        $path = $this->seedPath();
+        $path = $seed->path();
 
         if ($path === null) {
             $this->error('No seed file found. Publish it with arkhe:email:install, or set arkhe-email.domains.seed_path.');
@@ -69,29 +70,5 @@ class SeedEmailDomainsCommand extends Command
         $this->info("Seed loaded from {$path}: {$written} written, {$kept} kept (non-seed rows are never overwritten).");
 
         return self::SUCCESS;
-    }
-
-    /**
-     * An explicit `seed_path` wins; otherwise the copy the app published,
-     * and as a last resort the file shipped inside the package — so a fresh
-     * install can seed before publishing anything (FRD § 6.3).
-     */
-    private function seedPath(): ?string
-    {
-        $configured = config('arkhe-email.domains.seed_path');
-
-        if (is_string($configured) && $configured !== '') {
-            return file_exists($configured) ? $configured : null;
-        }
-
-        $published = database_path('seeders/data/email_domains.json');
-
-        if (file_exists($published)) {
-            return $published;
-        }
-
-        $shipped = dirname(__DIR__, 3).'/database/seeders/data/email_domains.json';
-
-        return file_exists($shipped) ? $shipped : null;
     }
 }

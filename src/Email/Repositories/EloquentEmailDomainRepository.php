@@ -105,6 +105,15 @@ class EloquentEmailDomainRepository implements EmailDomainRepository
         $this->increment($domain, 'deliveries');
     }
 
+    public function delete(string $domain): void
+    {
+        $domain = DomainEntry::normalizeDomain($domain);
+
+        EmailDomain::query()->where('domain', $domain)->delete();
+
+        Cache::forget($this->cacheKey($domain));
+    }
+
     private function increment(string $domain, string $column): void
     {
         $domain = DomainEntry::normalizeDomain($domain);

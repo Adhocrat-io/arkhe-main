@@ -13,6 +13,7 @@ use Arkhe\Main\Email\Rules\DeliverableEmail;
 use Arkhe\Main\Email\Services\EmailVerificationService;
 use Arkhe\Main\Email\Verifiers\DomainListVerifier;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 
 function domains(): EmailDomainRepository
@@ -142,6 +143,12 @@ it('seeds the shipped list and stays idempotent', function (): void {
     $this->artisan('arkhe:email:seed-domains')->assertSuccessful();
 
     expect(EmailDomain::query()->count())->toBe($count);
+});
+
+// NFR-09 at the routing layer: while the module stays off — the suite's
+// baseline and the shipped default — no admin route exists at all.
+it('mounts no admin route while the module is disabled', function (): void {
+    expect(Route::has('arkhe.email-domains.index'))->toBeFalse();
 });
 
 it('never overwrites a row whose source is not seed', function (): void {

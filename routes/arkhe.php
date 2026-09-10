@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Arkhe\Main\Email\Livewire\EmailDomains;
+use Arkhe\Main\Email\Support\EmailModule;
 use Arkhe\Main\Livewire\Cookies;
 use Arkhe\Main\Livewire\EditRole;
 use Arkhe\Main\Livewire\EditUser;
@@ -86,5 +88,13 @@ Route::middleware($middleware)
             Route::get('/seo', $component('site-seo', SiteSeo::class))->name('site-seo.edit');
             Route::get('/sitemap', $component('sitemap', Sitemap::class))->name('sitemap.edit');
             Route::get('/cookies', $component('cookies', Cookies::class))->name('cookies.index');
+
+            // Email deliverability: the domain knowledge base. Only mounted
+            // when the module is activated — an app that never opted in must
+            // not even grow a route (FRD § 14.1).
+            if (EmailModule::enabled()) {
+                Route::get('/email-domains', $component('email-domains', EmailDomains::class))
+                    ->name('email-domains.index');
+            }
         });
     });

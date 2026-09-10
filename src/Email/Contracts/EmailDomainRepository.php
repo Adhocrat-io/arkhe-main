@@ -40,4 +40,11 @@ interface EmailDomainRepository
     public function incrementBounces(string $domain): void;
 
     public function incrementDeliveries(string $domain): void;
+
+    /**
+     * Not in the FRD's § 6.2 interface, required by the § 6.5 admin screen —
+     * removal is an admin act, so it lives behind the same cache-invalidating
+     * door as every other write.
+     */
+    public function delete(string $domain): void;
 }

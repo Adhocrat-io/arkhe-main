@@ -14,6 +14,8 @@ use Arkhe\Main\Contracts\SiteSeoRepositoryInterface;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Arkhe\Main\Cookies\ArkheCookiesServiceProvider;
 use Arkhe\Main\Email\ArkheEmailServiceProvider;
+use Arkhe\Main\Email\Livewire\EmailDomains;
+use Arkhe\Main\Email\Support\EmailModule;
 use Arkhe\Main\Http\Middleware\EnsureUserHasBackendAccess;
 use Arkhe\Main\Http\Middleware\EnsureUserHasStrongAuth;
 use Arkhe\Main\Http\Middleware\EnsureUserIsRoot;
@@ -104,6 +106,7 @@ class ArkheMainServiceProvider extends PackageServiceProvider
         'sitemap' => Sitemap::class,
         'cookies' => Cookies::class,
         'strong-auth-required' => StrongAuthRequired::class,
+        'email-domains' => EmailDomains::class,
     ];
 
     public function packageBooted(): void
@@ -210,6 +213,20 @@ class ArkheMainServiceProvider extends PackageServiceProvider
                 active: 'arkhe.cookies.*',
                 priority: 30,
             );
+
+        // The domain screen only exists while the email module is active —
+        // same gate as its route, so the sidebar never links to a 404.
+        if (EmailModule::enabled()) {
+            ArkheNav::section('settings')
+                ->item(
+                    key: 'email-domains',
+                    label: static fn (): string => __('arkhe::arkhe.email.domains.title'),
+                    icon: 'at-symbol',
+                    route: 'arkhe.email-domains.index',
+                    active: 'arkhe.email-domains.*',
+                    priority: 40,
+                );
+        }
     }
 
     /**

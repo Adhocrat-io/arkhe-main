@@ -62,6 +62,49 @@ php artisan tinker --execute="var_dump(Arkhe\Main\Support\StrongAuth::enabled())
 Le reste du mécanisme est inchangé (voir la section 4.0 ci-dessous : sondes,
 page d'explication, middleware persistant, trait `RequiresStrongAuth`).
 
+## Module « Délivrabilité e-mail » — adoption sur une application existante
+
+Le module est livré **désactivé** : `composer update` seul ne change
+strictement rien (ni écouteur d'envoi, ni route, ni règle de validation).
+L'adoption suit la procédure ci-dessous, pensée pour qu'aucun utilisateur ne
+soit jamais surpris.
+
+1. `composer update adhocrat-io/arkhe-main` — aucun changement de
+   comportement.
+2. `php artisan arkhe:email:install` — activation en mode `observe` :
+   publication de la config (`enabled = true`), des migrations (refusées si
+   une table du même nom existe avec un autre schéma — renommez alors dans
+   `arkhe-email.tables`), du seed, des fichiers assistant (`arkhe:sync-ai`),
+   génération d'une baseline `arkhe:doctor` si des formulaires existants ne
+   passent pas par les classes de base, puis rapport `arkhe:doctor`.
+   Enchaînez avec `php artisan migrate && php artisan arkhe:email:seed-domains`.
+3. Si l'application portait déjà une suggestion de domaine maison :
+   `php artisan arkhe:email:import-domains --from-php=<chemin> --dry-run`,
+   puis sans `--dry-run`. Les deux cohabitent en `observe` ; l'ancienne se
+   retire au passage en `suggest` (le doctor la signale en avertissement,
+   `email.legacy_domain_list`, jamais en erreur).
+4. Marquez `BypassesSuppression` les Mailables qui doivent toujours partir
+   (reçus fiscaux, documents légaux) — le journal des « aurait été
+   supprimé » du mode `observe` vous dit lesquels.
+5. Après trois semaines (ou le volume convenu) :
+   `php artisan arkhe:email:report`. Examinez les adresses qui auraient été
+   bloquées et les suggestions produites ; ajustez `email_domains` (entrées
+   `manual` depuis `/administration/email-domains`) si des faux positifs
+   apparaissent.
+6. Passez en `suggest` (`'mode' => 'suggest'` dans `config/arkhe-email.php`).
+   Retirez l'ancienne suggestion de domaine ; vérifiez l'affichage de
+   `<x-arkhe::email-suggestion>` sur chaque formulaire.
+7. Après une nouvelle période d'observation du rapport : passez en `enforce`.
+8. Résorbez la baseline au fil des tâches — retirer une entrée de
+   `arkhe-doctor-baseline.json` rend la vérification contraignante ;
+   `arkhe:doctor --strict` mesure ce qui reste.
+
+Faire hériter un formulaire existant des classes de base est un changement
+d'une ligne, un fichier à la fois : `Arkhe\Main\Foundation\ArkheFormRequest`
+pour un FormRequest, `Arkhe\Main\Livewire\ArkheForm` pour un objet Form
+Livewire. En `observe`, ce changement n'a aucun effet visible pour
+l'utilisateur.
+
 ## Vers la 4.0 — depuis la 3.3
 
 Une app en `^3.0` ne monte pas toute seule : il faut passer la contrainte à

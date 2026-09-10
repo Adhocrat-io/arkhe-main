@@ -230,6 +230,37 @@ The page sits **outside** the guarded route group, since a gate that redirects t
 ],
 ```
 
+## Email deliverability
+
+An optional module that catches mistyped addresses at input time (`jena@hotmaij.com` → "did you mean jean@hotmail.com?"), learns from bounces, and stops sending to addresses the world already refused — **without any runtime call to Adhocrat or to a third-party verification service**. The only network activity it can ever do is DNS (MX), off by default. Knowledge travels between applications as a JSON file, by whatever channel the client chooses.
+
+**Inactive until asked for.** `composer update` changes nothing (the module ships disabled); activation is one command:
+
+```bash
+php artisan arkhe:email:install   # config (enabled, mode=observe), migrations, seed, assistant files, doctor
+php artisan migrate && php artisan arkhe:email:seed-domains
+```
+
+Three rollout modes govern how loud it is — `observe` (journal only, users see nothing), `suggest` ("did you mean…?" shown, nothing blocks), `enforce` (undeliverable addresses refused). Moving up is a human decision taken on `php artisan arkhe:email:report`; the full procedure is in UPGRADE.md.
+
+**Verification pipeline** — drivers run cheapest first; the first `Undeliverable` interrupts, a `Risky` (suggestion) outranks a `Deliverable`, and "nothing wrong found" is only ever `Unverifiable`:
+
+| Driver | Question | Network |
+| --- | --- | --- |
+| `bounce_history` | has this exact address hard-bounced before? | no |
+| `domain_list` | is the domain allowed / blocked / a known typo? | no |
+| `provider_rules` | could Gmail/Microsoft/Yahoo/the French ISPs have issued this local part? | no |
+| `local_part_name` | is the local part a near-miss of the user's own name? (Damerau-Levenshtein) | no |
+| `mx_record` | does the domain hold any mail record at all? | DNS, **opt-in** |
+
+**Forms wire themselves.** Extend `Arkhe\Main\Foundation\ArkheFormRequest` (or `Arkhe\Main\Livewire\ArkheForm` for Livewire) and every attribute validating an `email` gets the pipeline automatically — `Risky` never blocks, only a certainty does, and only in `enforce`. Opt a class out with `#[WithoutEmailVerification]`; harden one form with `protected string $emailVerificationMode = 'enforce'`. `php artisan arkhe:make:email-form` scaffolds a ready-made form, and `<x-arkhe::email-suggestion :form="$form" />` renders the suggestion.
+
+**Domain knowledge lives in the database** (`arkhe_email_domains`, prefixed and renameable): allowed / blocked / typo entries, seeded at install, learned from the bounce loop (3 hard bounces and no delivery block a domain; one delivery unblocks a learned block), managed from `/administration/email-domains`, and exchanged as JSON — `arkhe:email:export-domains --delta` exports only what this app learned, `arkhe:email:import-domains` merges with local-knowledge-wins rules and a dry-run report. Exported files carry no address, no counter, and no application identifier unless `arkhe-email.export.origin` is explicitly set.
+
+**Bounce loop.** Webhook adapters for Mailgun, Postmark, Amazon SES and Brevo (each mounted only when enabled), manual entry via `arkhe:email:record-bounce`, suppression on `MessageSending` (a Mailable that must always leave implements `BypassesSuppression`), learning on `MessageSent`, rehabilitation when the user edits their address.
+
+**Doctor & assistant.** `php artisan arkhe:doctor` diagnoses the wiring (15 checks: base-class adoption, hard-coded domain lists, external verifier references — the confidentiality constraint is a failing check — table collisions…), with a PHPStan-style baseline for existing applications. `php artisan arkhe:sync-ai` publishes the CLAUDE.md/AGENTS.md block, a confidentiality rule and the `arkhe-email` skill so a coding assistant plugs into the module instead of reimplementing it.
+
 ## Coexisting with a custom admin (Livewire starter kit)
 
 Arkhe is designed to **plug into** your existing admin shell rather than replace it. Two integration points:

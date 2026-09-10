@@ -9,6 +9,41 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 
 ## [Unreleased]
 
+### Added
+
+**Module « Délivrabilité e-mail »** (`Arkhe\Main\Email`, FRD
+FRD-arkhe-email-deliverability.md). Détection des adresses probablement
+erronées à la saisie (« vouliez-vous dire jean@hotmail.com ? »),
+apprentissage des bounces, suppression des envois vers les adresses mortes,
+listes de domaines partageables entre applications par fichier JSON — le
+tout **sans aucun appel réseau vers Adhocrat ni un service tiers** ; seule
+la résolution DNS du driver MX, opt-in, sort de la machine.
+
+Livré **désactivé** : une application qui met à jour sans lancer
+`arkhe:email:install` garde un comportement strictement identique
+(NFR-09). L'activation démarre en mode `observe` (journal seul), puis
+`suggest` (suggestions visibles, rien ne bloque), puis `enforce` — la
+décision se prend sur `arkhe:email:report`, procédure dans UPGRADE.md.
+
+Dans la boîte : pipeline de cinq drivers (historique de bounces, liste de
+domaines, règles de forme des fournisseurs, comparaison partie
+locale/prénom-nom en Damerau-Levenshtein, MX avec cache), règle
+`DeliverableEmail` (n'échoue que sur certitude), classes de base
+`ArkheFormRequest`/`ArkheForm` qui branchent la vérification sans une
+ligne dans les formulaires, composant `<x-arkhe::email-suggestion>`,
+écran d'administration des domaines (filtres, promotion learned→manuel,
+export/import avec rapport de simulation), seed d'environ 105 domaines,
+webhooks Mailgun/Postmark/SES/Brevo, exemption `BypassesSuppression`,
+commandes `arkhe:email:*` (install, seed, export, import --from-php,
+record-bounce, report) et `arkhe:make:email-form`.
+
+**`arkhe:doctor` et `arkhe:sync-ai`** — socle transversal aux modules :
+diagnostic du câblage en 15 vérifications (avec correctif actionnable par
+ligne, sortie `--json`, code de retour CI), baseline façon PHPStan pour
+les applications existantes, et synchronisation des fichiers à destination
+de l'assistant de codage (bloc `CLAUDE.md`/`AGENTS.md` entre marqueurs,
+rule de confidentialité, skill `arkhe-email`).
+
 ### Changed
 
 **L'authentification forte devient le défaut (rupture).** En 4.x, l'exigence

@@ -230,6 +230,37 @@ La page vit **hors** du groupe de routes verrouillé, puisqu'un portail qui redi
 ],
 ```
 
+## Délivrabilité e-mail
+
+Un module optionnel qui attrape les adresses mal saisies au moment de la frappe (`jena@hotmaij.com` → « vouliez-vous dire jean@hotmail.com ? »), apprend des bounces, et cesse d'envoyer vers les adresses que le monde a déjà refusées — **sans aucun appel réseau vers Adhocrat ni vers un service tiers de vérification à l'exécution**. La seule activité réseau possible est du DNS (MX), désactivée par défaut. La connaissance circule entre applications sous forme de fichier JSON, par le canal que choisit le client.
+
+**Inactif tant que non demandé.** `composer update` ne change rien (le module est livré désactivé) ; l'activation tient en une commande :
+
+```bash
+php artisan arkhe:email:install   # config (enabled, mode=observe), migrations, seed, fichiers assistant, doctor
+php artisan migrate && php artisan arkhe:email:seed-domains
+```
+
+Trois modes gouvernent sa présence — `observe` (journal seul, les utilisateurs ne voient rien), `suggest` (« vouliez-vous dire… ? » affiché, rien ne bloque), `enforce` (les adresses indélivrables sont refusées). Monter d'un cran est une décision humaine prise sur `php artisan arkhe:email:report` ; la procédure complète est dans UPGRADE.md.
+
+**Pipeline de vérification** — les drivers tournent du moins cher au plus cher ; le premier `Undeliverable` interrompt, un `Risky` (suggestion) prime sur un `Deliverable`, et « rien d'anormal » se dit toujours `Unverifiable` :
+
+| Driver | Question | Réseau |
+| --- | --- | --- |
+| `bounce_history` | cette adresse exacte a-t-elle déjà fait un hard bounce ? | non |
+| `domain_list` | le domaine est-il autorisé / bloqué / une faute de frappe connue ? | non |
+| `provider_rules` | Gmail/Microsoft/Yahoo/les FAI français auraient-ils pu émettre cette partie locale ? | non |
+| `local_part_name` | la partie locale est-elle un quasi-doublon du nom de l'utilisateur ? (Damerau-Levenshtein) | non |
+| `mx_record` | le domaine porte-t-il le moindre enregistrement de courrier ? | DNS, **opt-in** |
+
+**Les formulaires se branchent tout seuls.** Héritez d'`Arkhe\Main\Foundation\ArkheFormRequest` (ou d'`Arkhe\Main\Livewire\ArkheForm` côté Livewire) et tout attribut validant un `email` reçoit la pipeline automatiquement — `Risky` ne bloque jamais, seule une certitude le fait, et seulement en `enforce`. Une classe s'exempte avec `#[WithoutEmailVerification]` ; un formulaire se durcit seul avec `protected string $emailVerificationMode = 'enforce'`. `php artisan arkhe:make:email-form` génère un formulaire prêt à l'emploi, et `<x-arkhe::email-suggestion :form="$form" />` affiche la suggestion.
+
+**La connaissance des domaines vit en base** (`arkhe_email_domains`, préfixée et renommable) : entrées autorisées / bloquées / typo, seedées à l'installation, apprises de la boucle de bounces (3 hard bounces sans livraison bloquent un domaine ; une livraison débloque un blocage appris), gérées depuis `/administration/email-domains`, et échangées en JSON — `arkhe:email:export-domains --delta` n'exporte que ce que l'app a appris, `arkhe:email:import-domains` fusionne avec des règles où la connaissance locale prime, rapport de simulation à l'appui. Les fichiers exportés ne portent ni adresse, ni compteur, ni identifiant d'application sauf si `arkhe-email.export.origin` est explicitement renseigné.
+
+**Boucle de bounces.** Adaptateurs webhook pour Mailgun, Postmark, Amazon SES et Brevo (montés uniquement si activés), saisie manuelle via `arkhe:email:record-bounce`, suppression sur `MessageSending` (un Mailable qui doit toujours partir implémente `BypassesSuppression`), apprentissage sur `MessageSent`, réhabilitation quand l'utilisateur modifie son adresse.
+
+**Doctor et assistant.** `php artisan arkhe:doctor` diagnostique le câblage (15 vérifications : adoption des classes de base, listes de domaines en dur, références à un vérificateur externe — la contrainte de confidentialité est une vérification qui échoue —, collisions de tables…), avec une baseline façon PHPStan pour les applications existantes. `php artisan arkhe:sync-ai` publie le bloc CLAUDE.md/AGENTS.md, une rule de confidentialité et le skill `arkhe-email` pour qu'un assistant de codage se branche sur le module au lieu de le réimplémenter.
+
 ## Cohabiter avec une administration maison (starter kit Livewire)
 
 Arkhè est conçu pour **se brancher** sur votre coquille d'administration existante plutôt que la remplacer. Deux points d'intégration :

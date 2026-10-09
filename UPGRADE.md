@@ -2,6 +2,41 @@
 
 This document tracks breaking and behavioural changes between major versions of `adhocrat-io/arkhe-main`.
 
+## Vers la 6.0 — `spatie/laravel-permission` passe à la 8 (rupture)
+
+La contrainte du paquet devient `^8.0`. Une application hôte encore en 7.x
+monte donc en même temps que le paquet, sans possibilité de différer :
+
+```bash
+composer require adhocrat-io/arkhe-main:^6.0
+```
+
+La majeure amont est courte. Les contrats `Role` et `Permission` acceptent
+désormais `BackedEnum|string` sur `create()`, `findByName()` et
+`findOrCreate()` — le reste de l'API est identique, et la 8.x n'ajoute ni
+migration ni clé de config.
+
+**Ce que vous avez à faire, selon votre situation :**
+
+- **Vous utilisez les modèles Spatie tels quels, ou vous les étendez.** Rien.
+  C'est le cas courant, celui du paquet lui-même.
+
+- **Vous implémentez `Spatie\Permission\Contracts\Role` ou
+  `…\Contracts\Permission` à la main** (sans étendre les modèles). Alignez
+  les trois signatures sur `BackedEnum|string`, sinon PHP refuse la classe au
+  chargement.
+
+- **Vous passez des énumérations à ces méthodes avec un contournement**
+  (`->value` posé à l'appel, helper maison). Le contournement reste valide ;
+  vous pouvez maintenant le retirer.
+
+Le cache de permissions n'a pas de format versionné, mais videz-le par
+habitude après la montée :
+
+```bash
+php artisan permission:cache-reset
+```
+
 ## Vers la 5.0 — l'authentification forte devient le défaut (rupture)
 
 En 4.x, l'exigence d'un facteur fort (clé d'accès ou 2FA confirmée) existait

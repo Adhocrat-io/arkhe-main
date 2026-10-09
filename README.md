@@ -14,9 +14,9 @@ Bootstrap a Laravel backend with **users, roles and permissions** management, se
 | Laravel | `^12.0 || ^13.0` |
 | Livewire | `^4.2` |
 | Flux UI | `^2.1` (Free edition) |
-| Spatie laravel-permission | `^7.0` |
+| Spatie laravel-permission | `^8.0` |
 | ralphjsmit/laravel-seo | `^1.8` |
-| spatie/laravel-sitemap | `^8.1` |
+| spatie/laravel-sitemap | `^8.0` |
 | whitecube/laravel-cookie-consent | `^1.3` |
 
 ### Recommended starting point

@@ -7,6 +7,28 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 > `3.3.0`. Leur contenu a été publié avec la `3.3.0`, qui les englobe. Les liens
 > de comparaison en bas de page ne renvoient qu'aux tags qui existent.
 
+## [Unreleased]
+
+### Changed
+
+**`spatie/laravel-permission` passe à la 8 (rupture de dépendance).** La
+contrainte devient `^8.0` : une application hôte encore en 7.x monte en même
+temps que le paquet. La majeure amont est courte — les contrats `Role` et
+`Permission` acceptent désormais `BackedEnum|string` sur `create()`,
+`findByName()` et `findOrCreate()`, sans migration ni clé de config ajoutée.
+Rien à faire si vous utilisez ou étendez les modèles Spatie, ce qui est le cas
+du paquet ; seule une implémentation des contrats écrite à la main doit aligner
+ses signatures. Procédure dans UPGRADE.md.
+
+Dépendances de développement : Pest accepte la 5 (`pestphp/pest` et
+`pestphp/pest-plugin-laravel` en `^4.0 || ^5.0`), comme `orchestra/testbench`
+accepte déjà deux majeures. L'alternative est nécessaire, pas décorative :
+Pest 5 exige PHP `^8.4` et son plugin Laravel exige `laravel/framework
+^13.23`, alors que le paquet prend en charge PHP 8.3 et Laravel 12. Les
+branches concernées de la matrice CI restent donc sur Pest 4 ; la 5 ne sert
+que là où elle s'installe. Aucun effet pour les applications consommatrices —
+ce sont des `require-dev`.
+
 ## [5.0.0] — 2026-10-09
 
 ### Added

@@ -14,9 +14,9 @@ Démarrez un back-office Laravel avec la gestion des **utilisateurs, rôles et p
 | Laravel | `^12.0 || ^13.0` |
 | Livewire | `^4.2` |
 | Flux UI | `^2.1` (édition Free) |
-| Spatie laravel-permission | `^7.0` |
+| Spatie laravel-permission | `^8.0` |
 | ralphjsmit/laravel-seo | `^1.8` |
-| spatie/laravel-sitemap | `^8.1` |
+| spatie/laravel-sitemap | `^8.0` |
 | whitecube/laravel-cookie-consent | `^1.3` |
 
 ### Point de départ recommandé

@@ -18,9 +18,9 @@ beforeEach(function (): void {
     /** @var User $admin */
     $admin = User::query()->forceCreate([
         'first_name' => 'Form',
-        'last_name'  => 'Fixture',
-        'email'      => 'form-fixture@x.test',
-        'password'   => Hash::make('secret123'),
+        'last_name' => 'Fixture',
+        'email' => 'form-fixture@x.test',
+        'password' => Hash::make('secret123'),
     ]);
     $admin->assignRole('root');
 
@@ -37,8 +37,8 @@ function instantiateUserForm(): UserForm
 }
 
 it('produces required + min + confirmed-equivalent password rules on create', function (): void {
-    $form         = instantiateUserForm();
-    $form->id     = null;
+    $form = instantiateUserForm();
+    $form->id = null;
 
     $rules = $form->rules();
 
@@ -101,16 +101,16 @@ it('falls back to the humanised attribute when no translation exists', function 
 });
 
 it('returns empty password rules when editing with no new value', function (): void {
-    $form           = instantiateUserForm();
-    $form->id       = 42;
+    $form = instantiateUserForm();
+    $form->id = 42;
     $form->password = '';
 
     expect($form->rules()['password'])->toBe([]);
 });
 
 it('returns strength rules when editing with a new password', function (): void {
-    $form           = instantiateUserForm();
-    $form->id       = 42;
+    $form = instantiateUserForm();
+    $form->id = 42;
     $form->password = 'newpass123';
 
     $rules = $form->rules()['password'];
@@ -123,11 +123,11 @@ it('hydrates from an existing user via fillFromModel', function (): void {
     /** @var User $user */
     $user = User::query()->forceCreate([
         'first_name' => 'Luc',
-        'last_name'  => 'Adhocrat',
-        'email'      => 'luc-form@x.test',
-        'phone'      => '01-23',
-        'civility'   => 'Mr',
-        'password'   => Hash::make('x'),
+        'last_name' => 'Adhocrat',
+        'email' => 'luc-form@x.test',
+        'phone' => '01-23',
+        'civility' => 'Mr',
+        'password' => Hash::make('x'),
     ]);
     $user->assignRole('administrateur');
 
@@ -146,12 +146,12 @@ it('hydrates from an existing user via fillFromModel', function (): void {
 });
 
 it('exposes form state as an array suitable for the service', function (): void {
-    $form             = instantiateUserForm();
+    $form = instantiateUserForm();
     $form->first_name = 'A';
-    $form->last_name  = 'B';
-    $form->email      = 'ab@x.test';
-    $form->password   = 'pw';
-    $form->role       = 'user';
+    $form->last_name = 'B';
+    $form->email = 'ab@x.test';
+    $form->password = 'pw';
+    $form->role = 'user';
 
     $arr = $form->toPayload();
 
@@ -163,7 +163,7 @@ it('exposes form state as an array suitable for the service', function (): void 
 });
 
 it('emits an empty roles array when no role is selected', function (): void {
-    $form       = instantiateUserForm();
+    $form = instantiateUserForm();
     $form->role = null;
 
     expect($form->toPayload()['roles'])->toBe([]);

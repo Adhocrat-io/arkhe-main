@@ -16,9 +16,9 @@ function seedRepoUser(array $attrs = [], ?string $role = null): User
     /** @var User $u */
     $u = User::query()->forceCreate(array_merge([
         'first_name' => 'X',
-        'last_name'  => 'Y',
-        'email'      => 'rep-'.uniqid().'@x.test',
-        'password'   => Hash::make('x'),
+        'last_name' => 'Y',
+        'email' => 'rep-'.uniqid().'@x.test',
+        'password' => Hash::make('x'),
     ], $attrs));
 
     if ($role !== null) {
@@ -48,7 +48,7 @@ it('finds a user by id', function (): void {
 
 it('filters users by search across first_name, last_name, email', function (): void {
     seedRepoUser(['first_name' => 'Alice', 'email' => 'a@x.test']);
-    seedRepoUser(['last_name'  => 'Carpenter', 'email' => 'b@x.test']);
+    seedRepoUser(['last_name' => 'Carpenter', 'email' => 'b@x.test']);
     seedRepoUser(['email' => 'charlie@x.test']);
 
     $repo = app(UserRepositoryInterface::class);
@@ -78,7 +78,7 @@ it('orders by the requested field and direction', function (): void {
 
     $repo = app(UserRepositoryInterface::class);
 
-    $asc  = $repo->paginate([], 'last_name', 'asc')->items();
+    $asc = $repo->paginate([], 'last_name', 'asc')->items();
     $desc = $repo->paginate([], 'last_name', 'desc')->items();
 
     expect($asc[0]->last_name)->toBe('A');

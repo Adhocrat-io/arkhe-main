@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use Arkhe\Main\ArkheMainServiceProvider;
 use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Livewire\ListPermissions;
+use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
 use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Database\Eloquent\Model;
@@ -21,16 +24,15 @@ use Livewire\Livewire;
  * (see the same caveat in ListUsersTest). The hooks themselves don't care
  * which branch was taken — they're invoked by the same `save()` body.
  */
-
 beforeEach(function (): void {
     $this->app->make(ArkheRolesSeeder::class)->run();
 
     /** @var User $admin */
     $admin = User::query()->forceCreate([
         'first_name' => 'Ext',
-        'last_name'  => 'Tester',
-        'email'      => 'ext-tester@x.test',
-        'password'   => Hash::make('secret123'),
+        'last_name' => 'Tester',
+        'email' => 'ext-tester@x.test',
+        'password' => Hash::make('secret123'),
     ]);
     $admin->assignRole('root');
 
@@ -40,7 +42,7 @@ beforeEach(function (): void {
 function rebootArkhe(): void
 {
     $app = app();
-    $app->make(\Arkhe\Main\ArkheMainServiceProvider::class, ['app' => $app])
+    $app->make(ArkheMainServiceProvider::class, ['app' => $app])
         ->packageBooted();
 }
 
@@ -66,9 +68,9 @@ it('calls beforeSave + afterUpdate in order when editing an existing user', func
     /** @var User $target */
     $target = User::query()->forceCreate([
         'first_name' => 'Edit',
-        'last_name'  => 'Me',
-        'email'      => 'edit-me@x.test',
-        'password'   => Hash::make('secret123'),
+        'last_name' => 'Me',
+        'email' => 'edit-me@x.test',
+        'password' => Hash::make('secret123'),
     ]);
     $target->assignRole('user');
 
@@ -90,9 +92,9 @@ it('lets beforeSave mutate the payload before it reaches the service', function 
     /** @var User $target */
     $target = User::query()->forceCreate([
         'first_name' => 'Original',
-        'last_name'  => 'Name',
-        'email'      => 'mutate@x.test',
-        'password'   => Hash::make('secret123'),
+        'last_name' => 'Name',
+        'email' => 'mutate@x.test',
+        'password' => Hash::make('secret123'),
     ]);
     $target->assignRole('user');
 
@@ -111,9 +113,9 @@ it('calls beforeDelete just before the service deletes the user', function (): v
     /** @var User $target */
     $target = User::query()->forceCreate([
         'first_name' => 'Del',
-        'last_name'  => 'Me',
-        'email'      => 'del-me@x.test',
-        'password'   => Hash::make('secret123'),
+        'last_name' => 'Me',
+        'email' => 'del-me@x.test',
+        'password' => Hash::make('secret123'),
     ]);
     $target->assignRole('user');
 
@@ -130,8 +132,8 @@ it('calls beforeDelete just before the service deletes the user', function (): v
 it('exposes the same hooks on ListRoles and ListPermissions', function (): void {
     // Smoke check: the methods exist with the documented signatures so a
     // subclass can declare them without surprise.
-    $rolesHooks = new ReflectionClass(\Arkhe\Main\Livewire\ListRoles::class);
-    $permsHooks = new ReflectionClass(\Arkhe\Main\Livewire\ListPermissions::class);
+    $rolesHooks = new ReflectionClass(ListRoles::class);
+    $permsHooks = new ReflectionClass(ListPermissions::class);
 
     foreach (['beforeSave', 'afterCreate', 'afterUpdate', 'beforeDelete'] as $hook) {
         expect($rolesHooks->hasMethod($hook))->toBeTrue("ListRoles missing {$hook}");

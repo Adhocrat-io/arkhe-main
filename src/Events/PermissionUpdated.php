@@ -11,7 +11,5 @@ class PermissionUpdated
 {
     use Dispatchable;
 
-    public function __construct(public readonly Permission $permission)
-    {
-    }
+    public function __construct(public readonly Permission $permission) {}
 }

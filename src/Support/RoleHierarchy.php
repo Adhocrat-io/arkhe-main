@@ -65,9 +65,9 @@ final class RoleHierarchy
      */
     public static function ranks(): array
     {
-        $order   = self::order();
+        $order = self::order();
         $highest = count($order) - 1;
-        $map     = [];
+        $map = [];
 
         foreach ($order as $index => $name) {
             $map[$name] = $highest - $index;
@@ -95,10 +95,10 @@ final class RoleHierarchy
         $order = array_values(array_filter($order, static fn (string $r): bool => $r !== $role));
 
         if ($after !== null) {
-            $idx    = array_search($after, $order, true);
+            $idx = array_search($after, $order, true);
             $insert = $idx === false ? count($order) : $idx + 1;
         } elseif ($before !== null) {
-            $idx    = array_search($before, $order, true);
+            $idx = array_search($before, $order, true);
             $insert = $idx === false ? count($order) : $idx;
         } else {
             $insert = count($order);

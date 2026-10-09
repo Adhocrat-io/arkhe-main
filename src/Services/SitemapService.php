@@ -63,7 +63,5 @@ class SitemapService
      * Hook for host apps / subclasses: customize the generator (extra URLs,
      * crawl profile, filters) before it writes. Default is a no-op.
      */
-    protected function configureGenerator(SitemapGenerator $generator): void
-    {
-    }
+    protected function configureGenerator(SitemapGenerator $generator): void {}
 }

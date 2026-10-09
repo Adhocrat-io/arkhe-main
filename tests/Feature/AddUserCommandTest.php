@@ -9,10 +9,10 @@ beforeEach(fn () => $this->app->make(ArkheRolesSeeder::class)->run());
 
 it('creates a user from CLI options without any prompt', function (): void {
     $this->artisan('arkhe:main:add-user', [
-        '--email'    => 'cli-user@x.test',
-        '--first'    => 'Cli',
-        '--last'     => 'User',
-        '--role'     => 'administrateur',
+        '--email' => 'cli-user@x.test',
+        '--first' => 'Cli',
+        '--last' => 'User',
+        '--role' => 'administrateur',
         '--password' => 'secret123',
     ])->assertSuccessful();
 
@@ -23,10 +23,10 @@ it('creates a user from CLI options without any prompt', function (): void {
 
 it('rejects an unknown role', function (): void {
     $this->artisan('arkhe:main:add-user', [
-        '--email'    => 'bad-role@x.test',
-        '--first'    => 'X',
-        '--last'     => 'Y',
-        '--role'     => 'sysadmin',
+        '--email' => 'bad-role@x.test',
+        '--first' => 'X',
+        '--last' => 'Y',
+        '--role' => 'sysadmin',
         '--password' => 'secret123',
     ])->assertFailed();
 
@@ -53,10 +53,10 @@ it('does not enforce the role hierarchy when running from CLI', function (): voi
     // (rank 3) for an actor at rank -1 (no actor). The CLI bypass lets it
     // through.
     $this->artisan('arkhe:main:add-user', [
-        '--email'    => 'cli-root@x.test',
-        '--first'    => 'Cli',
-        '--last'     => 'Root',
-        '--role'     => 'root',
+        '--email' => 'cli-root@x.test',
+        '--first' => 'Cli',
+        '--last' => 'Root',
+        '--role' => 'root',
         '--password' => 'secret123',
     ])->assertSuccessful();
 

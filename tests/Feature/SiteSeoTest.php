@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
-use Arkhe\Main\Livewire\SiteSeo;
 use Arkhe\Main\Models\ArkheSiteSeo;
 use Arkhe\Main\Services\SiteSeoService;
 use Arkhe\Main\Tests\Stubs\User;
@@ -21,9 +20,9 @@ function makeSeoUser(?string $role = null): User
     /** @var User $u */
     $u = User::query()->forceCreate([
         'first_name' => 'Seo',
-        'last_name'  => 'User',
-        'email'      => 'seo-'.uniqid().'@x.test',
-        'password'   => Hash::make('x'),
+        'last_name' => 'User',
+        'email' => 'seo-'.uniqid().'@x.test',
+        'password' => Hash::make('x'),
     ]);
 
     if ($role !== null) {
@@ -58,10 +57,10 @@ it('updates the singleton row without creating duplicates', function (): void {
 
 it('fills empty SEOData fields with site defaults', function (): void {
     app(SiteSeoService::class)->update([
-        'site_name'        => 'Acme',
-        'description'      => 'Default description',
-        'author'           => 'Acme Team',
-        'image'            => '/og.png',
+        'site_name' => 'Acme',
+        'description' => 'Default description',
+        'author' => 'Acme Team',
+        'image' => '/og.png',
         'twitter_username' => 'acme',
     ]);
 
@@ -78,7 +77,7 @@ it('fills empty SEOData fields with site defaults', function (): void {
 it('does not overwrite SEOData fields that already carry a value', function (): void {
     app(SiteSeoService::class)->update([
         'description' => 'Site default',
-        'image'       => '/site-default.png',
+        'image' => '/site-default.png',
     ]);
 
     $data = new SEOData(
@@ -116,7 +115,7 @@ it('uses the title suffix as the title when SEOData has no title', function (): 
 it('loads the singleton row into the form on mount', function (): void {
     $root = makeSeoUser('root');
     app(SiteSeoService::class)->update([
-        'site_name'    => 'Acme',
+        'site_name' => 'Acme',
         'title_suffix' => '| Acme',
     ]);
 

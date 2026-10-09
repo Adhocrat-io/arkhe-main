@@ -19,9 +19,9 @@ function makeCookieUser(?string $role = null): User
     /** @var User $u */
     $u = User::query()->forceCreate([
         'first_name' => 'Cookie',
-        'last_name'  => 'User',
-        'email'      => 'cookie-'.uniqid().'@x.test',
-        'password'   => Hash::make('x'),
+        'last_name' => 'User',
+        'email' => 'cookie-'.uniqid().'@x.test',
+        'password' => Hash::make('x'),
     ]);
 
     if ($role !== null) {

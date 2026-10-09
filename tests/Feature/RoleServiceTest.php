@@ -29,7 +29,7 @@ it('creates a role with attached permissions', function (): void {
     Permission::query()->create(['name' => 'delete-posts', 'guard_name' => 'web']);
 
     $role = app(RoleService::class)->create([
-        'name'        => 'editor',
+        'name' => 'editor',
         'permissions' => ['edit-posts', 'delete-posts'],
     ]);
 
@@ -70,7 +70,7 @@ it('allows attaching permissions to a canonical role', function (): void {
 it('deletes a non-canonical role and dispatches RoleDeleted', function (): void {
     Event::fake([RoleDeleted::class]);
     $role = app(RoleService::class)->create(['name' => 'temp']);
-    $id   = $role->id;
+    $id = $role->id;
 
     app(RoleService::class)->delete($role);
 

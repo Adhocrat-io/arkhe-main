@@ -38,7 +38,7 @@ it('persists updates to the SEO row', function (): void {
     $model = SeoModel::query()->create(['label' => 'Pricing']);
 
     $model->seo->update([
-        'title'       => 'Pricing — Acme',
+        'title' => 'Pricing — Acme',
         'description' => 'Our plans.',
     ]);
 

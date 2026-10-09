@@ -6,7 +6,6 @@ namespace Arkhe\Main\Repositories;
 
 use Arkhe\Main\Contracts\RoleRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 use Spatie\Permission\Models\Role;
 
 class RoleRepository implements RoleRepositoryInterface
@@ -58,6 +57,6 @@ class RoleRepository implements RoleRepositoryInterface
 
     public function newModel(): Role
     {
-        return new Role();
+        return new Role;
     }
 }

@@ -6,6 +6,7 @@ namespace Arkhe\Main\Livewire;
 
 use Arkhe\Main\Concerns\RequiresStrongAuth;
 use Arkhe\Main\Livewire\Forms\SiteSeoForm;
+use Arkhe\Main\Models\ArkheSiteSeo;
 use Arkhe\Main\Services\SiteSeoService;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
@@ -56,9 +57,7 @@ class SiteSeo extends Component
     /**
      * @param  array<string, mixed>  $payload
      */
-    protected function afterSave(\Arkhe\Main\Models\ArkheSiteSeo $row, array $payload): void
-    {
-    }
+    protected function afterSave(ArkheSiteSeo $row, array $payload): void {}
 
     public function render(): View
     {

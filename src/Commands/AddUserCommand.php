@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Commands;
 
+use App\Models\User;
 use Arkhe\Main\Services\UserService;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
@@ -16,7 +18,7 @@ use function Laravel\Prompts\text;
 
 class AddUserCommand extends Command
 {
-    protected $signature  = 'arkhe:main:add-user
+    protected $signature = 'arkhe:main:add-user
                              {--email=    : Email of the new user}
                              {--first=    : First name}
                              {--last=     : Last name}
@@ -42,7 +44,7 @@ class AddUserCommand extends Command
         );
 
         $firstName = $this->option('first') ?: text(label: 'First name', required: true);
-        $lastName  = $this->option('last')  ?: text(label: 'Last name',  required: true);
+        $lastName = $this->option('last') ?: text(label: 'Last name', required: true);
 
         $availableRoles = Role::query()->orderBy('name')->pluck('name')->all();
         if ($availableRoles === []) {
@@ -84,10 +86,10 @@ class AddUserCommand extends Command
 
         $user = $service->create([
             'first_name' => $firstName,
-            'last_name'  => $lastName,
-            'email'      => $email,
-            'password'   => $rawPassword,
-            'roles'      => [$role],
+            'last_name' => $lastName,
+            'email' => $email,
+            'password' => $rawPassword,
+            'roles' => [$role],
         ]);
 
         $this->components->info("Utilisateur créé : {$user->email} (rôle: {$role}).");
@@ -107,7 +109,7 @@ class AddUserCommand extends Command
         }
 
         /** @var class-string<Model> $default */
-        $default = $config->get('auth.providers.users.model', \App\Models\User::class);
+        $default = $config->get('auth.providers.users.model', User::class);
 
         return $default;
     }
@@ -118,6 +120,6 @@ class AddUserCommand extends Command
     private function modelUsesHasRoles(string $modelClass): bool
     {
         return method_exists($modelClass, 'assignRole')
-            || in_array(\Spatie\Permission\Traits\HasRoles::class, class_uses_recursive($modelClass), true);
+            || in_array(HasRoles::class, class_uses_recursive($modelClass), true);
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Commands;
 
-use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
 use App\Models\User;
+use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
 use Composer\Autoload\ClassLoader;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;

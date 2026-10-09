@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
+use Arkhe\Main\Livewire\ListRoles;
 use Arkhe\Main\Livewire\ListUsers;
 use Arkhe\Main\Services\UserService;
 use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 function actingAs(User $user): User
 {
@@ -247,9 +249,9 @@ it('keeps a role canonical flag across a round trip', function (): void {
     $admin = makeUser([], 'root');
 
     $component = Livewire::actingAs($admin)
-        ->test(\Arkhe\Main\Livewire\ListRoles::class);
+        ->test(ListRoles::class);
 
-    $canonical = \Spatie\Permission\Models\Role::query()->where('name', 'administrateur')->first();
+    $canonical = Role::query()->where('name', 'administrateur')->first();
 
     if ($canonical === null) {
         $this->markTestSkipped('No canonical role seeded.');

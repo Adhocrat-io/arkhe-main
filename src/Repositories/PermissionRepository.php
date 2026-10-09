@@ -35,6 +35,6 @@ class PermissionRepository implements PermissionRepositoryInterface
 
     public function newModel(): Permission
     {
-        return new Permission();
+        return new Permission;
     }
 }

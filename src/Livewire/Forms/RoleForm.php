@@ -41,9 +41,9 @@ class RoleForm extends Form
             : ['required', 'string', 'max:120', Rule::unique('roles', 'name')->ignore($this->id)];
 
         return [
-            'name'          => $nameRules,
-            'guard_name'    => ['required', 'string', 'max:60'],
-            'permissions'   => ['array'],
+            'name' => $nameRules,
+            'guard_name' => ['required', 'string', 'max:60'],
+            'permissions' => ['array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
         ];
     }
@@ -66,10 +66,10 @@ class RoleForm extends Form
 
     public function fillFromModel(Role $role, bool $isCanonical): void
     {
-        $this->id           = (int) $role->getKey();
-        $this->name         = (string) $role->name;
-        $this->guard_name   = (string) $role->guard_name;
-        $this->permissions  = $role->permissions->pluck('name')->all();
+        $this->id = (int) $role->getKey();
+        $this->name = (string) $role->name;
+        $this->guard_name = (string) $role->guard_name;
+        $this->permissions = $role->permissions->pluck('name')->all();
         $this->is_canonical = $isCanonical;
     }
 
@@ -84,8 +84,8 @@ class RoleForm extends Form
     public function toPayload(): array
     {
         return [
-            'name'        => $this->name,
-            'guard_name'  => $this->guard_name,
+            'name' => $this->name,
+            'guard_name' => $this->guard_name,
             'permissions' => $this->permissions,
         ];
     }

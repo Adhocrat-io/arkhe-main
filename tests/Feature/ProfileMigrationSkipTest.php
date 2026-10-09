@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Schema;
  * *missing* ones should be added — never an `addColumn` on something that
  * already exists, which would crash with a SQL error mid-migration.
  */
-
 function loadProfileMigration(): object
 {
     // The .stub file is plain PHP (starts with <?php and returns an

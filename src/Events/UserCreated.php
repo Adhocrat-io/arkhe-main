@@ -11,7 +11,5 @@ class UserCreated
 {
     use Dispatchable;
 
-    public function __construct(public readonly Model $user)
-    {
-    }
+    public function __construct(public readonly Model $user) {}
 }

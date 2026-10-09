@@ -25,7 +25,6 @@ use Spatie\Permission\Models\Role;
 class ListUsers extends Component
 {
     use RequiresStrongAuth;
-
     use WithFileUploads;
     use WithPagination;
 

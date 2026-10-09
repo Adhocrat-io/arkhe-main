@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Arkhe\Main\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Singleton table (single row, id=1) holding the site-wide SEO defaults edited
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $robots
  * @property string|null $twitter_username
  * @property string|null $favicon
- * @property \Illuminate\Support\Carbon|null $sitemap_generated_at
+ * @property Carbon|null $sitemap_generated_at
  */
 class ArkheSiteSeo extends Model
 {

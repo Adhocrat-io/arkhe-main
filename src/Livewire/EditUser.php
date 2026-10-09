@@ -29,7 +29,6 @@ use Spatie\Permission\Models\Role;
 class EditUser extends Component
 {
     use RequiresStrongAuth;
-
     use WithFileUploads;
 
     public UserForm $userForm;

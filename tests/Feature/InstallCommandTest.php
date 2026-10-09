@@ -41,9 +41,9 @@ it('creates a root user with the root role assigned', function (): void {
     /** @var User $user */
     $user = User::query()->forceCreate([
         'first_name' => 'Luc',
-        'last_name'  => 'Adhocrat',
-        'email'      => 'luc@adhocrat.io',
-        'password'   => bcrypt('password123'),
+        'last_name' => 'Adhocrat',
+        'email' => 'luc@adhocrat.io',
+        'password' => bcrypt('password123'),
     ]);
 
     $user->assignRole(config('arkhe.roles.root'));

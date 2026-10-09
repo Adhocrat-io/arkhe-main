@@ -35,8 +35,8 @@ it('renames a permission on update', function (): void {
 
 it('deletes a permission and cascades on role pivots', function (): void {
     Event::fake([PermissionDeleted::class]);
-    $p     = app(PermissionService::class)->create(['name' => 'editable']);
-    $role  = Role::query()->where('name', 'root')->first();
+    $p = app(PermissionService::class)->create(['name' => 'editable']);
+    $role = Role::query()->where('name', 'root')->first();
     $role->givePermissionTo($p);
 
     expect($role->fresh()->permissions->pluck('name')->all())->toContain('editable');

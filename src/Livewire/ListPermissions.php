@@ -11,6 +11,7 @@ use Arkhe\Main\Services\PermissionService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Permission;
 
 /**
  * @deprecated since 4.0 — permissions are viewed and attached from the roles
@@ -24,7 +25,6 @@ use Livewire\WithPagination;
 class ListPermissions extends Component
 {
     use RequiresStrongAuth;
-
     use WithPagination;
 
     public PermissionForm $permissionForm;
@@ -59,7 +59,7 @@ class ListPermissions extends Component
         $this->resetErrorBag();
         $this->permissionForm->reset();
         $this->selectedPermission = null;
-        $this->showFormModal      = true;
+        $this->showFormModal = true;
     }
 
     public function openEdit(int $id, PermissionRepositoryInterface $repo): void
@@ -74,7 +74,7 @@ class ListPermissions extends Component
         $this->resetErrorBag();
         $this->permissionForm->fillFromModel($permission);
         $this->selectedPermission = $id;
-        $this->showFormModal      = true;
+        $this->showFormModal = true;
     }
 
     public function save(PermissionRepositoryInterface $repo, PermissionService $service): void
@@ -110,7 +110,7 @@ class ListPermissions extends Component
         $this->authorize('delete-permission');
 
         $this->selectedPermission = $id;
-        $this->showDeleteModal    = true;
+        $this->showDeleteModal = true;
     }
 
     public function delete(PermissionRepositoryInterface $repo, PermissionService $service): void
@@ -127,7 +127,7 @@ class ListPermissions extends Component
             $service->delete($permission);
         }
 
-        $this->showDeleteModal    = false;
+        $this->showDeleteModal = false;
         $this->selectedPermission = null;
         $this->resetPage();
     }
@@ -148,20 +148,14 @@ class ListPermissions extends Component
     /**
      * @param  array<string, mixed>  $payload
      */
-    protected function afterCreate(\Spatie\Permission\Models\Permission $permission, array $payload): void
-    {
-    }
+    protected function afterCreate(Permission $permission, array $payload): void {}
 
     /**
      * @param  array<string, mixed>  $payload
      */
-    protected function afterUpdate(\Spatie\Permission\Models\Permission $permission, array $payload): void
-    {
-    }
+    protected function afterUpdate(Permission $permission, array $payload): void {}
 
-    protected function beforeDelete(\Spatie\Permission\Models\Permission $permission): void
-    {
-    }
+    protected function beforeDelete(Permission $permission): void {}
 
     public function updatedSearch(): void
     {

@@ -6,8 +6,8 @@ use Arkhe\Main\Database\Seeders\ArkheRolesSeeder;
 use Arkhe\Main\Jobs\GenerateSitemap;
 use Arkhe\Main\Livewire\Sitemap;
 use Arkhe\Main\Models\ArkheSiteSeo;
-use Arkhe\Main\Services\SiteSeoService;
 use Arkhe\Main\Services\SitemapService;
+use Arkhe\Main\Services\SiteSeoService;
 use Arkhe\Main\Tests\Stubs\User;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Hash;
@@ -23,9 +23,9 @@ function makeSitemapUser(?string $role = null): User
     /** @var User $u */
     $u = User::query()->forceCreate([
         'first_name' => 'Map',
-        'last_name'  => 'User',
-        'email'      => 'sitemap-'.uniqid().'@x.test',
-        'password'   => Hash::make('x'),
+        'last_name' => 'User',
+        'email' => 'sitemap-'.uniqid().'@x.test',
+        'password' => Hash::make('x'),
     ]);
 
     if ($role !== null) {
@@ -115,7 +115,7 @@ it('stamps sitemap_generated_at when the service finishes a run', function (): v
 
     try {
         app(SitemapService::class)->generate();
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         // The generator hits the network. In CI / offline environments it
         // may fail before writing — the *stamping* is what we test here,
         // and that runs after writeToFile() returns. If write fails the

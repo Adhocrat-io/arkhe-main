@@ -22,7 +22,6 @@ use Spatie\Permission\Models\Role;
 class ListRoles extends Component
 {
     use RequiresStrongAuth;
-
     use WithPagination;
 
     public RoleForm $roleForm;
@@ -75,7 +74,7 @@ class ListRoles extends Component
 
         $this->resetErrorBag();
         $this->roleForm->reset();
-        $this->selectedRole  = null;
+        $this->selectedRole = null;
         $this->showFormModal = true;
     }
 
@@ -93,7 +92,7 @@ class ListRoles extends Component
 
         $this->resetErrorBag();
         $this->roleForm->fillFromModel($role, $service->isCanonical($role->name));
-        $this->selectedRole  = $id;
+        $this->selectedRole = $id;
         $this->showFormModal = true;
     }
 
@@ -139,7 +138,7 @@ class ListRoles extends Component
             return;
         }
 
-        $this->selectedRole    = $id;
+        $this->selectedRole = $id;
         $this->showDeleteModal = true;
     }
 
@@ -167,7 +166,7 @@ class ListRoles extends Component
         }
 
         $this->showDeleteModal = false;
-        $this->selectedRole    = null;
+        $this->selectedRole = null;
         $this->resetPage();
     }
 
@@ -177,7 +176,7 @@ class ListRoles extends Component
     public function cancelDelete(): void
     {
         $this->showDeleteModal = false;
-        $this->selectedRole    = null;
+        $this->selectedRole = null;
     }
 
     // ─── Extensibility hooks ─────────────────────────────────────────────
@@ -196,20 +195,14 @@ class ListRoles extends Component
     /**
      * @param  array<string, mixed>  $payload
      */
-    protected function afterCreate(\Spatie\Permission\Models\Role $role, array $payload): void
-    {
-    }
+    protected function afterCreate(Role $role, array $payload): void {}
 
     /**
      * @param  array<string, mixed>  $payload
      */
-    protected function afterUpdate(\Spatie\Permission\Models\Role $role, array $payload): void
-    {
-    }
+    protected function afterUpdate(Role $role, array $payload): void {}
 
-    protected function beforeDelete(\Spatie\Permission\Models\Role $role): void
-    {
-    }
+    protected function beforeDelete(Role $role): void {}
 
     public function updatedSearch(): void
     {
@@ -311,10 +304,10 @@ class ListRoles extends Component
         // and their absence would be an `Undefined variable` on its side.
         // They will go along with the deprecated methods.
         return view('arkhe::livewire.list-roles', [
-            'roles'              => $paginator,
-            'availablePerms'     => $permissions->all()->pluck('name'),
-            'canonicalResolver'  => fn (string $name): bool => $service->isCanonical($name),
-            'stats'              => $this->globalStats(),
+            'roles' => $paginator,
+            'availablePerms' => $permissions->all()->pluck('name'),
+            'canonicalResolver' => fn (string $name): bool => $service->isCanonical($name),
+            'stats' => $this->globalStats(),
         ])->layout((string) config('arkhe.admin.layout', config('arkhe.layout', 'arkhe::layouts.app')));
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Arkhe\Main\Repositories;
 
+use App\Models\User;
 use Arkhe\Main\Contracts\UserRepositoryInterface;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -28,8 +29,7 @@ class UserRepository implements UserRepositoryInterface
 
     public function __construct(
         private readonly ConfigRepository $config,
-    ) {
-    }
+    ) {}
 
     public function paginate(
         array $filters = [],
@@ -82,7 +82,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $class = $this->resolveUserModel();
 
-        return new $class();
+        return new $class;
     }
 
     private function query(): Builder
@@ -103,7 +103,7 @@ class UserRepository implements UserRepositoryInterface
         }
 
         /** @var class-string<Model> $default */
-        $default = $this->config->get('auth.providers.users.model', \App\Models\User::class);
+        $default = $this->config->get('auth.providers.users.model', User::class);
 
         return $default;
     }

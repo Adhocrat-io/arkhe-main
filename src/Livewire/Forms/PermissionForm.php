@@ -22,15 +22,15 @@ class PermissionForm extends Form
     public function rules(): array
     {
         return [
-            'name'       => ['required', 'string', 'max:120', Rule::unique('permissions', 'name')->ignore($this->id)],
+            'name' => ['required', 'string', 'max:120', Rule::unique('permissions', 'name')->ignore($this->id)],
             'guard_name' => ['required', 'string', 'max:60'],
         ];
     }
 
     public function fillFromModel(Permission $permission): void
     {
-        $this->id         = (int) $permission->getKey();
-        $this->name       = (string) $permission->name;
+        $this->id = (int) $permission->getKey();
+        $this->name = (string) $permission->name;
         $this->guard_name = (string) $permission->guard_name;
     }
 
@@ -45,7 +45,7 @@ class PermissionForm extends Form
     public function toPayload(): array
     {
         return [
-            'name'       => $this->name,
+            'name' => $this->name,
             'guard_name' => $this->guard_name,
         ];
     }

@@ -21,9 +21,9 @@ function makeRbacUser(?string $role = null): User
     /** @var User $u */
     $u = User::query()->forceCreate([
         'first_name' => 'X',
-        'last_name'  => 'Y',
-        'email'      => 'rbac-'.uniqid().'@x.test',
-        'password'   => Hash::make('x'),
+        'last_name' => 'Y',
+        'email' => 'rbac-'.uniqid().'@x.test',
+        'password' => Hash::make('x'),
     ]);
 
     if ($role !== null) {
@@ -171,7 +171,7 @@ it('creates a permission through the ListPermissions flow', function (): void {
 
 it('deletes a permission through the ListPermissions flow', function (): void {
     $root = makeRbacUser('root');
-    $p    = Permission::query()->create(['name' => 'temp', 'guard_name' => 'web']);
+    $p = Permission::query()->create(['name' => 'temp', 'guard_name' => 'web']);
 
     Livewire::actingAs($root)
         ->test(ListPermissions::class)
@@ -180,4 +180,3 @@ it('deletes a permission through the ListPermissions flow', function (): void {
 
     expect(Permission::query()->find($p->id))->toBeNull();
 });
-

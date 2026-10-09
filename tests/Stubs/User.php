@@ -18,8 +18,8 @@ class User extends Authenticatable
     protected $guarded = [];
 
     protected $casts = [
-        'date_of_birth'           => 'date',
-        'email_verified_at'       => 'datetime',
+        'date_of_birth' => 'date',
+        'email_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
     ];
 

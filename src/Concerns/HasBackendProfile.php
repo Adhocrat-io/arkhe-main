@@ -37,7 +37,7 @@ trait HasBackendProfile
     public function getInitialsAttribute(): string
     {
         $first = mb_substr((string) ($this->first_name ?? ''), 0, 1);
-        $last  = mb_substr((string) ($this->last_name ?? ''), 0, 1);
+        $last = mb_substr((string) ($this->last_name ?? ''), 0, 1);
 
         return mb_strtoupper($first.$last);
     }

@@ -42,10 +42,10 @@ class Sitemap extends Component
         $row = $repository->get();
 
         return view('arkhe::livewire.sitemap', [
-            'enabled'      => $service->isEnabled(),
-            'url'          => $service->url(),
-            'outputPath'   => $service->outputPath(),
-            'schedule'     => (string) config('arkhe.sitemap.schedule', '0 3 * * *'),
+            'enabled' => $service->isEnabled(),
+            'url' => $service->url(),
+            'outputPath' => $service->outputPath(),
+            'schedule' => (string) config('arkhe.sitemap.schedule', '0 3 * * *'),
             'lastGenerated' => $row->sitemap_generated_at,
         ])->layout((string) config('arkhe.admin.layout', config('arkhe.layout', 'arkhe::layouts.app')));
     }

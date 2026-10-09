@@ -85,13 +85,13 @@ class Cookies extends Component
     {
         $categories = collect($registrar->getCategories())->map(function ($category): array {
             return [
-                'key'         => $category->key(),
-                'title'       => (string) $category->getAttribute('title'),
+                'key' => $category->key(),
+                'title' => (string) $category->getAttribute('title'),
                 'description' => (string) ($category->getAttribute('description') ?? ''),
-                'cookies'     => collect($category->getCookies())->map(function ($cookie): array {
+                'cookies' => collect($category->getCookies())->map(function ($cookie): array {
                     return [
-                        'name'        => (string) ($cookie->name ?? '—'),
-                        'duration'    => $this->humanDuration(isset($cookie->duration) ? (int) $cookie->duration : null),
+                        'name' => (string) ($cookie->name ?? '—'),
+                        'duration' => $this->humanDuration(isset($cookie->duration) ? (int) $cookie->duration : null),
                         'description' => $this->resolveDescription($cookie->getAttribute('description')),
                     ];
                 })->all(),

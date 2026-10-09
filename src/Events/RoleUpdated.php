@@ -11,7 +11,5 @@ class RoleUpdated
 {
     use Dispatchable;
 
-    public function __construct(public readonly Role $role)
-    {
-    }
+    public function __construct(public readonly Role $role) {}
 }

@@ -731,6 +731,28 @@ php artisan arkhe:main:install   # re-run, answer "no" to steps already done
 
 If you'd rather skip the prompts, the manual snippets in the [Styling](#styling--tailwind--flux) and [Wiring up your User model](#wiring-up-your-user-model) sections give you the exact lines to add.
 
+### From V4 to V5
+
+One breaking change — **strong authentication is now the default**. In 4.x the
+requirement for a strong factor (passkey or confirmed 2FA) existed but stayed
+off until you set `ARKHE_STRONG_AUTH=true`; in 5.0 it is on, and it is the
+opt-out you declare:
+
+```bash
+composer update adhocrat-io/arkhe-main:^5.0
+# keep the 4.x behaviour, if you must:
+# ARKHE_STRONG_AUTH=false
+```
+
+Nobody gets locked out: an account with no factor stays logged in and lands on
+the explanation screen, which leads to enrolment. **A config published under
+4.x carries the old default (`false`) and wins over the package's** — edit the
+key yourself to adopt the new one. Enrol your own account before deploying.
+
+The release also ships the opt-in **Email Deliverability** module, which is
+inert until `arkhe:email:install` runs. Full procedure for both in
+[UPGRADE.md](UPGRADE.md).
+
 ### From V3 to V4
 
 Two breaking changes — the dashboard left the package, and `toArray()` became

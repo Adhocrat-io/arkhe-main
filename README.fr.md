@@ -727,6 +727,28 @@ php artisan arkhe:main:install   # relancer, répondre « non » aux étapes dé
 
 Si vous préférez éviter les questions, les extraits manuels des sections [Habillage](#habillage--tailwind--flux) et [Brancher votre modèle User](#brancher-votre-modèle-user) donnent les lignes exactes à ajouter.
 
+### De la V4 à la V5
+
+Une seule rupture — **l'authentification forte devient le défaut**. En 4.x,
+l'exigence d'un facteur fort (clé d'accès ou 2FA confirmée) existait mais
+restait désactivée tant qu'on ne posait pas `ARKHE_STRONG_AUTH=true` ; en 5.0
+elle s'applique, et c'est la désactivation qui se déclare :
+
+```bash
+composer update adhocrat-io/arkhe-main:^5.0
+# pour conserver le comportement 4.x, si nécessaire :
+# ARKHE_STRONG_AUTH=false
+```
+
+Personne n'est enfermé : un compte sans facteur reste connecté et arrive sur
+l'écran d'explication, qui le mène à l'enrôlement. **Une config publiée en 4.x
+porte l'ancien défaut (`false`) et l'emporte sur celui du paquet** — modifiez
+la clé pour adopter le nouveau. Enrôlez-vous avant de déployer.
+
+La version embarque aussi le module **Délivrabilité e-mail**, opt-in : il reste
+inerte tant que `arkhe:email:install` n'a pas tourné. Procédure complète pour
+les deux dans [UPGRADE.md](UPGRADE.md).
+
 ### De la V3 à la V4
 
 Deux ruptures — le tableau de bord quitte le paquet, et `toArray()` devient

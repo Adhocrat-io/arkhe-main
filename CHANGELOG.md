@@ -7,7 +7,7 @@ All notable changes to `adhocrat-io/arkhe-main` are documented in this file. The
 > `3.3.0`. Leur contenu a été publié avec la `3.3.0`, qui les englobe. Les liens
 > de comparaison en bas de page ne renvoient qu'aux tags qui existent.
 
-## [Unreleased]
+## [6.0.0] — 2026-10-09
 
 ### Changed
 
@@ -661,7 +661,8 @@ the Livewire 4 page rewrites, and the lifecycle-hook extensibility layer.
 - Pest 4 test suite covering install command, ListUsers CRUD/auth/search/sort, and `HasBackendProfile`.
 - GitHub Actions matrix: PHP 8.3/8.4 × Laravel 12/13 × prefer-lowest/prefer-stable, with an optional dev-master job.
 
-[Unreleased]: https://github.com/adhocrat-io/arkhe-main/compare/5.0.0...HEAD
+[Unreleased]: https://github.com/adhocrat-io/arkhe-main/compare/6.0.0...HEAD
+[6.0.0]: https://github.com/adhocrat-io/arkhe-main/compare/5.0.0...6.0.0
 [5.0.0]: https://github.com/adhocrat-io/arkhe-main/compare/4.0.0...5.0.0
 [4.0.0]: https://github.com/adhocrat-io/arkhe-main/compare/3.3.0...4.0.0
 [3.3.0]: https://github.com/adhocrat-io/arkhe-main/compare/3.1.2...3.3.0

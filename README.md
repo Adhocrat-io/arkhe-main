@@ -731,6 +731,23 @@ php artisan arkhe:main:install   # re-run, answer "no" to steps already done
 
 If you'd rather skip the prompts, the manual snippets in the [Styling](#styling--tailwind--flux) and [Wiring up your User model](#wiring-up-your-user-model) sections give you the exact lines to add.
 
+### From V5 to V6
+
+One breaking change, and it is not ours: **`spatie/laravel-permission` moves
+to `^8.0`**, so a host app still on 7.x moves up at the same time.
+
+```bash
+composer require adhocrat-io/arkhe-main:^6.0
+php artisan permission:cache-reset
+```
+
+That upstream major is a short one — the `Role` and `Permission` contracts now
+take `BackedEnum|string` on `create()`, `findByName()` and `findOrCreate()`,
+with no migration and no new config key. It asks nothing of you if you use or
+extend the Spatie models, which is the common case and the package's own; only
+a hand-written implementation of either contract has signatures to realign.
+Details in [UPGRADE.md](UPGRADE.md).
+
 ### From V4 to V5
 
 One breaking change — **strong authentication is now the default**. In 4.x the

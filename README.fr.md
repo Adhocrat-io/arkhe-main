@@ -727,6 +727,23 @@ php artisan arkhe:main:install   # relancer, répondre « non » aux étapes dé
 
 Si vous préférez éviter les questions, les extraits manuels des sections [Habillage](#habillage--tailwind--flux) et [Brancher votre modèle User](#brancher-votre-modèle-user) donnent les lignes exactes à ajouter.
 
+### De la V5 à la V6
+
+Une seule rupture, et elle n'est pas de nous : **`spatie/laravel-permission`
+passe en `^8.0`**, donc une app hôte encore en 7.x monte en même temps.
+
+```bash
+composer require adhocrat-io/arkhe-main:^6.0
+php artisan permission:cache-reset
+```
+
+La majeure amont est courte — les contrats `Role` et `Permission` acceptent
+désormais `BackedEnum|string` sur `create()`, `findByName()` et
+`findOrCreate()`, sans migration ni nouvelle clé de config. Elle ne demande
+rien si vous utilisez ou étendez les modèles Spatie, le cas courant et celui
+du paquet ; seule une implémentation écrite à la main a des signatures à
+aligner. Détails dans [UPGRADE.md](UPGRADE.md).
+
 ### De la V4 à la V5
 
 Une seule rupture — **l'authentification forte devient le défaut**. En 4.x,
